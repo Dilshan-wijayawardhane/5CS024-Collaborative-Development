@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>UoW Companion</title>
+
+        <style>
+        :root {
+            /* Colors derived from the document visuals */
+            --wlv-blue: #002d5b; /* Deep blue from logos */
+            --wlv-gold: #ffb81c; /* Gold from icons/headings */
+            --bg-light: #f4f4f4;
+            --white: #ffffff;
+            --text-dark: #333;
+            --success: #28a745;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+        }
+
+        /* HEADER: User Profile & Branding  */
+        header {
+            background-color: var(--wlv-blue);
+            color: var(--white);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .points-badge {
+            background-color: var(--wlv-gold);
+            color: var(--wlv-blue);
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* MAIN LAYOUT: Dashboard Style */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .card h2 {
+            color: var(--wlv-blue);
+            border-bottom: 2px solid var(--wlv-gold);
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        /* FEATURE 1: Facility & Event Updates [cite: 44, 106] */
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .status-live {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* FEATURE 2: Transit & Navigation [cite: 46, 111] */
+        .transit-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .bus-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: var(--wlv-blue);
+        }
+
+        /* FEATURE 3: Check-in & Rewards */
+        .check-in-section {
+            text-align: center;
+            display: flex;
+            flex-direction: column; /* stack buttons vertically */
+            gap: 10px; /* spacing between buttons */
+        }
+
+        .check-in-btn {
+            background-color: var(--wlv-blue);
+            color: var(--white);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .check-in-btn:hover {
+            background-color: var(--wlv-gold);
+            color: var(--wlv-blue);
+        }
+
+        #location-status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* FEATURE 4: Club Hub [cite: 63] */
+        .club-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .club-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Stretch Goal: Academic [cite: 112] */
+        .stretch-goal {
+            opacity: 0.8;
+            border: 1px dashed #ccc;
+        }
+
+    </style>
+
+    </head>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtONzMp4ge6VE_G8Z7wFzztLjKwD1baaY&callback=initMap" 
+        async defer></script>
+
+    <script src="script.js"></script>
+
+    <body>
+        <header>
+            <div class="app-title">CINEC Campus</div>
+            <div class="user-profile">
+                <span id="username">Alex</span>
+                <span class="points-badge">Points: <span id="poins-balance">60</span></span>
+            </div>
+        </header>
+
+        <div class="container">
+
+
+            <div class="card">
+            <h2>Check-In & Earn</h2>
+            <p>At a key location? Check in now to earn +10 points!</p>
+            <div class="check-in-section">
+                <button class="check-in-btn" onclick="simulateQRCheckIn('library')">📍 QR Check-In</button>
+                <button class="check-in-btn" onclick="simulateGPSCheckIn()">📡 GPS Check-In</button>
+                <p id="location-status">Waiting for check-in...</p>
+            </div>
+        </div>
+
+        <div class="card">
+        <h2>Campus Map</h2>
+            <div id="map" style="width:100%; height:100px; border-radius:10px;"></div>
+        </div>
+
+            
+            <div class="card">
+            <h2>Facility Status</h2>
+            <div class="status-item">
+                <strong>WLV Gym</strong>
+                <span class="status-live">Open (Closes 10 PM)</span>
+            </div>
+            <div class="status-item">
+                <span>Pool Availability</span>
+                <span class="status-live">Available</span>
+            </div>
+            <div class="status-item">
+                <strong>Harrison Library</strong>
+                <span class="status-live">Not Busy</span>
+            </div>
+            </div>
+
+            <div class="card">
+            <h2>SU Events Feed</h2>
+            <div class="status-item">
+                <div>
+                    <strong>Quiz Night</strong><br>
+                    <small>Main Hall</small>
+                </div>
+                <div style="text-align: right;">
+                    <strong>8 PM</strong><br>
+                    <small>Today</small>
+                </div>
+            </div>
+            <div class="status-item">
+                <div>
+                    <strong>Career Fair</strong><br>
+                    <small>Student Union</small>
+                </div>
+                <div style="text-align: right;">
+                    <strong>10 AM</strong><br>
+                    <small>Tomorrow</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Campus Transport</h2>
+            <div class="transit-row">
+                <div class="bus-icon">🚌</div>
+                <div>
+                    <strong>Route: City -> Walsall</strong><br>
+                    <span>Next Departure: 12 mins</span><br>
+                    <small style="color: green;">Status: On Time</small>
+                </div>
+            </div>
+            <div class="transit-row">
+                <div class="bus-icon">🚌</div>
+                <div>
+                    <strong>Route: Walsall -> City</strong><br>
+                    <span>Next Departure: 25 mins</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Club Hub</h2>
+            <ul class="club-list">
+                <li><strong>💻 Coding Club</strong> - <em>Active now</em></li>
+                <li><strong>🔒 Cybersecurity Club</strong> - <em>Meeting 5 PM</em></li>
+                <li><strong>🎮 Computer Games Society</strong></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+    </body>
+</html>
