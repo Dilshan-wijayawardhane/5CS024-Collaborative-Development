@@ -1,0 +1,158 @@
+		* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            /* The deep blue radial gradient background */
+            background: radial-gradient(circle at center, #0072ff 0%, #003a8c 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* The Glassmorphism Card */
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px 35px;
+            width: 400px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            color: #fff;
+            text-align: center;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        h2 {
+            text-align: left;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            margin-bottom: 5px;
+            display: block;
+            opacity: 0.9;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+            font-size: 13px;
+            color: #333;
+            background: #fff;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .forgot-pass {
+            text-align: right;
+            display: block;
+            font-size: 11px;
+            color: #fff;
+            text-decoration: none;
+            margin-top: -5px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .sign-in-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #062d57; /* Dark Navy Blue */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .sign-in-btn:hover {
+            background-color: #093b6e;
+        }
+
+        .divider {
+            font-size: 11px;
+            margin: 20px 0;
+            opacity: 0.8;
+        }
+
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .social-btn {
+            width: 45px;
+            height: 35px;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-decoration: none;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Specific Icon Colors */
+        .fa-google { color: #DB4437; } /* Google Red/Multi */
+        .fa-github { color: #333; }
+        .fa-facebook-f { color: #4267B2; }
+
+        .footer-text {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        .footer-text a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
