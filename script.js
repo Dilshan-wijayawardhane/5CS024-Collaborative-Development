@@ -1,294 +1,134 @@
-// ===============================
-// Student Profile
-// ===============================
-let studentProfile = {
-    id: 1,
-    username: "Dilshan",
-    pointsBalance: 60,
-    lastCheckIn: null
-};
+function toggleSidebar(){
+  const s=document.getElementById("sidebar");
+  s.style.left = s.style.left==="0px" ? "-220px":"0px";
+}
 
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+}
+document.querySelectorAll("a").forEach(link=>{
+link.addEventListener("click",e=>{
+const href=link.getAttribute("href");
+if(href && href.includes(".html")){
+e.preventDefault();
+document.body.style.opacity="0";
+setTimeout(()=>{window.location=href},300);
+}
+});
+});
 
-// ===============================
-// Locations
-// ===============================
+function toggleTheme(){
+document.body.classList.toggle("dark");
 
-// Indoor locations (QR)
-const indoorLocations = ["library", "dining", "club_hub"];
+/* save user preference */
+localStorage.setItem(
+"theme",
+document.body.classList.contains("dark")?"dark":"light"
+);
+}
 
-// Outdoor locations (GPS)
-const outdoorLocations = {
-    gym: { lat: 7.201774, lon: 80.099194 },
-    bus_stop: { lat: 6.9280, lon: 79.8600 },
-    campus_gate: { lat: 6.9290, lon: 79.8620 }
-};
+/* load saved theme */
+if(localStorage.getItem("theme")==="dark"){
+document.body.classList.add("dark");
+}
 
+function addPoints(amount){
+const value=document.getElementById("pointsValue");
+const box=document.getElementById("pointsBox");
 
-// ===============================
-// Check-in Handler
-// ===============================
-function handleCheckIn(locationType, locationValue) {
+let current=parseInt(value.textContent);
+current+=amount;
 
-    // QR Check-in
-    if (locationType === "QR") {
+value.textContent=current;
 
-        if (!indoorLocations.includes(locationValue)) {
+/* trigger animation */
+box.classList.add("active");
+setTimeout(()=>box.classList.remove("active"),500);
+}
 
-            document.getElementById("location-status").innerText =
-                "Invalid QR code. No points awarded.";
-            return;
-        }
+function simulateScan(){
 
-        processCheckIn(locationValue);
-    }
+/* show result */
+document.getElementById("qrResult").style.display="block";
 
-    // GPS Check-in
-    if (locationType === "GPS") {
-
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        };
-
-        navigator.geolocation.getCurrentPosition(
-            checkLocation,
-            showError,
-            options
-        );
-    }
+/* reward points */
+if(typeof addPoints==="function"){
+addPoints(10);
+}
 }
 
 
-// ===============================
-// Process Check-in
-// ===============================
-function processCheckIn(location) {
+function toggleProfileMenu(e){
+  e.stopPropagation();
+  document.getElementById("profileMenu").classList.toggle("show");
+}
 
-    if (studentProfile.lastCheckIn === location) {
+function logout(){
+  localStorage.removeItem("loggedIn");
+  window.location="login.html";
+}
 
-        document.getElementById("location-status").innerText =
-            "Duplicate check-in. No points awarded.";
+document.addEventListener("click", ()=>{
+  const menu=document.getElementById("profileMenu");
+  if(menu) menu.classList.remove("show");
+});
 
-        return;
+
+function openEditProfile(){
+  document.getElementById("editModal").style.display="flex";
+
+  document.getElementById("editName").value =
+  localStorage.getItem("userName") || "";
+
+  document.getElementById("editEmail").value =
+  localStorage.getItem("userEmail") || "";
+}
+
+function closeEdit(){
+  document.getElementById("editModal").style.display="none";
+}
+
+
+function saveProfile(){
+
+  const name=document.getElementById("editName").value;
+  const email=document.getElementById("editEmail").value;
+  const file=document.getElementById("editPhoto").files[0];
+
+  localStorage.setItem("userName",name);
+  localStorage.setItem("userEmail",email);
+
+  if(file){
+    const reader=new FileReader();
+
+    reader.onload=function(e){
+      localStorage.setItem("userPhoto", e.target.result);
+      location.reload();
     }
 
-    const pointsAwarded = 10;
+    reader.readAsDataURL(file);
+  }else{
+    location.reload();
+  }
+}
 
-    studentProfile.pointsBalance += pointsAwarded;
-    studentProfile.lastCheckIn = location;
+function toggleChat(){
+  const box=document.getElementById("chatBox");
+  box.style.display = box.style.display==="flex" ? "none":"flex";
+}
 
-    document.getElementById("poins-balance").innerText =
-        studentProfile.pointsBalance;
+function sendMessage(){
+  const input=document.getElementById("chatInput");
+  const msg=input.value.trim();
 
-    document.getElementById("location-status").innerText =
-        `Check-in successful! +${pointsAwarded} points at ${location}.`;
+  if(!msg) return;
+
+  const area=document.getElementById("chatMessages");
+
+  area.innerHTML += `<p class="user">${msg}</p>`;
+
+  input.value="";
+  area.scrollTop=area.scrollHeight;
 }
 
 
-// ===============================
-// QR Check-in
-// ===============================
-function simulateQRCheckIn(locationValue) {
-
-    if (indoorLocations.includes(locationValue)) {
-
-        handleCheckIn("QR", locationValue);
-
-    } else {
-
-        document.getElementById("location-status").innerText =
-            "Invalid QR code. No points awarded.";
-    }
-}
-
-
-// ===============================
-// GPS Check-in Button
-// ===============================
-function simulateGPSCheckIn() {
-
-    if (!navigator.geolocation) {
-
-        alert("Geolocation not supported");
-        return;
-    }
-
-    handleCheckIn("GPS");
-}
-
-
-// ===============================
-// Distance Calculator (Haversine)
-// ===============================
-function getDistance(lat1, lon1, lat2, lon2) {
-
-    const R = 6371e3; // meters
-
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-    const a =
-        Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-        Math.cos(φ1) * Math.cos(φ2) *
-        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c;
-}
-
-
-// ===============================
-// GPS Location Check
-// ===============================
-function checkLocation(position) {
-
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-
-    let matchedLocation = null;
-
-    for (const [name, coords] of Object.entries(outdoorLocations)) {
-
-        const distance = getDistance(
-            lat, lon,
-            coords.lat, coords.lon
-        );
-
-        // Allow 50 meters
-        if (distance < 50) {
-            matchedLocation = name;
-            break;
-        }
-    }
-
-    if (matchedLocation) {
-
-        processCheckIn(matchedLocation);
-
-    } else {
-
-        document.getElementById("location-status").innerText =
-            "You are too far from campus locations.";
-    }
-}
-
-
-// ===============================
-// GPS Error Handler
-// ===============================
-function showError(error) {
-
-    let msg = "";
-
-    switch (error.code) {
-
-        case error.PERMISSION_DENIED:
-            msg = "Location permission denied.";
-            break;
-
-        case error.POSITION_UNAVAILABLE:
-            msg = "Location unavailable.";
-            break;
-
-        case error.TIMEOUT:
-            msg = "GPS timeout.";
-            break;
-
-        default:
-            msg = "Unknown GPS error.";
-    }
-
-    document.getElementById("location-status").innerText = msg;
-}
-
-
-// ===============================
-// Google Maps
-// ===============================
-
-let map;
-let userMarker;
-
-
-// Initialize Map (called by Google API)
-function initMap() {
-
-    const center = {
-        lat: outdoorLocations.gym.lat,
-        lng: outdoorLocations.gym.lon
-    };
-
-    map = new google.maps.Map(
-        document.getElementById("map"),
-        {
-            zoom: 16,
-            center: center
-        }
-    );
-
-    // Campus Markers
-    for (const [name, coords] of Object.entries(outdoorLocations)) {
-
-        new google.maps.Marker({
-            position: {
-                lat: coords.lat,
-                lng: coords.lon
-            },
-            map: map,
-            title: name
-        });
-    }
-
-    trackUserLocation();
-}
-
-
-// ===============================
-// Live User Tracking
-// ===============================
-function trackUserLocation() {
-
-    if (!navigator.geolocation) return;
-
-    navigator.geolocation.watchPosition(
-
-        function (pos) {
-
-            const userPos = {
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude
-            };
-
-            if (!userMarker) {
-
-                userMarker = new google.maps.Marker({
-
-                    position: userPos,
-                    map: map,
-                    icon: {
-                        url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                    },
-                    title: "You"
-                });
-
-            } else {
-
-                userMarker.setPosition(userPos);
-            }
-
-            map.setCenter(userPos);
-
-        },
-
-        showError,
-
-        {
-            enableHighAccuracy: true
-        }
-    );
-}
