@@ -6,28 +6,160 @@
 </head>
 <body>
 
-<h1>Campus Transport</h1>
+<h1 style="text-align:center;">Campus Transport</h1>
 
 <div class="transport-list">
 
-<div class="route">
-<h3>Malabe → Colombo</h3>
-<p>7:30 AM • Available</p>
-</div>
+    <div class="route-card" id="route-cinec">
+    <h3 style="text-align:center;">Malabe</h3>
+    <div class="map-area">
+        <iframe id="map-cinec"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.783515024766!2d79.97036937587595!3d6.916460618471185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae256db1a677131%3A0x2c6145384bc19bc8!2sCINEC%20Campus!5e0!3m2!1sen!2slk!4v1700000000000" 
+        width="100%" height="150" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
+        </iframe>
+    </div>
+    <div class="buttons">
+        <button onclick="viewLocation('cinec')">View</button>
+        <button id="update-btn-cinec" onclick="updateLocation('cinec')">Update</button>
+    </div>
+    <p id="status-cinec" style="font-size: 0.8rem; color: #1a0101;text-align:center;"></p>
+    </div>
 
-<div class="route">
-<h3>Malabe → Kaduwela</h3>
-<p>8:00 AM • Seats Low</p>
-</div>
+    <div class="route-card" id="route-cinec">
+    <h3 style="text-align:center;">Gampha-1</h3>
+    <div class="map-area">
+        <iframe id="map-gampha1"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.783515024766!2d79.97036937587595!3d6.916460618471185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae256db1a677131%3A0x2c6145384bc19bc8!2sCINEC%20Campus!5e0!3m2!1sen!2slk!4v1700000000000" 
+        width="100%" height="150" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
+        </iframe>
+    </div>
+    <div class="buttons">
+        <button onclick="viewLocation('gampha1')">View</button>
+        <button id="update-btn-cinec" onclick="updateLocation('gampha1')">Update</button>
+    </div>
+    <p id="status-gampha1" style="font-size: 0.8rem; color: #1a0101;text-align:center;"></p>
+    </div>
 
-<div class="route">
-<h3>Malabe → Battaramulla</h3>
-<p>9:00 AM • Full</p>
-</div>
+    <div class="route-card" id="route-cinec">
+    <h3 style="text-align:center;">Gampha-2</h3>
+    <div class="map-area">
+        <iframe id="map-gampha2"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.783515024766!2d79.97036937587595!3d6.916460618471185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae256db1a677131%3A0x2c6145384bc19bc8!2sCINEC%20Campus!5e0!3m2!1sen!2slk!4v1700000000000" 
+        width="100%" height="150" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
+        </iframe>
+    </div>
+    <div class="buttons">
+        <button onclick="viewLocation('gampha2')">View</button>
+        <button id="update-btn-cinec" onclick="updateLocation('gampha2')">Update</button>
+    </div>
+    <p id="status-gampha2" style="font-size: 0.8rem; color: #1a0101;text-align:center;"></p>
+    </div>
+
+    <div class="route-card" id="route-cinec">
+    <h3 style="text-align:center;">Hedala</h3>
+    <div class="map-area">
+        <iframe id="map-hendala"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.783515024766!2d79.97036937587595!3d6.916460618471185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae256db1a677131%3A0x2c6145384bc19bc8!2sCINEC%20Campus!5e0!3m2!1sen!2slk!4v1700000000000" 
+        width="100%" height="150" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
+        </iframe>
+    </div>
+    <div class="buttons">
+        <button onclick="viewLocation('hendala')">View</button>
+        <button id="update-btn-cinec" onclick="updateLocation('hendala')">Update</button>
+    </div>
+    <p id="status-hendala" style="font-size: 0.8rem; color: #1a0101;text-align:center;"></p>
+    </div>
+
+    <div class="route-card" id="route-cinec">
+    <h3 style="text-align:center;">Moratuwa</h3>
+    <div class="map-area">
+        <iframe id="map-moratuwa"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.783515024766!2d79.97036937587595!3d6.916460618471185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae256db1a677131%3A0x2c6145384bc19bc8!2sCINEC%20Campus!5e0!3m2!1sen!2slk!4v1700000000000" 
+        width="100%" height="150" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
+        </iframe>
+    </div>
+    <div class="buttons">
+        <button onclick="viewLocation('moratuwa')">View</button>
+        <button id="update-btn-cinec" onclick="updateLocation('moratuwa')">Update</button>
+    </div>
+    <p id="status-moratuwa" style="font-size: 0.8rem; color: #1a0101;text-align:center;"></p>
+    </div>
+
+    <div class="route-card" id="route-cinec">
+    <h3 style="text-align:center;">Negombo</h3>
+    <div class="map-area">
+        <iframe id="map-negombo"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.783515024766!2d79.97036937587595!3d6.916460618471185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae256db1a677131%3A0x2c6145384bc19bc8!2sCINEC%20Campus!5e0!3m2!1sen!2slk!4v1700000000000" 
+        width="100%" height="150" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
+        </iframe>
+    </div>
+    <div class="buttons">
+        <button onclick="viewLocation('negombo')">View</button>
+        <button id="update-btn-cinec" onclick="updateLocation('negombo')">Update</button>
+    </div>
+    <p id="status-negombo" style="font-size: 0.8rem; color: #1a0101;text-align:center;"></p>
+    </div>
 
 </div>
 
 <a href="index.html">⬅ Back</a>
 
+<script>
+function updateLocation(routeId) {
+    let newPlace = prompt("Where is the bus now? (e.g. Wattala, Kadawatha, etc.)");
+
+    if (newPlace && newPlace.trim() !== "") {
+        // Get current time in HH:MM format
+        let currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Save location and time
+        localStorage.setItem('loc_' + routeId, newPlace);
+        localStorage.setItem('time_' + routeId, currentTime);
+        
+        // Update UI immediately
+        renderStatus(routeId, newPlace, currentTime);
+        
+        alert("Location updated at " + currentTime);
+    }
+}
+
+function viewLocation(routeId) {
+    let savedPlace = localStorage.getItem('loc_' + routeId);
+    
+    if (savedPlace) {
+        let mapFrame = document.getElementById('map-' + routeId);
+        let newMapUrl = "https://maps.google.com/maps?q=" + encodeURIComponent(savedPlace) + "&output=embed";
+        
+        mapFrame.src = newMapUrl;
+    } else {
+        alert("No updates yet for this route.");
+    }
+}
+
+// Helper function to update the text under the buttons
+function renderStatus(routeId, place, time) {
+    let statusEl = document.getElementById('status-' + routeId);
+    if (statusEl) {
+        statusEl.innerHTML = `<strong>Last Location:</strong> ${place} <br> <strong>Updated at:</strong> ${time}`;
+    }
+}
+
+// Load everything when the page opens
+window.onload = function() {
+    const allRoutes = ['gampaha1', 'gampaha2', 'hendala', 'moratuwa', 'negombo', 'cinec'];
+    allRoutes.forEach(id => {
+        let savedLoc = localStorage.getItem('loc_' + id);
+        let savedTime = localStorage.getItem('time_' + id);
+        
+        if (savedLoc && savedTime) {
+            renderStatus(id, savedLoc, savedTime);
+            // Pre-load the map with the saved location
+            document.getElementById('map-' + id).src = "https://maps.google.com/maps?q=" + encodeURIComponent(savedLoc) + "&output=embed";
+        }
+    });
+}
+
+
+</script>
 </body>
 </html>

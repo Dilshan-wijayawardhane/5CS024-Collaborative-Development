@@ -227,19 +227,67 @@ text-align:center;
 .closed{border:2px solid #ef4444;}
 
 
-.transport-list{
-padding:30px;
-display:flex;
-flex-direction:column;
-gap:15px;
+/* TRANSPORT CARDS */
+.transport-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 30px;
 }
 
-.route{
-background:var(--card);
-padding:20px;
-border-radius:14px;
+.route-card {
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
+.route-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+}
+
+/* Map area */
+.map-area {
+  background: rgba(255,255,255,0.08);
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+}
+
+/* Buttons */
+.buttons {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px;
+  background: rgba(255,255,255,0.05);
+}
+
+.buttons button {
+  flex: 1;
+  margin: 0 6px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.buttons button:hover {
+  background: var(--accent);
+  transform: scale(1.05);
+}
 
 
 .fields{
