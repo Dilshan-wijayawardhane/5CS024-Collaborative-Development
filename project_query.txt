@@ -1,0 +1,362 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS collaborative_dev;
+USE collaborative_dev;
+
+-- Users Table
+CREATE TABLE Users (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    StudentID VARCHAR(20) UNIQUE,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Role ENUM('Admin', 'User', 'Visitor') DEFAULT 'User',
+    PointsBalance INT DEFAULT 0,
+    MembershipStatus ENUM('Active', 'Inactive', 'Expired') DEFAULT 'Active',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (Email),
+    INDEX idx_role (Role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Facilities Table
+CREATE TABLE Facilities (
+    FacilityID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Type ENUM('Gym', 'Library', 'Café', 'Transport', 'GameField') NOT NULL,
+    Status ENUM('Open', 'Closed', 'Maintenance') DEFAULT 'Open',
+    Capacity INT,
+    ExtraInfo JSON,
+    INDEX idx_type (Type),
+    INDEX idx_status (Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Events Table
+CREATE TABLE Events (
+    EventID INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(200) NOT NULL,
+    Description TEXT,
+    Location VARCHAR(200),
+    StartTime DATETIME NOT NULL,
+    EndTime DATETIME NOT NULL,
+    OrganizerID INT,
+    Category ENUM('SU', 'Club', 'Workshop') NOT NULL,
+    Status ENUM('Upcoming', 'Ongoing', 'Completed', 'Cancelled') DEFAULT 'Upcoming',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (OrganizerID) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_starttime (StartTime),
+    INDEX idx_category (Category),
+    INDEX idx_organizer (OrganizerID),
+    INDEX idx_event_dates (StartTime, EndTime),
+    FULLTEXT INDEX ft_event_description (Description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- CheckIns Table
+CREATE TABLE CheckIns (
+    CheckInID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    FacilityID INT NOT NULL,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PointsAwarded INT DEFAULT 10,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (FacilityID) REFERENCES Facilities(FacilityID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_facility (FacilityID),
+    INDEX idx_user_timestamp (UserID, Timestamp),
+    INDEX idx_timestamp (Timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Rewards Table
+CREATE TABLE Rewards (
+    RewardID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Description TEXT,
+    PointsRequired INT NOT NULL,
+    Availability ENUM('Available', 'Limited', 'Out of Stock') DEFAULT 'Available',
+    Quantity INT DEFAULT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_points (PointsRequired),
+    INDEX idx_availability (Availability)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- TransportPasses Table
+CREATE TABLE TransportPasses (
+    PassID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    RouteName VARCHAR(100) NOT NULL,
+    ValidUntil DATE NOT NULL,
+    Status ENUM('Active', 'Expired', 'Cancelled') DEFAULT 'Active',
+    IssuedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_validuntil (ValidUntil),
+    INDEX idx_status (Status),
+    INDEX idx_user_valid (UserID, ValidUntil)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Orders (Café) Table
+CREATE TABLE Orders (
+    OrderID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    ItemName VARCHAR(100) NOT NULL,
+    Category ENUM('Food', 'Beverage', 'Dessert') NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL,
+    Quantity INT DEFAULT 1,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status ENUM('Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled') DEFAULT 'Pending',
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_timestamp (Timestamp),
+    INDEX idx_status (Status),
+    INDEX idx_user_orders (UserID, Timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Clubs Table
+CREATE TABLE Clubs (
+    ClubID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) UNIQUE NOT NULL,
+    Description TEXT,
+    LeaderID INT,
+    Category VARCHAR(50),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    FOREIGN KEY (LeaderID) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_leader (LeaderID),
+    INDEX idx_status (Status),
+    FULLTEXT INDEX ft_club_description (Description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ClubMemberships Table
+CREATE TABLE ClubMemberships (
+    MembershipID INT AUTO_INCREMENT PRIMARY KEY,
+    ClubID INT NOT NULL,
+    UserID INT NOT NULL,
+    JoinDate DATE DEFAULT (CURRENT_DATE),
+    Role ENUM('Member', 'Leader') DEFAULT 'Member',
+    Status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    FOREIGN KEY (ClubID) REFERENCES Clubs(ClubID) ON DELETE CASCADE,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    UNIQUE KEY unique_membership (ClubID, UserID),
+    INDEX idx_club (ClubID),
+    INDEX idx_user (UserID),
+    INDEX idx_role (Role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Notifications Table
+CREATE TABLE Notifications (
+    NotificationID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    Message TEXT NOT NULL,
+    Type ENUM('Event', 'Transport', 'Reminder', 'Announcement') NOT NULL,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status ENUM('Read', 'Unread') DEFAULT 'Unread',
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_status (Status),
+    INDEX idx_user_notifications (UserID, Status),
+    INDEX idx_timestamp (Timestamp),
+    FULLTEXT INDEX ft_notification_message (Message)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- GameField Table
+CREATE TABLE GameField (
+    GameID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    GameType VARCHAR(50) NOT NULL,
+    PointsUsed INT DEFAULT 0,
+    PointsEarned INT DEFAULT 0,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    GameData JSON,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_timestamp (Timestamp),
+    INDEX idx_gametype (GameType),
+    INDEX idx_user_games (UserID, Timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE AuditLogs (
+    LogID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT,
+    Action VARCHAR(255) NOT NULL,
+    TableName VARCHAR(50),
+    RecordID INT,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    IPAddress VARCHAR(45),
+    UserAgent TEXT,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_user (UserID),
+    INDEX idx_timestamp (Timestamp),
+    INDEX idx_action (Action)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+--------------------------------------------------------------------------------------------------------------
+
+-- Sample Data Insertion
+
+-- Insert sample users (passwords are hashed using bcrypt - 'password123' as example)
+INSERT INTO Users (StudentID, Name, Email, PasswordHash, Role, PointsBalance) VALUES
+('STU001', 'Admin User', 'admin@university.lk', '$2y$10$YourHashedPasswordHere', 'Admin', 0),
+('STU002', 'John Doe', 'john.doe@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 100),
+('STU003', 'Jane Smith', 'jane.smith@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 150),
+('STU004', 'Visitor User', 'visitor@university.lk', '$2y$10$YourHashedPasswordHere', 'Visitor', 0);
+
+-- Insert sample facilities
+INSERT INTO Facilities (Name, Type, Status, Capacity, ExtraInfo) VALUES
+('Main Library', 'Library', 'Open', 500, '{"floors": 3, "wifi": true, "air_conditioned": true}'),
+('University Gym', 'Gym', 'Open', 100, '{"equipment": ["treadmill", "weights"], "lockers": true}'),
+('Campus Café', 'Café', 'Open', 150, '{"menu_available": true, "vegetarian_options": true}'),
+('Shuttle Service', 'Transport', 'Open', 50, '{"routes": ["Malabe", "Kaduwela"], "frequency": "30min"}'),
+('Sports Field', 'GameField', 'Open', 200, '{"games": ["football", "cricket"], "lights": true}');
+
+-- Insert sample clubs
+INSERT INTO Clubs (Name, Description, Category, Status) VALUES
+('Coding Club', 'Programming and software development club', 'Academic', 'Active'),
+('Cybersecurity Club', 'Ethical hacking and security enthusiasts', 'Academic', 'Active'),
+('IEEE Student Branch', 'IEEE student chapter', 'Academic', 'Active'),
+('Robotics Club', 'Robotics and automation', 'Technical', 'Active');
+
+-- Insert sample events
+INSERT INTO Events (Title, Description, Location, StartTime, EndTime, Category, Status) VALUES
+('Hackathon 2024', '24-hour coding competition', 'CS Building', DATE_ADD(NOW(), INTERVAL 7 DAY), DATE_ADD(NOW(), INTERVAL 8 DAY), 'Club', 'Upcoming'),
+('Workshop: Web Development', 'Learn modern web development', 'Lab 101', DATE_ADD(NOW(), INTERVAL 3 DAY), DATE_ADD(NOW(), INTERVAL 3 DAY), 'Workshop', 'Upcoming'),
+('SU Meeting', 'Student Union general meeting', 'Auditorium', DATE_ADD(NOW(), INTERVAL 2 DAY), DATE_ADD(NOW(), INTERVAL 2 DAY), 'SU', 'Upcoming');
+
+-- Insert sample rewards
+INSERT INTO Rewards (Name, Description, PointsRequired, Availability, Quantity) VALUES
+('Free Café Coffee', 'Redeem for one free coffee at campus café', 50, 'Available', 100),
+('Transport Pass', 'One-day unlimited transport pass', 100, 'Available', 50),
+('Gym Day Pass', 'One-day gym access', 75, 'Available', 30),
+('University Merch', 'University t-shirt', 200, 'Limited', 10);
+
+-- Insert sample check-ins
+INSERT INTO CheckIns (UserID, FacilityID, PointsAwarded) VALUES
+(2, 1, 10),
+(2, 3, 10),
+(3, 2, 10),
+(3, 1, 10);
+
+-- Insert sample orders
+INSERT INTO Orders (UserID, ItemName, Category, Price, Quantity, Status) VALUES
+(2, 'Chicken Sandwich', 'Food', 450.00, 1, 'Completed'),
+(2, 'Coffee', 'Beverage', 250.00, 2, 'Preparing'),
+(3, 'Chocolate Cake', 'Dessert', 350.00, 1, 'Pending');
+
+-- Insert sample transport passes
+INSERT INTO TransportPasses (UserID, RouteName, ValidUntil, Status) VALUES
+(2, 'Malabe - Colombo', DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'Active'),
+(3, 'Malabe - Kandy', DATE_ADD(CURDATE(), INTERVAL 15 DAY), 'Active');
+
+-- Insert sample club memberships
+INSERT INTO ClubMemberships (ClubID, UserID, Role) VALUES
+(1, 2, 'Member'),
+(1, 3, 'Member'),
+(2, 2, 'Leader'),
+(3, 3, 'Member');
+
+-- Insert sample notifications
+INSERT INTO Notifications (UserID, Message, Type, Status) VALUES
+(2, 'Reminder: Hackathon registration closes tomorrow', 'Event', 'Unread'),
+(2, 'Your transport pass expires in 7 days', 'Transport', 'Unread'),
+(3, 'Club meeting today at 3 PM', 'Reminder', 'Read');
+
+-- Insert sample game activity
+INSERT INTO GameField (UserID, GameType, PointsUsed, PointsEarned) VALUES
+(2, 'Quiz Challenge', 0, 20),
+(2, 'AR Treasure Hunt', 10, 15),
+(3, 'Memory Game', 5, 10);
+
+-- Create Views for common queries
+
+-- View for active members with points
+CREATE VIEW ActiveMembers AS
+SELECT UserID, StudentID, Name, Email, PointsBalance, MembershipStatus
+FROM Users
+WHERE Role = 'User' AND MembershipStatus = 'Active';
+
+-- View for facility usage statistics
+CREATE VIEW FacilityUsage AS
+SELECT 
+    f.FacilityID,
+    f.Name,
+    f.Type,
+    COUNT(c.CheckInID) AS TotalCheckIns,
+    COUNT(DISTINCT c.UserID) AS UniqueUsers,
+    MAX(c.Timestamp) AS LastCheckIn
+FROM Facilities f
+LEFT JOIN CheckIns c ON f.FacilityID = c.FacilityID
+GROUP BY f.FacilityID, f.Name, f.Type;
+
+-- View for upcoming events
+CREATE VIEW UpcomingEvents AS
+SELECT 
+    EventID,
+    Title,
+    Description,
+    Location,
+    StartTime,
+    EndTime,
+    Category,
+    DATEDIFF(StartTime, NOW()) AS DaysUntil
+FROM Events
+WHERE StartTime > NOW() AND Status = 'Upcoming'
+ORDER BY StartTime;
+
+-- Stored Procedure for user points calculation
+DELIMITER //
+
+CREATE PROCEDURE CalculateUserPoints(IN userId INT)
+BEGIN
+    DECLARE totalPoints INT;
+    
+    -- Calculate points from check-ins
+    SELECT COALESCE(SUM(PointsAwarded), 0) INTO totalPoints
+    FROM CheckIns
+    WHERE UserID = userId;
+    
+    -- Add points from games
+    SELECT totalPoints + COALESCE(SUM(PointsEarned - PointsUsed), 0) INTO totalPoints
+    FROM GameField
+    WHERE UserID = userId;
+    
+    -- Update user points balance
+    UPDATE Users 
+    SET PointsBalance = totalPoints 
+    WHERE UserID = userId;
+    
+    SELECT totalPoints AS NewPointsBalance;
+END //
+
+-- Trigger to update points after check-in
+CREATE TRIGGER after_checkin_insert
+AFTER INSERT ON CheckIns
+FOR EACH ROW
+BEGIN
+    UPDATE Users 
+    SET PointsBalance = PointsBalance + NEW.PointsAwarded 
+    WHERE UserID = NEW.UserID;
+END //
+
+DELIMITER ;
+
+-- Grant permissions (example for role-based access)
+-- Admin privileges
+GRANT ALL PRIVILEGES ON collaborative_dev.* TO 'admin'@'localhost' IDENTIFIED BY 'admin_password';
+
+-- User privileges (limited)
+GRANT SELECT, INSERT, UPDATE ON collaborative_dev.Users TO 'app_user'@'localhost' IDENTIFIED BY 'user_password';
+GRANT SELECT ON collaborative_dev.Facilities TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Events TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.CheckIns TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Rewards TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.Orders TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Clubs TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.ClubMemberships TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Notifications TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.GameField TO 'app_user'@'localhost';
+
+-- Visitor privileges (read-only)
+GRANT SELECT ON collaborative_dev.Facilities TO 'visitor'@'localhost' IDENTIFIED BY 'visitor_password';
+GRANT SELECT ON collaborative_dev.Events TO 'visitor'@'localhost';
+
+FLUSH PRIVILEGES;
