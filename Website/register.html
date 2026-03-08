@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="auth">
+
+
+
+<div class="bg"></div>
+
+<div class="auth-container">
+
+  <div class="auth-box">
+    <h2>Create Account</h2>
+
+    <input id="name" placeholder="Full Name">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+
+    <p>Already have account? <a href="login.html">Login</a></p>
+  </div>
+
+</div>
+
+<footer class="footer">
+All rights reserved
+</footer>
+
+</body>
+
+
+<script>
+function register(){
+
+  const nameEl = document.getElementById("name");
+  const emailEl = document.getElementById("email");
+  const passEl = document.getElementById("password");
+
+  const name = nameEl.value.trim();
+  const email = emailEl.value.trim();
+  const pass = passEl.value.trim();
+
+  if(!name || !email || !pass){
+    alert("Please fill all fields");
+    return;
+  }
+
+  /* save profile info */
+  localStorage.setItem("userName", name);
+  localStorage.setItem("userEmail", email);
+
+  /* save login credentials */
+  localStorage.setItem("user", JSON.stringify({email, pass}));
+
+  alert("Account created successfully");
+
+  window.location="login.html";
+}
+</script>
+
+</body>
+</html>
