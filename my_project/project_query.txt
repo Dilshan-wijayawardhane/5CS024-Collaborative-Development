@@ -1,0 +1,547 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS collaborative_dev;
+USE collaborative_dev;
+
+-- Users Table
+CREATE TABLE Users (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    StudentID VARCHAR(20) UNIQUE,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Role ENUM('Admin', 'User', 'Visitor') DEFAULT 'User',
+    PointsBalance INT DEFAULT 0,
+    MembershipStatus ENUM('Active', 'Inactive', 'Expired') DEFAULT 'Active',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (Email),
+    INDEX idx_role (Role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Facilities Table
+CREATE TABLE Facilities (
+    FacilityID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Type ENUM('Gym', 'Library', 'Café', 'Transport', 'GameField') NOT NULL,
+    Status ENUM('Open', 'Closed', 'Maintenance') DEFAULT 'Open',
+    Capacity INT,
+    ExtraInfo JSON,
+    INDEX idx_type (Type),
+    INDEX idx_status (Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Events Table
+CREATE TABLE Events (
+    EventID INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(200) NOT NULL,
+    Description TEXT,
+    Location VARCHAR(200),
+    StartTime DATETIME NOT NULL,
+    EndTime DATETIME NOT NULL,
+    OrganizerID INT,
+    Category ENUM('SU', 'Club', 'Workshop') NOT NULL,
+    Status ENUM('Upcoming', 'Ongoing', 'Completed', 'Cancelled') DEFAULT 'Upcoming',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (OrganizerID) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_starttime (StartTime),
+    INDEX idx_category (Category),
+    INDEX idx_organizer (OrganizerID),
+    INDEX idx_event_dates (StartTime, EndTime),
+    FULLTEXT INDEX ft_event_description (Description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- CheckIns Table
+CREATE TABLE CheckIns (
+    CheckInID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    FacilityID INT NOT NULL,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PointsAwarded INT DEFAULT 10,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (FacilityID) REFERENCES Facilities(FacilityID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_facility (FacilityID),
+    INDEX idx_user_timestamp (UserID, Timestamp),
+    INDEX idx_timestamp (Timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Rewards Table
+CREATE TABLE Rewards (
+    RewardID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Description TEXT,
+    PointsRequired INT NOT NULL,
+    Availability ENUM('Available', 'Limited', 'Out of Stock') DEFAULT 'Available',
+    Quantity INT DEFAULT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_points (PointsRequired),
+    INDEX idx_availability (Availability)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- TransportPasses Table
+CREATE TABLE TransportPasses (
+    PassID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    RouteName VARCHAR(100) NOT NULL,
+    ValidUntil DATE NOT NULL,
+    Status ENUM('Active', 'Expired', 'Cancelled') DEFAULT 'Active',
+    IssuedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_validuntil (ValidUntil),
+    INDEX idx_status (Status),
+    INDEX idx_user_valid (UserID, ValidUntil)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Orders (Café) Table
+CREATE TABLE Orders (
+    OrderID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    ItemName VARCHAR(100) NOT NULL,
+    Category ENUM('Food', 'Beverage', 'Dessert') NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL,
+    Quantity INT DEFAULT 1,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status ENUM('Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled') DEFAULT 'Pending',
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_timestamp (Timestamp),
+    INDEX idx_status (Status),
+    INDEX idx_user_orders (UserID, Timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Clubs Table
+CREATE TABLE Clubs (
+    ClubID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) UNIQUE NOT NULL,
+    Description TEXT,
+    LeaderID INT,
+    Category VARCHAR(50),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    FOREIGN KEY (LeaderID) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_leader (LeaderID),
+    INDEX idx_status (Status),
+    FULLTEXT INDEX ft_club_description (Description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ClubMemberships Table
+CREATE TABLE ClubMemberships (
+    MembershipID INT AUTO_INCREMENT PRIMARY KEY,
+    ClubID INT NOT NULL,
+    UserID INT NOT NULL,
+    JoinDate DATE DEFAULT (CURRENT_DATE),
+    Role ENUM('Member', 'Leader') DEFAULT 'Member',
+    Status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    FOREIGN KEY (ClubID) REFERENCES Clubs(ClubID) ON DELETE CASCADE,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    UNIQUE KEY unique_membership (ClubID, UserID),
+    INDEX idx_club (ClubID),
+    INDEX idx_user (UserID),
+    INDEX idx_role (Role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Notifications Table
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    type ENUM('gym', 'event', 'transport', 'general', 'reminder') DEFAULT 'general',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_read (is_read),
+    INDEX idx_type (type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- GameField Table
+CREATE TABLE GameField (
+    GameID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    GameType VARCHAR(50) NOT NULL,
+    PointsUsed INT DEFAULT 0,
+    PointsEarned INT DEFAULT 0,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    GameData JSON,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (UserID),
+    INDEX idx_timestamp (Timestamp),
+    INDEX idx_gametype (GameType),
+    INDEX idx_user_games (UserID, Timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE AuditLogs (
+    LogID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT,
+    Action VARCHAR(255) NOT NULL,
+    TableName VARCHAR(50),
+    RecordID INT,
+    Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    IPAddress VARCHAR(45),
+    UserAgent TEXT,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_user (UserID),
+    INDEX idx_timestamp (Timestamp),
+    INDEX idx_action (Action)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bus_routes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    route_id VARCHAR(50) UNIQUE,
+    location VARCHAR(255),
+    updated_time VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_route (route_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS books (
+    book_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255),
+    isbn VARCHAR(50),
+    category VARCHAR(100),
+    quantity INT DEFAULT 1,
+    available INT DEFAULT 1,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_category (category),
+    INDEX idx_available (available)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS borrowed_books (
+    borrow_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    borrow_date DATE DEFAULT (CURRENT_DATE),
+    due_date DATE,
+    return_date DATE NULL,
+    status ENUM('borrowed', 'returned', 'overdue') DEFAULT 'borrowed',
+    fine DECIMAL(5,2) DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_status (status),
+    INDEX idx_due (due_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS gym_equipment (
+    equipment_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    quantity INT DEFAULT 1,
+    available INT DEFAULT 1,
+    category VARCHAR(100),
+    image_icon VARCHAR(50) DEFAULT 'fa-dumbbell',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS fitness_classes (
+    class_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    time VARCHAR(50),
+    instructor VARCHAR(255),
+    capacity INT DEFAULT 20,
+    booked INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS class_bookings (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    class_id INT NOT NULL,
+    booking_date DATE DEFAULT (CURRENT_DATE),
+    status ENUM('booked', 'cancelled', 'attended') DEFAULT 'booked',
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES fitness_classes(class_id) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_class (class_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS cafe_menu (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    category ENUM('Food', 'Beverage', 'Dessert') NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    points_price INT DEFAULT 0,
+    image_icon VARCHAR(50) DEFAULT 'fa-utensils',
+    available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS field_bookings (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    field_name VARCHAR(255) NOT NULL,
+    booking_date DATE NOT NULL,
+    time_slot VARCHAR(50),
+    status ENUM('booked', 'cancelled', 'completed') DEFAULT 'booked',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_date (booking_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS study_rooms (
+    room_id INT AUTO_INCREMENT PRIMARY KEY,
+    room_name VARCHAR(255) NOT NULL,
+    capacity INT DEFAULT 4,
+    has_projector BOOLEAN DEFAULT FALSE,
+    has_whiteboard BOOLEAN DEFAULT TRUE,
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS room_bookings (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    room_id INT NOT NULL,
+    booking_date DATE NOT NULL,
+    time_slot VARCHAR(50),
+    status ENUM('booked', 'cancelled', 'completed') DEFAULT 'booked',
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES study_rooms(room_id) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_room (room_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS gym_status (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    status VARCHAR(50) DEFAULT 'Open',
+    closing_time VARCHAR(20) DEFAULT '10:00 PM',
+    pool_available BOOLEAN DEFAULT TRUE,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-------------------------------------------------------
+CREATE TABLE IF NOT EXISTS su_events (
+    event_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    event_time DATETIME NOT NULL,
+    location VARCHAR(255),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-------------------------------------------
+CREATE TABLE IF NOT EXISTS campus_transport (
+    route_id INT AUTO_INCREMENT PRIMARY KEY,
+    from_campus VARCHAR(100) NOT NULL,
+    to_campus VARCHAR(100) NOT NULL,
+    next_departure VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'On Time',
+    frequency VARCHAR(100),
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-----------------------------------------
+******
+
+
+-------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS special_offers (
+    offer_id INT AUTO_INCREMENT PRIMARY KEY,
+    facility_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    discount_type ENUM('percentage', 'points', 'bogo') DEFAULT 'percentage',
+    discount_value INT,
+    original_price DECIMAL(10,2),
+    offer_price DECIMAL(10,2),
+    points_required INT,
+    valid_from DATE,
+    valid_until DATE,
+    image_url VARCHAR(500),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (facility_id) REFERENCES Facilities(FacilityID) ON DELETE CASCADE,
+    INDEX idx_facility (facility_id),
+    INDEX idx_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+------------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS table_reservations (
+    reservation_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    facility_id INT NOT NULL,
+    reservation_date DATE NOT NULL,
+    reservation_time TIME NOT NULL,
+    guest_count INT DEFAULT 2,
+    special_requests TEXT,
+    status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
+    points_used INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (facility_id) REFERENCES Facilities(FacilityID) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_date (reservation_date),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------
+
+-- Sample Data Insertion
+
+-- Insert sample users (passwords are hashed using bcrypt - 'password123' as example)
+INSERT INTO Users (StudentID, Name, Email, PasswordHash, Role, PointsBalance) VALUES
+('STU001', 'Admin User', 'admin@university.lk', '$2y$10$YourHashedPasswordHere', 'Admin', 0),
+('STU002', 'John Doe', 'john.doe@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 100),
+('STU003', 'Jane Smith', 'jane.smith@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 150),
+('STU004', 'Visitor User', 'visitor@university.lk', '$2y$10$YourHashedPasswordHere', 'Visitor', 0);
+
+-- Insert sample facilities
+INSERT INTO Facilities (Name, Type, Status, Capacity, ExtraInfo) VALUES
+('Main Library', 'Library', 'Open', 500, '{"floors": 3, "wifi": true, "air_conditioned": true}'),
+('University Gym', 'Gym', 'Open', 100, '{"equipment": ["treadmill", "weights"], "lockers": true}'),
+('Campus Café', 'Café', 'Open', 150, '{"menu_available": true, "vegetarian_options": true}'),
+('Shuttle Service', 'Transport', 'Open', 50, '{"routes": ["Malabe", "Kaduwela"], "frequency": "30min"}'),
+('Sports Field', 'GameField', 'Open', 200, '{"games": ["football", "cricket"], "lights": true}');
+
+-- Insert sample clubs
+INSERT INTO Clubs (Name, Description, Category, Status) VALUES
+('Coding Club', 'Programming and software development club', 'Academic', 'Active'),
+('Cybersecurity Club', 'Ethical hacking and security enthusiasts', 'Academic', 'Active'),
+('IEEE Student Branch', 'IEEE student chapter', 'Academic', 'Active'),
+('Robotics Club', 'Robotics and automation', 'Technical', 'Active');
+
+-- Insert sample events
+INSERT INTO Events (Title, Description, Location, StartTime, EndTime, Category, Status) VALUES
+('Hackathon 2024', '24-hour coding competition', 'CS Building', DATE_ADD(NOW(), INTERVAL 7 DAY), DATE_ADD(NOW(), INTERVAL 8 DAY), 'Club', 'Upcoming'),
+('Workshop: Web Development', 'Learn modern web development', 'Lab 101', DATE_ADD(NOW(), INTERVAL 3 DAY), DATE_ADD(NOW(), INTERVAL 3 DAY), 'Workshop', 'Upcoming'),
+('SU Meeting', 'Student Union general meeting', 'Auditorium', DATE_ADD(NOW(), INTERVAL 2 DAY), DATE_ADD(NOW(), INTERVAL 2 DAY), 'SU', 'Upcoming');
+
+-- Insert sample rewards
+INSERT INTO Rewards (Name, Description, PointsRequired, Availability, Quantity) VALUES
+('Free Café Coffee', 'Redeem for one free coffee at campus café', 50, 'Available', 100),
+('Transport Pass', 'One-day unlimited transport pass', 100, 'Available', 50),
+('Gym Day Pass', 'One-day gym access', 75, 'Available', 30),
+('University Merch', 'University t-shirt', 200, 'Limited', 10);
+
+-- Insert sample check-ins
+INSERT INTO CheckIns (UserID, FacilityID, PointsAwarded) VALUES
+(2, 1, 10),
+(2, 3, 10),
+(3, 2, 10),
+(3, 1, 10);
+
+-- Insert sample orders
+INSERT INTO Orders (UserID, ItemName, Category, Price, Quantity, Status) VALUES
+(2, 'Chicken Sandwich', 'Food', 450.00, 1, 'Completed'),
+(2, 'Coffee', 'Beverage', 250.00, 2, 'Preparing'),
+(3, 'Chocolate Cake', 'Dessert', 350.00, 1, 'Pending');
+
+-- Insert sample transport passes
+INSERT INTO TransportPasses (UserID, RouteName, ValidUntil, Status) VALUES
+(2, 'Malabe - Colombo', DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'Active'),
+(3, 'Malabe - Kandy', DATE_ADD(CURDATE(), INTERVAL 15 DAY), 'Active');
+
+-- Insert sample club memberships
+INSERT INTO ClubMemberships (ClubID, UserID, Role) VALUES
+(1, 2, 'Member'),
+(1, 3, 'Member'),
+(2, 2, 'Leader'),
+(3, 3, 'Member');
+
+-- Insert sample notifications
+INSERT INTO notifications (user_id, title, message, type) VALUES
+(2, 'Hackathon Reminder', 'Reminder: Hackathon registration closes tomorrow', 'event'),
+(2, 'Transport Pass Expiry', 'Your transport pass expires in 7 days', 'transport'),
+(3, 'Club Meeting Today', 'Club meeting today at 3 PM', 'event'),
+(1, 'WLV Gym Update', 'Gym closes at 10:00 PM tonight', 'gym'),
+(2, 'Points Earned', 'You earned 20 points from Memory Game!', 'general');
+
+-- Insert sample game activity
+INSERT INTO GameField (UserID, GameType, PointsUsed, PointsEarned) VALUES
+(2, 'Quiz Challenge', 0, 20),
+(2, 'AR Treasure Hunt', 10, 15),
+(3, 'Memory Game', 5, 10);
+
+
+-----------------------------------------------
+INSERT INTO bus_routes (route_id, location, updated_time) VALUES
+('cinec', 'Malabe', '10:30 AM'),
+('gampaha1', 'Gampaha', '10:15 AM'),
+('gampaha2', 'Kadawatha', '10:45 AM'),
+('hendala', 'Hendala', '10:20 AM'),
+('moratuwa', 'Moratuwa', '10:10 AM'),
+('negombo', 'Negombo', '10:00 AM')
+ON DUPLICATE KEY UPDATE
+location = VALUES(location),
+updated_time = VALUES(updated_time);
+
+--------------------------------------------------------------
+INSERT INTO books (title, author, category, quantity, available, description) VALUES
+('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 3, 3, 'A classic novel about the American Dream'),
+('To Kill a Mockingbird', 'Harper Lee', 'Fiction', 2, 2, 'A story of racial injustice in the Deep South'),
+('1984', 'George Orwell', 'Science Fiction', 4, 4, 'Dystopian social science fiction novel'),
+('Pride and Prejudice', 'Jane Austen', 'Romance', 2, 2, 'A romantic novel of manners'),
+('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', 2, 2, 'Story of teenage alienation'),
+('Introduction to Algorithms', 'Thomas H. Cormen', 'Academic', 5, 5, 'Comprehensive algorithms textbook'),
+('Clean Code', 'Robert C. Martin', 'Programming', 3, 3, 'Handbook of agile software craftsmanship'),
+('The Pragmatic Programmer', 'David Thomas', 'Programming', 2, 2, 'Your journey to mastery'),
+('Database Systems', 'Elmasri & Navathe', 'Academic', 3, 3, 'Complete database textbook'),
+('Harry Potter and the Philosopher\'s Stone', 'J.K. Rowling', 'Fantasy', 4, 4, 'First book in the Harry Potter series');
+
+--------------------------------------------------------------------------------
+INSERT INTO gym_equipment (name, quantity, available, category, image_icon) VALUES
+('Treadmill', 5, 3, 'Cardio', 'fa-person-running'),
+('Dumbbells Set', 20, 15, 'Strength', 'fa-dumbbell'),
+('Bench Press', 4, 2, 'Strength', 'fa-weight-hanging'),
+('Pull-up Bar', 3, 3, 'Strength', 'fa-arrow-up'),
+('Exercise Bike', 4, 1, 'Cardio', 'fa-bicycle'),
+('Rowing Machine', 2, 1, 'Cardio', 'fa-oar'),
+('Yoga Mats', 15, 8, 'Accessories', 'fa-circle'),
+('Kettlebells', 10, 6, 'Strength', 'fa-circle');
+------------------------------------------------------
+INSERT INTO fitness_classes (name, time, instructor, capacity, booked) VALUES
+('Morning Yoga', '8:00 AM', 'Ms. Perera', 20, 12),
+('Zumba Dance', '10:00 AM', 'Mr. Silva', 25, 18),
+('HIIT Workout', '5:00 PM', 'Mr. Fernando', 15, 10),
+('Strength Training', '6:30 PM', 'Ms. Kumari', 12, 5);
+-----------------------------------------------------------
+INSERT INTO cafe_menu (name, category, price, points_price, image_icon) VALUES ('Chicken Sandwich', 'Food', 450.00, 45, 'fa-burger'),
+('Veggie Wrap', 'Food', 350.00, 35, 'fa-leaf'),
+('Chicken Rice', 'Food', 550.00, 55, 'fa-bowl-food'),
+('Pasta', 'Food', 480.00, 48, 'fa-utensils'),('Coffee', 'Beverage', 250.00, 25, 'fa-mug-hot'),
+('Tea', 'Beverage', 150.00, 15, 'fa-mug-saucer'),
+('Soft Drink', 'Beverage', 200.00, 20, 'fa-bottle-water'),
+('Fresh Juice', 'Beverage', 300.00, 30, 'fa-glass-water'),('Chocolate Cake', 'Dessert', 350.00, 35, 'fa-cake-candles'),
+('Ice Cream', 'Dessert', 250.00, 25, 'fa-ice-cream'),
+('Fruit Salad', 'Dessert', 280.00, 28, 'fa-bowl-food');
+-----------------------------------------------------------
+INSERT INTO study_rooms (room_name, capacity, has_projector, has_whiteboard) VALUES
+('Study Room 1', 4, TRUE, TRUE),
+('Study Room 2', 6, TRUE, TRUE),
+('Group Study Hall', 10, TRUE, TRUE),
+('Quiet Reading Room', 2, FALSE, FALSE);
+----------------------------------------------
+INSERT INTO gym_status (status, closing_time, pool_available) 
+VALUES ('Open', '10:00 PM', TRUE);
+-------------------------------------------------------------
+
+INSERT INTO su_events (title, event_time, location, description) VALUES
+('Quiz Night', DATE_ADD(NOW(), INTERVAL 2 DAY), 'Main Hall', 'Test your knowledge!'),
+('SU Meeting', DATE_ADD(NOW(), INTERVAL 1 DAY), 'Room 101', 'Weekly student union meeting'),
+('Movie Night', DATE_ADD(NOW(), INTERVAL 3 DAY), 'Lecture Theatre', 'Free movie screening');
+-----------------------------------------------------------------------
+
+INSERT INTO campus_transport (from_campus, to_campus, next_departure, status, frequency) VALUES
+('City', 'Walsall', '15 mins', 'On Time', 'Every 30 mins'),
+('Walsall', 'City', '20 mins', 'On Time', 'Every 30 mins'),
+('City', 'Telford', '45 mins', 'On Time', 'Every 60 mins'),
+('Telford', 'City', '50 mins', 'On Time', 'Every 60 mins');
+----------------------------------------------------------------
+
+------------------------------------------------------
+INSERT INTO special_offers (facility_id, title, description, discount_type, discount_value, original_price, offer_price, points_required, valid_until, image_url) VALUES
+(3, 'Happy Hour Special', 'Get 20% off on all beverages from 4 PM to 6 PM', 'percentage', 20, NULL, NULL, 0, DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'https://images.unsplash.com/photo-1470119693884-47d3a1d1f180?w=300&h=200&fit=crop'),
+(3, 'Combo Meal Deal', 'Chicken Rice + Soft Drink for only 450 points', 'points', 450, 550.00, NULL, 450, DATE_ADD(CURDATE(), INTERVAL 15 DAY), 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=300&h=200&fit=crop'),
+(3, 'Buy 1 Get 1 Free', 'Buy any coffee and get one free', 'bogo', 1, 250.00, NULL, 0, DATE_ADD(CURDATE(), INTERVAL 7 DAY), 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop');
+------------------------------------------------------------
+
+
