@@ -380,7 +380,8 @@ CREATE TABLE IF NOT EXISTS table_reservations (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -------------------------------------------------------------------------
-
+ALTER TABLE Facilities 
+MODIFY COLUMN Type ENUM('Gym', 'Library', 'Café', 'Transport', 'GameField', 'Pool') NOT NULL;
 
 
 --------------------------------------------------------------------------------------------------------------
