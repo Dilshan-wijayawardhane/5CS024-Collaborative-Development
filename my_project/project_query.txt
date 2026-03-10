@@ -1,8 +1,10 @@
--- Create Database
+This is used for Create Database
+----------------------------------
 CREATE DATABASE IF NOT EXISTS collaborative_dev;
 USE collaborative_dev;
 
--- Users Table
+This is Users Table
+-------------------
 CREATE TABLE Users (
     UserID INT AUTO_INCREMENT PRIMARY KEY,
     StudentID VARCHAR(20) UNIQUE,
@@ -17,7 +19,8 @@ CREATE TABLE Users (
     INDEX idx_role (Role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Facilities Table
+This is Facilities Table
+------------------------
 CREATE TABLE Facilities (
     FacilityID INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
@@ -29,7 +32,8 @@ CREATE TABLE Facilities (
     INDEX idx_status (Status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Events Table
+This is Events Table
+--------------------
 CREATE TABLE Events (
     EventID INT AUTO_INCREMENT PRIMARY KEY,
     Title VARCHAR(200) NOT NULL,
@@ -49,7 +53,8 @@ CREATE TABLE Events (
     FULLTEXT INDEX ft_event_description (Description)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- CheckIns Table
+This is CheckIns Table
+------------------------
 CREATE TABLE CheckIns (
     CheckInID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT NOT NULL,
@@ -64,7 +69,8 @@ CREATE TABLE CheckIns (
     INDEX idx_timestamp (Timestamp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Rewards Table
+This is Rewards Table
+----------------------
 CREATE TABLE Rewards (
     RewardID INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
@@ -77,7 +83,8 @@ CREATE TABLE Rewards (
     INDEX idx_availability (Availability)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- TransportPasses Table
+This is TransportPasses Table
+-----------------------------
 CREATE TABLE TransportPasses (
     PassID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT NOT NULL,
@@ -92,7 +99,8 @@ CREATE TABLE TransportPasses (
     INDEX idx_user_valid (UserID, ValidUntil)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Orders (Café) Table
+This is Orders (Café) Table
+-----------------------------
 CREATE TABLE Orders (
     OrderID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT NOT NULL,
@@ -109,7 +117,8 @@ CREATE TABLE Orders (
     INDEX idx_user_orders (UserID, Timestamp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Clubs Table
+This is Clubs Table
+---------------------
 CREATE TABLE Clubs (
     ClubID INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(100) UNIQUE NOT NULL,
@@ -124,7 +133,8 @@ CREATE TABLE Clubs (
     FULLTEXT INDEX ft_club_description (Description)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ClubMemberships Table
+This is  ClubMemberships Table
+-----------------------------
 CREATE TABLE ClubMemberships (
     MembershipID INT AUTO_INCREMENT PRIMARY KEY,
     ClubID INT NOT NULL,
@@ -140,7 +150,8 @@ CREATE TABLE ClubMemberships (
     INDEX idx_role (Role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Notifications Table
+This is Notifications Table
+--------------------------
 CREATE TABLE IF NOT EXISTS notifications (
     notification_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -155,7 +166,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     INDEX idx_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- GameField Table
+This is GameField Table
+-------------------------
 CREATE TABLE GameField (
     GameID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT NOT NULL,
@@ -170,9 +182,9 @@ CREATE TABLE GameField (
     INDEX idx_gametype (GameType),
     INDEX idx_user_games (UserID, Timestamp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
--------------------------------------------------------------------------------------------------------
 
-
+This is AuditLogs Table
+-----------------------
 CREATE TABLE AuditLogs (
     LogID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT,
@@ -189,6 +201,8 @@ CREATE TABLE AuditLogs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ---------------------------------------------------------------------
+This is bus_routes Table
+------------------------
 CREATE TABLE IF NOT EXISTS bus_routes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     route_id VARCHAR(50) UNIQUE,
@@ -199,6 +213,8 @@ CREATE TABLE IF NOT EXISTS bus_routes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --------------------------------------------------------------------
+This is books Table
+-------------------
 CREATE TABLE IF NOT EXISTS books (
     book_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -213,6 +229,8 @@ CREATE TABLE IF NOT EXISTS books (
     INDEX idx_available (available)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ---------------------------------------------------------------------
+This is borrowed_books Table
+----------------------------
 CREATE TABLE IF NOT EXISTS borrowed_books (
     borrow_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -229,6 +247,8 @@ CREATE TABLE IF NOT EXISTS borrowed_books (
     INDEX idx_due (due_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ---------------------------------------------------------------------
+This is gym_equipment Table
+----------------------------
 CREATE TABLE IF NOT EXISTS gym_equipment (
     equipment_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -239,6 +259,8 @@ CREATE TABLE IF NOT EXISTS gym_equipment (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ---------------------------------------------------------------------
+This is fitness_classes Table
+----------------------------
 CREATE TABLE IF NOT EXISTS fitness_classes (
     class_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -249,6 +271,8 @@ CREATE TABLE IF NOT EXISTS fitness_classes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ---------------------------------------------------------------------
+This is class_bookings Table
+
 CREATE TABLE IF NOT EXISTS class_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -261,6 +285,7 @@ CREATE TABLE IF NOT EXISTS class_bookings (
     INDEX idx_class (class_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -------------------------------------------------------------------
+This is cafe_menu Table
 
 CREATE TABLE IF NOT EXISTS cafe_menu (
     item_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -274,6 +299,8 @@ CREATE TABLE IF NOT EXISTS cafe_menu (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ------------------------------------------------------------------
+This is field_bookings Table
+
 CREATE TABLE IF NOT EXISTS field_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -287,6 +314,8 @@ CREATE TABLE IF NOT EXISTS field_bookings (
     INDEX idx_date (booking_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ------------------------------------------------------------------
+This is study_rooms Table
+
 CREATE TABLE IF NOT EXISTS study_rooms (
     room_id INT AUTO_INCREMENT PRIMARY KEY,
     room_name VARCHAR(255) NOT NULL,
@@ -297,6 +326,8 @@ CREATE TABLE IF NOT EXISTS study_rooms (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ------------------------------------------------------------------
+This is room_bookings Table
+
 CREATE TABLE IF NOT EXISTS room_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -310,6 +341,8 @@ CREATE TABLE IF NOT EXISTS room_bookings (
     INDEX idx_room (room_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ---------------------------------------------------------------------
+This is gym_status Table
+
 CREATE TABLE IF NOT EXISTS gym_status (
     id INT AUTO_INCREMENT PRIMARY KEY,
     status VARCHAR(50) DEFAULT 'Open',
@@ -318,6 +351,8 @@ CREATE TABLE IF NOT EXISTS gym_status (
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -------------------------------------------------------
+This is su_events Table
+
 CREATE TABLE IF NOT EXISTS su_events (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -327,6 +362,8 @@ CREATE TABLE IF NOT EXISTS su_events (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -------------------------------------------
+This is campus_transport Table
+
 CREATE TABLE IF NOT EXISTS campus_transport (
     route_id INT AUTO_INCREMENT PRIMARY KEY,
     from_campus VARCHAR(100) NOT NULL,
@@ -336,11 +373,9 @@ CREATE TABLE IF NOT EXISTS campus_transport (
     frequency VARCHAR(100),
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
------------------------------------------
-******
+-----------------------------------------------------------------------------
+This is special_offers Table
 
-
--------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS special_offers (
     offer_id INT AUTO_INCREMENT PRIMARY KEY,
     facility_id INT NOT NULL,
@@ -380,8 +415,44 @@ CREATE TABLE IF NOT EXISTS table_reservations (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -------------------------------------------------------------------------
-ALTER TABLE Facilities 
-MODIFY COLUMN Type ENUM('Gym', 'Library', 'Café', 'Transport', 'GameField', 'Pool') NOT NULL;
+-- Pool Bookings Table
+CREATE TABLE IF NOT EXISTS pool_bookings (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    facility_id INT NOT NULL,
+    lane_number INT NOT NULL,
+    booking_date DATE NOT NULL,
+    time_slot VARCHAR(50) NOT NULL,
+    status ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'confirmed',
+    medical_report_id INT,
+    points_earned INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (facility_id) REFERENCES Facilities(FacilityID) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_date (booking_date),
+    INDEX idx_status (status),
+    UNIQUE KEY unique_booking (facility_id, booking_date, lane_number, time_slot)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Medical Reports Table
+CREATE TABLE IF NOT EXISTS medical_reports (
+    report_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size INT,
+    upload_date DATE DEFAULT (CURRENT_DATE),
+    expiry_date DATE,
+    is_valid BOOLEAN DEFAULT TRUE,
+    emergency_contact_name VARCHAR(255),
+    emergency_contact_phone VARCHAR(50),
+    medical_conditions TEXT,
+    FOREIGN KEY (user_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_expiry (expiry_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 
 --------------------------------------------------------------------------------------------------------------
@@ -545,4 +616,280 @@ INSERT INTO special_offers (facility_id, title, description, discount_type, disc
 (3, 'Buy 1 Get 1 Free', 'Buy any coffee and get one free', 'bogo', 1, 250.00, NULL, 0, DATE_ADD(CURDATE(), INTERVAL 7 DAY), 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop');
 ------------------------------------------------------------
 
+ALTER TABLE Facilities 
+MODIFY COLUMN Type ENUM('Gym', 'Library', 'Café', 'Transport', 'GameField', 'Pool') NOT NULL;
 
+-- Insert a sample pool facility
+INSERT INTO Facilities (Name, Type, Status, Capacity, ExtraInfo) VALUES
+('Olympic Swimming Pool', 'Pool', 'Open', 80, '{"depth": "1.2m-2.5m", "lanes": 8, "waterTemp": 27, "lifeguards": 4, "medicalRequired": true, "amenities": ["Changing Rooms", "Showers", "Lockers", "Pool Equipment", "First Aid Station"]}');
+
+-- Add medical_report_id to pool_bookings if not exists
+ALTER TABLE pool_bookings 
+ADD COLUMN IF NOT EXISTS medical_report_id INT,
+ADD FOREIGN KEY (medical_report_id) REFERENCES medical_reports(report_id) ON DELETE SET NULL;
+
+-- Create admin tables that match your existing schema
+
+-- Points Configuration table
+CREATE TABLE IF NOT EXISTS PointsConfig (
+    ConfigID INT PRIMARY KEY AUTO_INCREMENT,
+    ActionType VARCHAR(50) NOT NULL UNIQUE,
+    Points INT NOT NULL DEFAULT 0,
+    Description TEXT,
+    MaxPerDay INT DEFAULT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default points configuration
+INSERT INTO PointsConfig (ActionType, Points, Description) VALUES
+('LOGIN', 10, 'Daily login bonus'),
+('FACILITY_VISIT', 20, 'Check in to a facility'),
+('EVENT_ATTENDANCE', 50, 'Attend a campus event'),
+('BOOK_BORROW', 5, 'Borrow a book from library'),
+('GAME_PLAY', 15, 'Play a game'),
+('CLUB_JOIN', 20, 'Join a club'),
+('REFERRAL', 100, 'Refer a friend'),
+('ADMIN_ADJUSTMENT', 0, 'Manual adjustment by admin');
+
+-- Points History table (fixing the column names)
+CREATE TABLE IF NOT EXISTS PointsHistory (
+    HistoryID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    PointsChange INT NOT NULL,
+    ActionType VARCHAR(50) NOT NULL,
+    Description TEXT,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+-- Membership Tiers table
+CREATE TABLE IF NOT EXISTS MembershipTiers (
+    TierID INT PRIMARY KEY AUTO_INCREMENT,
+    TierName VARCHAR(50) NOT NULL,
+    MinPoints INT NOT NULL,
+    MaxPoints INT DEFAULT NULL,
+    Multiplier DECIMAL(3,2) DEFAULT 1.00,
+    Benefits JSON,
+    Color VARCHAR(20) DEFAULT '#667eea',
+    Icon VARCHAR(50) DEFAULT 'fa-star',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default tiers
+INSERT INTO MembershipTiers (TierName, MinPoints, MaxPoints, Multiplier, Benefits, Color, Icon) VALUES
+('Bronze', 0, 499, 1.0, '{"points_multiplier": 1.0}', '#CD7F32', 'fa-bronze'),
+('Silver', 500, 1999, 1.2, '{"points_multiplier": 1.2, "free_drinks": 1}', '#C0C0C0', 'fa-silver'),
+('Gold', 2000, 4999, 1.5, '{"points_multiplier": 1.5, "free_drinks": 2, "priority_booking": true}', '#FFD700', 'fa-gold'),
+('Platinum', 5000, NULL, 2.0, '{"points_multiplier": 2.0, "free_drinks": 4, "priority_booking": true, "free_events": true}', '#E5E4E2', 'fa-crown');
+
+-- Rewards Catalog table
+CREATE TABLE IF NOT EXISTS Rewards (
+    RewardID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Description TEXT,
+    PointsRequired INT NOT NULL,
+    Availability ENUM('Available', 'Limited', 'Out of Stock') DEFAULT 'Available',
+    Quantity INT DEFAULT NULL,
+    ImageURL VARCHAR(255) DEFAULT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Rewards Redemption table
+CREATE TABLE IF NOT EXISTS RewardsRedemption (
+    RedemptionID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    RewardID INT NOT NULL,
+    PointsSpent INT NOT NULL,
+    Status ENUM('Pending', 'Approved', 'Completed', 'Cancelled') DEFAULT 'Pending',
+    RedeemedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CompletedAt TIMESTAMP NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (RewardID) REFERENCES Rewards(RewardID) ON DELETE CASCADE
+);
+
+-- Import History table
+CREATE TABLE IF NOT EXISTS ImportHistory (
+    ImportID INT PRIMARY KEY AUTO_INCREMENT,
+    FileName VARCHAR(255) NOT NULL,
+    RecordsImported INT DEFAULT 0,
+    Status VARCHAR(50) DEFAULT 'Success',
+    ImportedBy INT,
+    ImportedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ImportedBy) REFERENCES Users(UserID) ON DELETE SET NULL
+);
+
+-- Points Expiration settings
+CREATE TABLE IF NOT EXISTS PointsExpiration (
+    ExpirationID INT PRIMARY KEY AUTO_INCREMENT,
+    ExpiryDays INT DEFAULT 365,
+    LastEarnedPointsExpire BOOLEAN DEFAULT TRUE,
+    NotificationDays INT DEFAULT 30,
+    Enabled BOOLEAN DEFAULT TRUE,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default expiration settings
+INSERT INTO PointsExpiration (ExpirationID, ExpiryDays, LastEarnedPointsExpire, NotificationDays, Enabled) 
+VALUES (1, 365, TRUE, 30, TRUE)
+ON DUPLICATE KEY UPDATE ExpirationID = ExpirationID;
+
+-- Streak Bonuses table
+CREATE TABLE IF NOT EXISTS StreakBonuses (
+    StreakID INT PRIMARY KEY AUTO_INCREMENT,
+    StreakType ENUM('Daily', 'Weekly') NOT NULL,
+    StreakDays INT NOT NULL,
+    Multiplier DECIMAL(3,2) DEFAULT 1.0,
+    BonusPoints INT DEFAULT 0,
+    Description TEXT
+);
+
+-- Insert default streak bonuses
+INSERT INTO StreakBonuses (StreakType, StreakDays, Multiplier, BonusPoints, Description) VALUES
+('Daily', 7, 1.5, 50, '7-day daily streak bonus'),
+('Daily', 30, 2.0, 200, '30-day daily streak bonus'),
+('Weekly', 4, 1.2, 100, '4-week weekly streak bonus');
+
+
+
+
+
+
+-- Create ActivityLogs table if it doesn't exist
+CREATE TABLE IF NOT EXISTS ActivityLogs (
+    LogID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    Action VARCHAR(50) NOT NULL,
+    Details TEXT,
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+-- Also create index for better performance
+CREATE INDEX idx_activity_user ON ActivityLogs(UserID);
+CREATE INDEX idx_activity_timestamp ON ActivityLogs(Timestamp);
+
+
+
+
+
+-- Notification Templates table
+CREATE TABLE IF NOT EXISTS NotificationTemplates (
+    TemplateID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Title VARCHAR(255) NOT NULL,
+    Message TEXT NOT NULL,
+    Type ENUM('gym', 'event', 'transport', 'general', 'emergency') DEFAULT 'general',
+    CreatedBy INT,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (CreatedBy) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_type (Type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Notification History/Log table
+CREATE TABLE IF NOT EXISTS NotificationLog (
+    LogID INT AUTO_INCREMENT PRIMARY KEY,
+    NotificationID INT NULL,
+    Title VARCHAR(255) NOT NULL,
+    Message TEXT NOT NULL,
+    Type ENUM('gym', 'event', 'transport', 'general', 'emergency') NOT NULL,
+    TargetType ENUM('all', 'user_group', 'location', 'tier') NOT NULL,
+    TargetValue VARCHAR(255),
+    ScheduledFor DATETIME NULL,
+    SentAt DATETIME NULL,
+    Status ENUM('scheduled', 'sending', 'sent', 'failed', 'cancelled') DEFAULT 'scheduled',
+    SentCount INT DEFAULT 0,
+    FailedCount INT DEFAULT 0,
+    OpenedCount INT DEFAULT 0,
+    CreatedBy INT,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CreatedBy) REFERENCES Users(UserID) ON DELETE SET NULL,
+    INDEX idx_status (Status),
+    INDEX idx_scheduled (ScheduledFor),
+    INDEX idx_type_target (Type, TargetType)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- User Groups for targeting
+CREATE TABLE IF NOT EXISTS UserGroups (
+    GroupID INT AUTO_INCREMENT PRIMARY KEY,
+    GroupName VARCHAR(100) NOT NULL UNIQUE,
+    Description TEXT,
+    CreatedBy INT,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CreatedBy) REFERENCES Users(UserID) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- User Group Members
+CREATE TABLE IF NOT EXISTS UserGroupMembers (
+    GroupID INT NOT NULL,
+    UserID INT NOT NULL,
+    AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (GroupID, UserID),
+    FOREIGN KEY (GroupID) REFERENCES UserGroups(GroupID) ON DELETE CASCADE,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Notification Opens tracking
+CREATE TABLE IF NOT EXISTS NotificationOpens (
+    OpenID INT AUTO_INCREMENT PRIMARY KEY,
+    NotificationID INT NOT NULL,
+    UserID INT NOT NULL,
+    NotificationLogID INT NULL,
+    OpenedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (NotificationID) REFERENCES notifications(notification_id) ON DELETE CASCADE,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    INDEX idx_notification_user (NotificationID, UserID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Insert default user groups
+INSERT INTO UserGroups (GroupName, Description) VALUES
+('All Students', 'All registered students'),
+('Active Users', 'Users who logged in within last 30 days'),
+('Gym Members', 'Users who have checked into gym'),
+('Library Users', 'Users who have borrowed books'),
+('Transport Users', 'Users who use campus transport')
+ON DUPLICATE KEY UPDATE GroupID=GroupID;
+
+
+
+
+
+
+-- Create lifeguards table
+CREATE TABLE IF NOT EXISTS lifeguards (
+    lifeguard_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(50),
+    certification VARCHAR(100),
+    experience INT DEFAULT 0,
+    status ENUM('active', 'inactive', 'on_leave') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Create lifeguard schedule table
+CREATE TABLE IF NOT EXISTS lifeguard_schedule (
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+    lifeguard_id INT NOT NULL,
+    schedule_date DATE NOT NULL,
+    time_slot VARCHAR(20) NOT NULL,
+    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lifeguard_id) REFERENCES lifeguards(lifeguard_id) ON DELETE CASCADE,
+    INDEX idx_date (schedule_date),
+    INDEX idx_lifeguard (lifeguard_id),
+    UNIQUE KEY unique_schedule (lifeguard_id, schedule_date, time_slot)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insert some sample lifeguards
+INSERT INTO lifeguards (name, email, phone, certification, experience, status) VALUES
+('Kumara Sangakra', 'Kumara.doe@example.com', '0771234567', 'Lifeguard Certificate', 5, 'active'),
+('John kells', 'john.smith@example.com', '0772345678', 'Water Safety Instructor', 3, 'active'),
+('Mike Johnson', 'mike.johnson@example.com', '0773456789', 'CPR Instructor', 7, 'active'),
+('Sanath jayasuriya ', 'sanat.wilson@example.com', '0774567890', 'First Aid', 2, 'active'),
+('Tom Brown', 'tom.brown@example.com', '0775678901', 'Pool Operator', 4, 'on_leave')
+ON DUPLICATE KEY UPDATE lifeguard_id=lifeguard_id;
