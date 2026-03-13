@@ -1,0 +1,1058 @@
+<?php
+require_once 'config.php';
+require_once 'functions.php';
+
+if (!isLoggedIn()) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+// Initialize cart in session if not exists
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+
+// Handle AJAX add to cart
+if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
+    header('Content-Type: application/json');
+    
+    $item_id = intval($_POST['item_id']);
+    $item_name = $_POST['item_name'];
+    $price = floatval($_POST['price']);
+    $points_price = intval($_POST['points_price']);
+    $quantity = intval($_POST['quantity']);
+    $category = $_POST['category'] ?? 'Food';
+    
+    // Check if item already in cart
+    $found = false;
+    foreach ($_SESSION['cart'] as &$item) {
+        if ($item['item_id'] == $item_id) {
+            $item['quantity'] += $quantity;
+            $found = true;
+            break;
+        }
+    }
+    
+    if (!$found) {
+        $_SESSION['cart'][] = [
+            'item_id' => $item_id,
+            'name' => $item_name,
+            'price' => $price,
+            'points_price' => $points_price,
+            'quantity' => $quantity,
+            'category' => $category
+        ];
+    }
+    
+    // Calculate cart totals
+    $cart_count = 0;
+    $cart_total = 0;
+    foreach ($_SESSION['cart'] as $item) {
+        $cart_count += $item['quantity'];
+        $cart_total += $item['price'] * $item['quantity'];
+    }
+    
+    echo json_encode([
+        'success' => true, 
+        'cart_count' => $cart_count,
+        'cart_total' => $cart_total,
+        'message' => 'Added to cart!'
+    ]);
+    exit();
+}
+
+// Handle get cart
+if (isset($_GET['action']) && $_GET['action'] == 'get_cart') {
+    header('Content-Type: application/json');
+    
+    $cart_items = [];
+    $cart_count = 0;
+    $cart_total = 0;
+    
+    foreach ($_SESSION['cart'] as $item) {
+        $cart_items[] = $item;
+        $cart_count += $item['quantity'];
+        $cart_total += $item['price'] * $item['quantity'];
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'items' => $cart_items,
+        'count' => $cart_count,
+        'total' => $cart_total
+    ]);
+    exit();
+}
+
+// Handle remove from cart
+if (isset($_POST['action']) && $_POST['action'] == 'remove_from_cart') {
+    header('Content-Type: application/json');
+    
+    $item_id = intval($_POST['item_id']);
+    
+    foreach ($_SESSION['cart'] as $key => $item) {
+        if ($item['item_id'] == $item_id) {
+            unset($_SESSION['cart'][$key]);
+            break;
+        }
+    }
+    
+    // Re-index array
+    $_SESSION['cart'] = array_values($_SESSION['cart']);
+    
+    echo json_encode(['success' => true]);
+    exit();
+}
+
+// Handle update cart quantity
+if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
+    header('Content-Type: application/json');
+    
+    $item_id = intval($_POST['item_id']);
+    $quantity = intval($_POST['quantity']);
+    
+    foreach ($_SESSION['cart'] as &$item) {
+        if ($item['item_id'] == $item_id) {
+            if ($quantity <= 0) {
+                // Remove item if quantity is 0
+                $item = null;
+            } else {
+                $item['quantity'] = $quantity;
+            }
+            break;
+        }
+    }
+    
+    // Remove null items
+    $_SESSION['cart'] = array_filter($_SESSION['cart']);
+    $_SESSION['cart'] = array_values($_SESSION['cart']);
+    
+    echo json_encode(['success' => true]);
+    exit();
+}
+
+// Get menu from database
+$menu_sql = "SELECT * FROM cafe_menu WHERE available = TRUE ORDER BY category, name";
+$menu_result = mysqli_query($conn, $menu_sql);
+
+// Get user points
+$user_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
+$user_stmt = mysqli_prepare($conn, $user_sql);
+mysqli_stmt_bind_param($user_stmt, "i", $user_id);
+mysqli_stmt_execute($user_stmt);
+$user_result = mysqli_stmt_get_result($user_stmt);
+$user = mysqli_fetch_assoc($user_result);
+
+// Organize menu by category
+$menu_by_category = [];
+while($item = mysqli_fetch_assoc($menu_result)) {
+    $menu_by_category[$item['category']][] = $item;
+}
+
+// Food Images Array
+$food_images = [
+    'Chicken Rice' => 'chickenrice.jpg',
+    'Chicken Sandwich' => 'Chicken Sandwich.jfif',
+    'Pasta' => 'Pasta.jpg',
+    'Veggie Wrap' => 'Veggie Wrap.jfif',
+    'Coffee' => 'coffee.jpg',
+    'Tea' => 'Tea.jpg',
+    'Soft Drink' => 'Soft Drink.jpg',
+    'Fresh Juice' => 'juice.jpg',
+    'Chocolate Cake' => 'Chocolate Cake.jpg',
+    'Ice Cream' => 'Ice Cream.jpg',
+    'Fruit Salad' => 'Fruit Salad.jpg',
+];
+
+// Get current cart for display
+$cart_items = $_SESSION['cart'];
+$cart_count = 0;
+foreach ($cart_items as $item) {
+    $cart_count += $item['quantity'];
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Food - Synergy Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Your existing CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+        }
+        
+        .bg::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("campus.jpg");
+            background-size: cover;
+            background-position: center;
+            filter: blur(4px) brightness(0.65);
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .logo span {
+            color: #22d3ee;
+        }
+        
+        .icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .menu-btn {
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .points {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+        }
+        
+        .home-link {
+            color: white;
+            font-size: 20px;
+            text-decoration: none;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: -260px;
+            top: 0;
+            width: 260px;
+            height: 100%;
+            background: #0f172a;
+            padding-top: 70px;
+            transition: .35s;
+            z-index: 9999;
+        }
+        
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            opacity: .8;
+            transition: all 0.3s;
+        }
+        
+        .sidebar a:hover {
+            opacity: 1;
+            background: #1e293b;
+            padding-left: 30px;
+        }
+        
+        .container {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .points-badge {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 18px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .menu-category {
+            color: white;
+            font-size: 28px;
+            margin: 40px 0 20px;
+            border-left: 5px solid #22d3ee;
+            padding-left: 15px;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .menu-item {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+        
+        .food-image {
+            width: 100%;
+            height: 160px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .food-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .stock-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .item-name {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .item-prices {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        
+        .price-tag {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .price-tag small {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+        }
+        
+        .price-tag div {
+            color: #22d3ee;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .qty-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .qty-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .qty-value {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .add-to-cart-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Cart Sidebar */
+        .cart-sidebar {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 380px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .cart-sidebar.open {
+            right: 0;
+        }
+        
+        .cart-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cart-header h3 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .close-cart {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .close-cart:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .cart-item-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .cart-item-price {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .cart-qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .cart-qty-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .remove-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #ef4444;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        
+        .remove-item:hover {
+            opacity: 1;
+        }
+        
+        .cart-footer {
+            padding: 20px;
+            border-top: 2px solid #eee;
+            background: #f8f9fa;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .empty-cart i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        
+        .cart-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 9999;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .cart-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            border: 2px solid white;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+            z-index: 10001;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-top: 30px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: #22d3ee;
+        }
+        
+        @media (max-width: 768px) {
+            .cart-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+    <a href="index.php">Home</a>
+    <a href="facilities.php">Facilities</a>
+    <a href="transport.php">Transport</a>
+    <a href="game.php">Game Field</a>
+    <a href="clubs.php">Club Hub</a>
+    <a href="qr.html">QR Scanner</a>
+</div>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <div class="menu-btn" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </div>
+    
+    <h1 class="logo">Synergy <span>Hub</span> - Order Food</h1>
+    
+    <div class="icons">
+        <div class="points">
+            <i class="fa-solid fa-star"></i>
+            <span id="pointsDisplay"><?php echo $user['PointsBalance']; ?></span>
+        </div>
+        <a href="cafe_menu.php?id=<?php echo $facility_id; ?>" class="home-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Menu
+        </a>
+    </div>
+</header>
+
+<!-- CART TOGGLE BUTTON -->
+<div class="cart-toggle" onclick="toggleCart()">
+    <i class="fa-solid fa-cart-shopping"></i>
+    <span class="cart-count" id="cartCount"><?php echo $cart_count; ?></span>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+        <h3><i class="fa-solid fa-cart-shopping"></i> Your Cart</h3>
+        <button class="close-cart" onclick="toggleCart()"><i class="fa-solid fa-times"></i></button>
+    </div>
+    
+    <div class="cart-items" id="cartItems">
+        <!-- Cart items will be loaded via AJAX -->
+        <div class="empty-cart">
+            <i class="fa-solid fa-cart-plus"></i>
+            <p>Your cart is empty</p>
+        </div>
+    </div>
+    
+    <div class="cart-footer" id="cartFooter" style="display: none;">
+        <div class="cart-total">
+            <span>Total:</span>
+            <span id="cartTotal">Rs. 0</span>
+        </div>
+        <button class="checkout-btn" onclick="goToCheckout()">
+            <i class="fa-solid fa-lock"></i> Proceed to Checkout
+        </button>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+    
+    <div class="points-badge">
+        <i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span>
+    </div>
+    
+    <h1 class="page-title">🛒 Order Food</h1>
+    
+    <!-- MENU BY CATEGORY -->
+    <?php foreach($menu_by_category as $category => $items): ?>
+    <h2 class="menu-category"><?php echo $category; ?></h2>
+    <div class="menu-grid">
+        <?php foreach($items as $item): 
+            $image_url = isset($food_images[$item['name']]) ? $food_images[$item['name']] : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
+            $stock = $item['stock'] ?? 10;
+        ?>
+        <div class="menu-item" id="item-<?php echo $item['item_id']; ?>" data-stock="<?php echo $stock; ?>">
+            <div class="food-image">
+                <img src="<?php echo $image_url; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                <?php if($stock < 5): ?>
+                <span class="stock-badge">Only <?php echo $stock; ?> left!</span>
+                <?php endif; ?>
+            </div>
+            
+            <div class="item-name"><?php echo htmlspecialchars($item['name']); ?></div>
+            
+            <div class="item-prices">
+                <div class="price-tag">
+                    <small>Cash</small>
+                    <div>Rs. <?php echo number_format($item['price'], 2); ?></div>
+                </div>
+                <div class="price-tag">
+                    <small>Points</small>
+                    <div><?php echo $item['points_price']; ?> ⭐</div>
+                </div>
+            </div>
+            
+            <div class="quantity-selector">
+                <button class="qty-btn" onclick="updateItemQty(<?php echo $item['item_id']; ?>, 'dec', <?php echo $stock; ?>)">-</button>
+                <span class="qty-value" id="qty-<?php echo $item['item_id']; ?>">1</span>
+                <button class="qty-btn" onclick="updateItemQty(<?php echo $item['item_id']; ?>, 'inc', <?php echo $stock; ?>)">+</button>
+            </div>
+            
+            <button class="add-to-cart-btn" onclick="addToCart(<?php echo $item['item_id']; ?>, '<?php echo addslashes($item['name']); ?>', <?php echo $item['price']; ?>, <?php echo $item['points_price']; ?>, <?php echo $stock; ?>, '<?php echo $item['category']; ?>')">
+                <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endforeach; ?>
+    
+    <a href="cafe_menu.php?id=<?php echo $facility_id; ?>" class="back-btn">
+        <i class="fa-solid fa-arrow-left"></i> Back to Menu
+    </a>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">Item added to cart!</div>
+
+<script>
+// Item quantities
+let itemQuantities = {};
+
+// Initialize quantities
+document.querySelectorAll('[id^="qty-"]').forEach(el => {
+    let id = el.id.replace('qty-', '');
+    itemQuantities[id] = 1;
+});
+
+// Update quantity for an item
+function updateItemQty(itemId, action, stock) {
+    let qtyEl = document.getElementById('qty-' + itemId);
+    let currentQty = parseInt(qtyEl.innerText);
+    
+    if (action === 'inc' && currentQty < stock) {
+        itemQuantities[itemId] = currentQty + 1;
+    } else if (action === 'dec' && currentQty > 1) {
+        itemQuantities[itemId] = currentQty - 1;
+    } else if (action === 'inc' && currentQty >= stock) {
+        showToast('Only ' + stock + ' items available!');
+        return;
+    }
+    
+    qtyEl.innerText = itemQuantities[itemId];
+}
+
+// Add to cart
+function addToCart(itemId, name, price, points, stock, category) {
+    let qty = itemQuantities[itemId];
+    
+    // Disable button temporarily
+    let btn = event.currentTarget;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+    
+    // Send AJAX request
+    fetch('cafe_order.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=add_to_cart&item_id=' + itemId + 
+              '&item_name=' + encodeURIComponent(name) + 
+              '&price=' + price + 
+              '&points_price=' + points + 
+              '&quantity=' + qty + 
+              '&category=' + encodeURIComponent(category)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reset quantity
+            itemQuantities[itemId] = 1;
+            document.getElementById('qty-' + itemId).innerText = '1';
+            
+            // Update cart count
+            document.getElementById('cartCount').innerText = data.cart_count;
+            
+            // Show success message
+            showToast('✅ ' + name + ' added to cart!');
+            
+            // Refresh cart display
+            loadCart();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Error adding to cart');
+    })
+    .finally(() => {
+        // Re-enable button
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+    });
+}
+
+// Load cart items
+function loadCart() {
+    fetch('cafe_order.php?action=get_cart')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateCartDisplay(data);
+            }
+        });
+}
+
+// Update cart display
+function updateCartDisplay(data) {
+    let cartItems = document.getElementById('cartItems');
+    let cartFooter = document.getElementById('cartFooter');
+    let cartCount = document.getElementById('cartCount');
+    
+    cartCount.innerText = data.count;
+    
+    if (data.count === 0) {
+        cartItems.innerHTML = '<div class="empty-cart"><i class="fa-solid fa-cart-plus"></i><p>Your cart is empty</p></div>';
+        cartFooter.style.display = 'none';
+        return;
+    }
+    
+    let html = '';
+    data.items.forEach(item => {
+        html += `
+            <div class="cart-item" data-id="${item.item_id}">
+                <div class="cart-item-details">
+                    <div class="cart-item-name">${item.name}</div>
+                    <div class="cart-item-price">Rs. ${item.price} / ${item.points_price} ⭐</div>
+                    <div class="cart-item-controls">
+                        <button class="cart-qty-btn" onclick="updateCartItem(${item.item_id}, ${item.quantity - 1})">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="cart-qty-btn" onclick="updateCartItem(${item.item_id}, ${item.quantity + 1})">+</button>
+                    </div>
+                </div>
+                <i class="fa-solid fa-trash remove-item" onclick="removeFromCart(${item.item_id})"></i>
+            </div>
+        `;
+    });
+    
+    cartItems.innerHTML = html;
+    document.getElementById('cartTotal').innerText = 'Rs. ' + data.total.toFixed(2);
+    cartFooter.style.display = 'block';
+}
+
+// Update cart item quantity
+function updateCartItem(itemId, newQty) {
+    if (newQty < 1) {
+        removeFromCart(itemId);
+        return;
+    }
+    
+    fetch('cafe_order.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=update_cart&item_id=' + itemId + '&quantity=' + newQty
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCart();
+        }
+    });
+}
+
+// Remove from cart
+function removeFromCart(itemId) {
+    if (confirm('Remove this item from cart?')) {
+        fetch('cafe_order.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=remove_from_cart&item_id=' + itemId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadCart();
+                showToast('Item removed from cart');
+            }
+        });
+    }
+}
+
+// Toggle cart sidebar
+function toggleCart() {
+    document.getElementById('cartSidebar').classList.toggle('open');
+    loadCart(); // Refresh cart when opened
+}
+
+// Go to checkout
+function goToCheckout() {
+    window.location.href = 'checkout.php?id=<?php echo $facility_id; ?>';
+}
+
+// Show toast message
+function showToast(message) {
+    let toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2000);
+}
+
+// Sidebar function
+function toggleSidebar() {
+    const sidebar = document.querySelector(".sidebar");
+    sidebar.style.left = sidebar.style.left === "0px" ? "-260px" : "0px";
+}
+
+// Close sidebar when clicking outside
+document.addEventListener("click", function(e) {
+    const sidebar = document.querySelector(".sidebar");
+    const btn = document.querySelector(".menu-btn");
+    if(sidebar && btn && !sidebar.contains(e.target) && !btn.contains(e.target)) {
+        sidebar.style.left = "-260px";
+    }
+});
+
+// Close cart when clicking outside
+document.addEventListener("click", function(e) {
+    const cart = document.getElementById('cartSidebar');
+    const cartBtn = document.querySelector('.cart-toggle');
+    if (cart && cartBtn && !cart.contains(e.target) && !cartBtn.contains(e.target) && cart.classList.contains('open')) {
+        cart.classList.remove('open');
+    }
+});
+
+// Load cart on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadCart();
+});
+</script>
+
+</body>
+</html>
