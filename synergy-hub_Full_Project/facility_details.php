@@ -86,11 +86,10 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
             backdrop-filter: blur(10px);
             position: relative;
             z-index: 1000;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
         .logo {
@@ -100,7 +99,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .logo span {
-            color: #3b82f6;
+            color: #22d3ee;
         }
         
         .icons {
@@ -127,16 +126,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             backdrop-filter: blur(10px);
             color: white;
             transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .points.active {
             transform: scale(1.1);
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         .home-link {
@@ -146,11 +144,11 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .home-link:hover {
-            color: #3b82f6;
+            color: #22d3ee;
         }
         
         /* ========================================
-           SYNERGY HUB SIDEBAR - WHITE & BLUE
+           SYNERGY HUB SIDEBAR - LAS SANATA
            ======================================== */
 
         .sidebar {
@@ -159,12 +157,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             top: 0;
             width: 280px;
             height: 100%;
-            background: rgba(255,255,255,0.95);
+            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
             backdrop-filter: blur(10px);
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
-            border-right: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
             overflow-y: auto;
         }
 
@@ -174,39 +172,55 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .sidebar-header {
             padding: 25px 20px 20px 20px;
-            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 15px;
             position: relative;
             overflow: hidden;
         }
 
+        .sidebar-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
         .sidebar-header h2 {
-            color: #1e293b;
+            color: white;
             font-size: 24px;
             font-weight: 700;
             margin: 0 0 5px 0;
             letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .sidebar-header p {
-            color: #3b82f6;
+            color: #94a3b8;
             font-size: 13px;
             margin: 0;
             font-weight: 400;
         }
 
         .sidebar-header p i {
-            color: #3b82f6;
+            color: #22d3ee;
             margin-right: 5px;
             font-size: 10px;
         }
 
         .sidebar-user {
             padding: 15px 20px;
-            background: rgba(59, 130, 246, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             margin: 0 15px 20px 15px;
             border-radius: 16px;
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -216,24 +230,24 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             color: white;
-            border: 2px solid white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-user-info h4 {
-            color: #1e293b;
+            color: white;
             font-size: 15px;
             margin: 0 0 3px 0;
             font-weight: 600;
         }
 
         .sidebar-user-info p {
-            color: #3b82f6;
+            color: #94a3b8;
             font-size: 12px;
             margin: 0;
             display: flex;
@@ -242,7 +256,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-user-info p i {
-            color: #3b82f6;
+            color: #fbbf24;
             font-size: 10px;
         }
 
@@ -260,7 +274,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             display: flex;
             align-items: center;
             padding: 12px 18px;
-            color: #64748b;
+            color: #b8c7de;
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
@@ -272,29 +286,29 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .sidebar-nav-link i {
             width: 22px;
             font-size: 1.1rem;
-            color: #94a3b8;
+            color: #5f7d9e;
             transition: all 0.3s ease;
             text-align: center;
         }
 
         .sidebar-nav-link:hover {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
+            background: rgba(168, 192, 255, 0.1);
+            color: white;
             transform: translateX(5px);
         }
 
         .sidebar-nav-link:hover i {
-            color: #3b82f6;
+            color: #a5b4fc;
         }
 
         .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
-            color: #3b82f6;
-            border-left: 3px solid #3b82f6;
+            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
+            color: white;
+            border-left: 3px solid #a5b4fc;
         }
 
         .sidebar-nav-link.active i {
-            color: #3b82f6;
+            color: #a5b4fc;
         }
 
         .sidebar-badge {
@@ -315,7 +329,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .sidebar-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
@@ -330,15 +344,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-club-preview {
-            background: rgba(59, 130, 246, 0.03);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
             padding: 15px;
             margin: 0 15px 20px 15px;
-            border: 1px solid rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .sidebar-club-preview h4 {
-            color: #1e293b;
+            color: white;
             font-size: 13px;
             margin: 0 0 12px 0;
             display: flex;
@@ -350,40 +364,39 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-club-preview h4 i {
-            color: #3b82f6;
+            color: #fbbf24;
         }
 
         .sidebar-club-item {
-            background: white;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.03);
             transition: transform 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .sidebar-club-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .sidebar-club-item h5 {
-            color: #1e293b;
+            color: white;
             font-size: 14px;
             margin: 0 0 4px 0;
             font-weight: 600;
         }
 
         .sidebar-club-item p {
-            color: #64748b;
+            color: #94a3b8;
             font-size: 11px;
             margin: 0 0 6px 0;
             line-height: 1.4;
         }
 
         .sidebar-club-tag {
-            background: #3b82f6;
+            background: #2d4c6e;
             color: white;
             font-size: 9px;
             font-weight: 600;
@@ -398,10 +411,9 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: space-around;
             padding: 15px 10px;
             margin: 0 15px;
-            background: white;
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 16px;
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .sidebar-stat-item {
@@ -409,14 +421,18 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-stat-value {
-            color: #3b82f6;
+            color: white;
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 3px;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .sidebar-stat-label {
-            color: #64748b;
+            color: #94a3b8;
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -434,7 +450,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-footer-links a {
-            color: #64748b;
+            color: #94a3b8;
             text-decoration: none;
             font-size: 11px;
             transition: color 0.2s;
@@ -444,16 +460,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-footer-links a:hover {
-            color: #3b82f6;
+            color: white;
         }
 
         .sidebar-footer-links a i {
             font-size: 10px;
-            color: #3b82f6;
         }
 
         .sidebar-copyright {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 10px;
             text-align: center;
         }
@@ -486,12 +501,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.3);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 20px;
         }
 
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #3b82f6;
+            background: rgba(255, 255, 255, 0.3);
         }
         
         .container {
@@ -516,7 +531,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .facility-icon {
             width: 100px;
             height: 100px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -536,7 +551,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .facility-type {
-            color: #3b82f6;
+            color: #22d3ee;
             font-size: 18px;
             margin-bottom: 10px;
         }
@@ -551,21 +566,18 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .status-Open {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
+            background: #10b981;
+            color: white;
         }
         
         .status-Closed {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid #ef4444;
+            background: #ef4444;
+            color: white;
         }
         
         .status-Maintenance {
-            background: rgba(245, 158, 11, 0.2);
-            color: #f59e0b;
-            border: 1px solid #f59e0b;
+            background: #f59e0b;
+            color: white;
         }
         
         /* CHECK-IN SECTION */
@@ -600,13 +612,13 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .points-badge i {
-            color: #3b82f6;
+            color: #22d3ee;
             margin-right: 8px;
         }
         
         .checkin-btn {
             padding: 15px 40px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 50px;
             color: white;
@@ -619,7 +631,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .checkin-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
         
         .checkin-btn:disabled {
@@ -630,7 +642,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .checkin-message {
             margin-top: 15px;
-            color: #3b82f6;
+            color: #22d3ee;
             font-size: 16px;
         }
         
@@ -666,12 +678,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .feature-card.active:hover {
             transform: translateY(-5px);
             background: rgba(255,255,255,0.15);
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
         .feature-icon {
             font-size: 48px;
-            color: #3b82f6;
+            color: #22d3ee;
             margin-bottom: 20px;
         }
         
@@ -702,7 +714,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .back-btn:hover {
             background: rgba(255,255,255,0.2);
-            color: #3b82f6;
+            color: #22d3ee;
         }
         
         .back-btn i {
@@ -724,14 +736,14 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .modal-content {
-            background: white;
+            background: linear-gradient(135deg, #1e2b3c 0%, #0d1a24 100%);
             margin: 50px auto;
             padding: 0;
             width: 90%;
             max-width: 1000px;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
             animation: slideDown 0.3s ease;
         }
 
@@ -748,7 +760,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .modal-header {
             padding: 20px 30px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: rgba(255,255,255,0.05);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px 20px 0 0;
             display: flex;
@@ -765,21 +777,19 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .modal-header h2 i {
-            color: white;
+            color: #22d3ee;
         }
 
         .close-btn {
-            color: white;
+            color: rgba(255,255,255,0.5);
             font-size: 30px;
             font-weight: bold;
             cursor: pointer;
             transition: color 0.3s;
-            opacity: 0.8;
         }
 
         .close-btn:hover {
-            color: white;
-            opacity: 1;
+            color: #ef4444;
         }
 
         .modal-body {
@@ -788,7 +798,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         /* ========== STUDY ROOMS STYLES ========== */
         .date-selector {
-            background: rgba(59, 130, 246, 0.05);
+            background: rgba(255,255,255,0.05);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 25px;
@@ -796,28 +806,26 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             align-items: center;
             gap: 15px;
             flex-wrap: wrap;
-            border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .date-selector label {
-            color: #1e293b;
+            color: white;
             font-size: 16px;
-            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .date-selector label i {
-            color: #3b82f6;
+            color: #22d3ee;
         }
 
         .date-input {
             padding: 10px 15px;
-            background: white;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 10px;
-            color: #1e293b;
+            color: white;
             font-size: 14px;
             flex: 1;
             max-width: 200px;
@@ -825,8 +833,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .date-input:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            border-color: #22d3ee;
         }
 
         .room-grid {
@@ -836,36 +843,32 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .room-card {
-            background: white;
+            background: rgba(255,255,255,0.05);
             border-radius: 15px;
             padding: 20px;
             border: 2px solid transparent;
             transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .room-card.available {
             cursor: pointer;
-            border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .room-card.available:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
-            border-color: #3b82f6;
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(34, 211, 238, 0.3);
         }
 
         .room-card.selected {
-            border-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.05);
+            border-color: #22d3ee;
+            background: rgba(34, 211, 238, 0.1);
             transform: scale(1.02);
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
         }
 
         .room-card.busy {
             opacity: 0.7;
             cursor: not-allowed;
-            background: #f1f5f9;
         }
 
         .room-header {
@@ -876,7 +879,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .room-header h3 {
-            color: #1e293b;
+            color: white;
             font-size: 18px;
             display: flex;
             align-items: center;
@@ -884,12 +887,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .room-header h3 i {
-            color: #3b82f6;
+            color: #22d3ee;
         }
 
         .premium-badge {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
             font-size: 10px;
             font-weight: 600;
             padding: 3px 8px;
@@ -899,9 +902,8 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .room-capacity {
-            color: #3b82f6;
+            color: #22d3ee;
             font-size: 14px;
-            font-weight: 600;
         }
 
         .room-capacity i {
@@ -916,16 +918,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .feature {
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(255,255,255,0.1);
             padding: 5px 10px;
             border-radius: 20px;
-            color: #1e293b;
+            color: white;
             font-size: 11px;
-            font-weight: 500;
         }
 
         .feature i {
-            color: #3b82f6;
+            color: #22d3ee;
             margin-right: 5px;
         }
 
@@ -935,17 +936,16 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             padding: 8px;
             border-radius: 8px;
             text-align: center;
-            font-weight: 600;
         }
 
         .room-status.available {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
         }
 
         .room-status.busy {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
             border: 1px solid #ef4444;
         }
@@ -961,7 +961,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             padding: 6px 10px;
             border-radius: 8px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
             flex: 1 0 auto;
@@ -970,44 +970,45 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .time-slot.available {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
         }
 
         .time-slot.available:hover {
-            background: #3b82f6;
+            background: #10b981;
             color: white;
             transform: scale(1.05);
         }
 
         .time-slot.available.selected {
-            background: #3b82f6;
+            background: #10b981;
             color: white;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
         }
 
         .time-slot.busy {
-            background: #f1f5f9;
-            color: #94a3b8;
-            border: 1px dashed #cbd5e1;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px dashed #ef4444;
+            opacity: 0.5;
             cursor: not-allowed;
             text-decoration: line-through;
         }
 
         .next-available {
-            color: #3b82f6;
+            color: #22d3ee;
             font-size: 13px;
             margin: 10px 0;
             text-align: center;
             padding: 5px;
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(34, 211, 238, 0.1);
             border-radius: 8px;
         }
 
         .select-hint {
             display: block;
-            color: #64748b;
+            color: #94a3b8;
             font-size: 11px;
             margin-top: 8px;
             text-align: center;
@@ -1016,7 +1017,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .book-btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             color: white;
@@ -1027,7 +1028,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .book-btn:hover:not(:disabled) {
             transform: scale(1.02);
-            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
         .book-btn:disabled {
@@ -1037,10 +1038,10 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .booking-summary {
             margin-top: 30px;
-            background: rgba(59, 130, 246, 0.05);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
             border-radius: 15px;
             padding: 25px;
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(255,255,255,0.1);
             animation: slideUp 0.3s ease;
         }
 
@@ -1056,7 +1057,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .booking-summary h3 {
-            color: #1e293b;
+            color: white;
             font-size: 18px;
             margin-bottom: 15px;
             display: flex;
@@ -1065,19 +1066,18 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .booking-summary h3 i {
-            color: #3b82f6;
+            color: #22d3ee;
         }
 
         .summary-details {
-            background: white;
+            background: rgba(0,0,0,0.2);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 20px;
-            border: 1px solid rgba(59, 130, 246, 0.1);
         }
 
         .summary-details p {
-            color: #1e293b;
+            color: white;
             margin: 8px 0;
             display: flex;
             align-items: center;
@@ -1085,7 +1085,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .summary-details p i {
-            color: #3b82f6;
+            color: #22d3ee;
             width: 20px;
         }
 
@@ -1097,7 +1097,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .confirm-btn {
             padding: 12px 25px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #10b981, #059669);
             border: none;
             border-radius: 10px;
             color: white;
@@ -1111,15 +1111,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .confirm-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
         }
 
         .cancel-btn {
             padding: 12px 25px;
-            background: white;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 10px;
-            color: #1e293b;
+            color: white;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -1129,8 +1129,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .cancel-btn:hover {
-            background: #f8fafc;
-            border-color: #3b82f6;
+            background: rgba(255,255,255,0.2);
         }
 
         /* ========== PRINT SERVICES STYLES ========== */
@@ -1142,41 +1141,40 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .print-card {
-            background: white;
+            background: rgba(255,255,255,0.05);
             border-radius: 15px;
             padding: 25px;
             text-align: center;
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(255,255,255,0.1);
             transition: all 0.3s;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .print-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
-            border-color: #3b82f6;
+            background: rgba(255,255,255,0.08);
+            border-color: #22d3ee;
         }
 
         .print-card.selected {
-            border: 2px solid #3b82f6;
-            background: rgba(59, 130, 246, 0.05);
+            border: 2px solid #22d3ee;
+            background: rgba(34, 211, 238, 0.1);
         }
 
         .print-card i {
             font-size: 40px;
-            color: #3b82f6;
+            color: #22d3ee;
             margin-bottom: 15px;
         }
 
         .print-card h3 {
-            color: #1e293b;
+            color: white;
             font-size: 18px;
             margin-bottom: 10px;
         }
 
         .print-price {
-            color: #3b82f6;
+            color: #22d3ee;
             font-size: 20px;
             font-weight: 700;
             margin-bottom: 10px;
@@ -1184,25 +1182,25 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .print-price small {
             font-size: 12px;
-            color: #64748b;
+            color: rgba(255,255,255,0.5);
         }
 
         .print-description {
-            color: #64748b;
+            color: rgba(255,255,255,0.6);
             font-size: 12px;
             margin-bottom: 15px;
         }
 
         .print-info {
-            background: rgba(59, 130, 246, 0.03);
+            background: rgba(255,255,255,0.03);
             border-radius: 15px;
             padding: 25px;
-            border: 1px solid rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(255,255,255,0.1);
             margin-top: 20px;
         }
 
         .print-info h4 {
-            color: #1e293b;
+            color: white;
             font-size: 16px;
             margin-bottom: 15px;
             display: flex;
@@ -1211,12 +1209,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .print-info h4 i {
-            color: #3b82f6;
+            color: #22d3ee;
         }
 
         .file-upload-area {
-            background: white;
-            border: 2px dashed rgba(59, 130, 246, 0.3);
+            background: rgba(255,255,255,0.02);
+            border: 2px dashed rgba(255,255,255,0.2);
             border-radius: 10px;
             padding: 30px;
             text-align: center;
@@ -1226,23 +1224,23 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .file-upload-area:hover {
-            border-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.05);
+            border-color: #22d3ee;
+            background: rgba(34, 211, 238, 0.05);
         }
 
         .file-upload-area i {
             font-size: 40px;
-            color: #3b82f6;
+            color: #22d3ee;
             margin-bottom: 10px;
         }
 
         .file-upload-area p {
-            color: #1e293b;
+            color: white;
             font-size: 14px;
         }
 
         .file-upload-area small {
-            color: #64748b;
+            color: rgba(255,255,255,0.5);
             font-size: 12px;
         }
 
@@ -1251,10 +1249,9 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .file-name {
-            color: #3b82f6;
+            color: #22d3ee;
             font-size: 14px;
             margin-top: 10px;
-            font-weight: 600;
         }
 
         .print-actions {
@@ -1266,7 +1263,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .print-action-btn {
             padding: 12px 30px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             color: white;
@@ -1280,7 +1277,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .print-action-btn:hover:not(:disabled) {
             transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
         .print-action-btn:disabled {
@@ -1289,23 +1286,22 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .print-summary {
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             border-radius: 10px;
             padding: 15px;
             margin-top: 20px;
-            border: 1px solid #3b82f6;
+            border: 1px solid #10b981;
         }
 
         .print-summary p {
-            color: #1e293b;
+            color: white;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: 600;
         }
 
         .print-summary i {
-            color: #3b82f6;
+            color: #10b981;
         }
         
         @media (max-width: 768px) {
@@ -1341,7 +1337,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <div class="bg"></div>
 
-<!-- SIDEBAR - WHITE & BLUE -->
+<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
@@ -1513,7 +1509,49 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     <h2 style="color: white; margin: 40px 0 20px; font-size: 28px;">📍 Facility Features</h2>
     <div class="features-grid">
         
-        <?php if($facility['Type'] == 'Library'): ?>
+        <?php if($facility['Type'] == 'Café'): ?>
+        <!-- ==================== CAFE FEATURES ==================== -->
+        <a href="cafe_menu.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-mug-saucer"></i>
+            </div>
+            <div class="feature-title">View Menu</div>
+            <div class="feature-description">
+                Browse our full menu with prices, photos, and availability. See what's fresh today!
+            </div>
+        </a>
+        
+        <a href="cafe_order.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <div class="feature-title">Order Food</div>
+            <div class="feature-description">
+                Place orders for pickup. Add items to cart, choose quantity, and pay with cash or points!
+            </div>
+        </a>
+        
+        <a href="special_offers.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-tag"></i>
+            </div>
+            <div class="feature-title">Special Offers</div>
+            <div class="feature-description">
+                Check daily specials and combo offers. Save points on selected items!
+            </div>
+        </a>
+        
+        <a href="reserve_table.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-chair"></i>
+            </div>
+            <div class="feature-title">Reserve Table</div>
+            <div class="feature-description">
+                Reserve a table for you and your friends during peak hours.
+            </div>
+        </a>
+        
+        <?php elseif($facility['Type'] == 'Library'): ?>
         <!-- ==================== LIBRARY FEATURES ==================== -->
         <a href="library_books.php?id=<?php echo $facility_id; ?>&tab=browse" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
@@ -1554,6 +1592,164 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             <div class="feature-title">Print Services</div>
             <div class="feature-description">
                 Print, scan, and photocopy documents. Pay with points or cash.
+            </div>
+        </div>
+        
+        <?php elseif($facility['Type'] == 'Gym'): ?>
+        <!-- ==================== GYM FEATURES ==================== -->
+        <a href="gym_equipment.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-dumbbell"></i>
+            </div>
+            <div class="feature-title">Gym Equipment</div>
+            <div class="feature-description">
+                View all available gym equipment. Treadmills, dumbbells, bench press, and more.
+            </div>
+        </a>
+        
+        <a href="gym_equipment.php?id=<?php echo $facility_id; ?>&tab=classes" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-people-group"></i>
+            </div>
+            <div class="feature-title">Fitness Classes</div>
+            <div class="feature-description">
+                Join yoga, zumba, HIIT, and strength training classes. Limited spots available!
+            </div>
+        </a>
+        
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Personal Trainer')">
+            <div class="feature-icon">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="feature-title">Personal Trainer</div>
+            <div class="feature-description">
+                Book a personal trainer session. Get personalized workout plans and guidance.
+            </div>
+        </div>
+        
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Locker Room')">
+            <div class="feature-icon">
+                <i class="fa-solid fa-locker"></i>
+            </div>
+            <div class="feature-title">Locker Room</div>
+            <div class="feature-description">
+                Access locker rooms with showers and changing facilities.
+            </div>
+        </div>
+        
+        <?php elseif($facility['Type'] == 'GameField'): ?>
+        <!-- ==================== GAME FIELD FEATURES ==================== -->
+        <a href="game_field.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="feature-title">Book Field</div>
+            <div class="feature-description">
+                Reserve sports fields for matches and practice sessions.
+            </div>
+        </a>
+        
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Sports Equipment')">
+            <div class="feature-icon">
+                <i class="fa-solid fa-futbol"></i>
+            </div>
+            <div class="feature-title">Sports Equipment</div>
+            <div class="feature-description">
+                Borrow sports equipment: balls, nets, rackets, and more.
+            </div>
+        </div>
+        
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Tournaments')">
+            <div class="feature-icon">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div class="feature-title">Tournaments</div>
+            <div class="feature-description">
+                Join upcoming tournaments and win points and prizes!
+            </div>
+        </div>
+        
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Score Board')">
+            <div class="feature-icon">
+                <i class="fa-solid fa-chart-simple"></i>
+            </div>
+            <div class="feature-title">Score Board</div>
+            <div class="feature-description">
+                View live scores and match schedules.
+            </div>
+        </div>
+        
+        <?php elseif($facility['Type'] == 'Transport'): ?>
+        <!-- ==================== TRANSPORT FEATURES ==================== -->
+        <a href="transport.php" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-bus"></i>
+            </div>
+            <div class="feature-title">View Routes</div>
+            <div class="feature-description">
+                Check all bus routes, schedules, and live bus tracking.
+            </div>
+        </a>
+        
+        <a href="transport.php" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-ticket"></i>
+            </div>
+            <div class="feature-title">Buy Passes</div>
+            <div class="feature-description">
+                Purchase transport passes using your points. Valid for 30 days!
+            </div>
+        </a>
+        
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Live Tracking')">
+            <div class="feature-icon">
+                <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div class="feature-title">Live Tracking</div>
+            <div class="feature-description">
+                Track buses in real-time on the map. See exactly where your bus is!
+            </div>
+        </div>
+        
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Schedule')">
+            <div class="feature-icon">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="feature-title">Time Table</div>
+            <div class="feature-description">
+                View complete bus schedule for all routes.
+            </div>
+        </div>
+
+        <?php elseif($facility['Type'] == 'Pool'): ?>
+        <!-- ==================== POOL FEATURES ==================== -->
+        <a href="pool.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-person-swimming"></i>
+            </div>
+            <div class="feature-title">Pool Dashboard</div>
+            <div class="feature-description">
+                View lane availability, book lanes, check water temperature and pool status.
+            </div>
+        </a>
+
+        <a href="pool_booking.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+            <div class="feature-icon">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="feature-title">Book a Lane</div>
+            <div class="feature-description">
+                Reserve a swimming lane for your workout session.
+            </div>
+        </a>
+
+        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Swim Lessons')">
+            <div class="feature-icon">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <div class="feature-title">Swim Lessons</div>
+            <div class="feature-description">
+                Join swimming lessons for all skill levels.
             </div>
         </div>
         
@@ -1738,8 +1934,8 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 
                 <!-- Pages Input -->
                 <div style="margin-top: 20px;">
-                    <label style="color: #1e293b; display: block; margin-bottom: 10px; font-weight: 600;"><i class="fa-regular fa-file"></i> Number of pages:</label>
-                    <input type="number" id="pageCount" min="1" max="100" value="1" style="width: 100px; padding: 10px; border-radius: 8px; background: white; border: 1px solid rgba(59, 130, 246, 0.3); color: #1e293b;">
+                    <label style="color: white; display: block; margin-bottom: 10px;"><i class="fa-regular fa-file"></i> Number of pages:</label>
+                    <input type="number" id="pageCount" min="1" max="100" value="1" style="width: 100px; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
                 </div>
                 
                 <!-- Print Summary -->
