@@ -795,514 +795,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .modal-body {
             padding: 30px;
         }
-
-        /* ========== STUDY ROOMS STYLES ========== */
-        .date-selector {
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .date-selector label {
-            color: white;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .date-selector label i {
-            color: #22d3ee;
-        }
-
-        .date-input {
-            padding: 10px 15px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            flex: 1;
-            max-width: 200px;
-        }
-
-        .date-input:focus {
-            outline: none;
-            border-color: #22d3ee;
-        }
-
-        .room-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .room-card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 20px;
-            border: 2px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .room-card.available {
-            cursor: pointer;
-        }
-
-        .room-card.available:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(34, 211, 238, 0.3);
-        }
-
-        .room-card.selected {
-            border-color: #22d3ee;
-            background: rgba(34, 211, 238, 0.1);
-            transform: scale(1.02);
-        }
-
-        .room-card.busy {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .room-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .room-header h3 {
-            color: white;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .room-header h3 i {
-            color: #22d3ee;
-        }
-
-        .premium-badge {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #0f172a;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 20px;
-            margin-left: 10px;
-            text-transform: uppercase;
-        }
-
-        .room-capacity {
-            color: #22d3ee;
-            font-size: 14px;
-        }
-
-        .room-capacity i {
-            margin-right: 5px;
-        }
-
-        .room-features {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 5px 10px;
-            border-radius: 20px;
-            color: white;
-            font-size: 11px;
-        }
-
-        .feature i {
-            color: #22d3ee;
-            margin-right: 5px;
-        }
-
-        .room-status {
-            font-size: 14px;
-            margin-bottom: 15px;
-            padding: 8px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .room-status.available {
-            background: rgba(16, 185, 129, 0.2);
-            color: #10b981;
-            border: 1px solid #10b981;
-        }
-
-        .room-status.busy {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-        }
-
-        .time-slots {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 15px 0;
-        }
-
-        .time-slot {
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex: 1 0 auto;
-            text-align: center;
-            min-width: 70px;
-        }
-
-        .time-slot.available {
-            background: rgba(16, 185, 129, 0.2);
-            color: #10b981;
-            border: 1px solid #10b981;
-        }
-
-        .time-slot.available:hover {
-            background: #10b981;
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .time-slot.available.selected {
-            background: #10b981;
-            color: white;
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
-        }
-
-        .time-slot.busy {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px dashed #ef4444;
-            opacity: 0.5;
-            cursor: not-allowed;
-            text-decoration: line-through;
-        }
-
-        .next-available {
-            color: #22d3ee;
-            font-size: 13px;
-            margin: 10px 0;
-            text-align: center;
-            padding: 5px;
-            background: rgba(34, 211, 238, 0.1);
-            border-radius: 8px;
-        }
-
-        .select-hint {
-            display: block;
-            color: #94a3b8;
-            font-size: 11px;
-            margin-top: 8px;
-            text-align: center;
-        }
-
-        .book-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .book-btn:hover:not(:disabled) {
-            transform: scale(1.02);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .book-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .booking-summary {
-            margin-top: 30px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-            border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .booking-summary h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .booking-summary h3 i {
-            color: #22d3ee;
-        }
-
-        .summary-details {
-            background: rgba(0,0,0,0.2);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .summary-details p {
-            color: white;
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .summary-details p i {
-            color: #22d3ee;
-            width: 20px;
-        }
-
-        .summary-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-        }
-
-        .confirm-btn {
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .confirm-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .cancel-btn {
-            padding: 12px 25px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .cancel-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        /* ========== PRINT SERVICES STYLES ========== */
-        .print-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .print-card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .print-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.08);
-            border-color: #22d3ee;
-        }
-
-        .print-card.selected {
-            border: 2px solid #22d3ee;
-            background: rgba(34, 211, 238, 0.1);
-        }
-
-        .print-card i {
-            font-size: 40px;
-            color: #22d3ee;
-            margin-bottom: 15px;
-        }
-
-        .print-card h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
-        .print-price {
-            color: #22d3ee;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .print-price small {
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-        }
-
-        .print-description {
-            color: rgba(255,255,255,0.6);
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-
-        .print-info {
-            background: rgba(255,255,255,0.03);
-            border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-top: 20px;
-        }
-
-        .print-info h4 {
-            color: white;
-            font-size: 16px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .print-info h4 i {
-            color: #22d3ee;
-        }
-
-        .file-upload-area {
-            background: rgba(255,255,255,0.02);
-            border: 2px dashed rgba(255,255,255,0.2);
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .file-upload-area:hover {
-            border-color: #22d3ee;
-            background: rgba(34, 211, 238, 0.05);
-        }
-
-        .file-upload-area i {
-            font-size: 40px;
-            color: #22d3ee;
-            margin-bottom: 10px;
-        }
-
-        .file-upload-area p {
-            color: white;
-            font-size: 14px;
-        }
-
-        .file-upload-area small {
-            color: rgba(255,255,255,0.5);
-            font-size: 12px;
-        }
-
-        #fileUpload {
-            display: none;
-        }
-
-        .file-name {
-            color: #22d3ee;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-
-        .print-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .print-action-btn {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .print-action-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .print-action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .print-summary {
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            border: 1px solid #10b981;
-        }
-
-        .print-summary p {
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .print-summary i {
-            color: #10b981;
-        }
         
         @media (max-width: 768px) {
             .facility-header {
@@ -1761,117 +1253,117 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </a>
 </div>
 
-<!-- STUDY ROOMS MODAL -->
+<!-- STUDY ROOMS MODAL - WHITE & BLUE VERSION -->
 <div id="studyRoomsModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2><i class="fa-solid fa-door-open"></i> Study Rooms</h2>
-            <span class="close-btn" onclick="closeStudyRoomsModal()">&times;</span>
+    <div class="modal-content" style="background: white;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+            <h2 style="color: white;"><i class="fa-solid fa-door-open" style="color: white;"></i> Study Rooms</h2>
+            <span class="close-btn" onclick="closeStudyRoomsModal()" style="color: white;">&times;</span>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="background: white;">
             
             <!-- Date Selector -->
-            <div class="date-selector">
-                <label><i class="fa-regular fa-calendar"></i> Select Date:</label>
-                <input type="date" id="bookingDate" class="date-input" value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d', strtotime('+7 days')); ?>">
+            <div class="date-selector" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <label style="color: #1e293b; font-size: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar" style="color: #3b82f6;"></i> Select Date:</label>
+                <input type="date" id="bookingDate" class="date-input" value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" style="padding: 10px 15px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b; font-size: 14px; flex: 1; max-width: 200px;">
             </div>
             
             <!-- Room Cards -->
-            <div class="room-grid">
+            <div class="room-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
                 <!-- Room 101 -->
-                <div class="room-card available" id="room101" onclick="selectRoom(101)">
-                    <div class="room-header">
-                        <h3><i class="fa-regular fa-door-open"></i> Room 101</h3>
-                        <span class="room-capacity"><i class="fa-solid fa-users"></i> 4 people</span>
+                <div class="room-card available" id="room101" onclick="selectRoom(101)" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
+                    <div class="room-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #1e293b; font-size: 18px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-door-open" style="color: #3b82f6;"></i> Room 101</h3>
+                        <span class="room-capacity" style="color: #3b82f6; font-size: 14px;"><i class="fa-solid fa-users"></i> 4 people</span>
                     </div>
-                    <div class="room-features">
-                        <span class="feature"><i class="fa-solid fa-wifi"></i> WiFi</span>
-                        <span class="feature"><i class="fa-solid fa-chalkboard"></i> Whiteboard</span>
-                        <span class="feature"><i class="fa-solid fa-tv"></i> Projector</span>
+                    <div class="room-features" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-wifi" style="color: #3b82f6;"></i> WiFi</span>
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-chalkboard" style="color: #3b82f6;"></i> Whiteboard</span>
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-tv" style="color: #3b82f6;"></i> Projector</span>
                     </div>
-                    <div class="room-status available">
+                    <div class="room-status available" style="background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6; font-size: 14px; margin-bottom: 15px; padding: 8px; border-radius: 8px; text-align: center;">
                         <i class="fa-regular fa-circle-check"></i> Available Now
                     </div>
-                    <div class="time-slots" id="room101-slots">
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '10:00 AM')">10:00 AM</div>
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '11:00 AM')">11:00 AM</div>
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '12:00 PM')">12:00 PM</div>
-                        <div class="time-slot busy" onclick="event.stopPropagation();">1:00 PM</div>
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '2:00 PM')">2:00 PM</div>
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '3:00 PM')">3:00 PM</div>
+                    <div class="time-slots" id="room101-slots" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0;">
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '10:00 AM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">10:00 AM</div>
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '11:00 AM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">11:00 AM</div>
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '12:00 PM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">12:00 PM</div>
+                        <div class="time-slot busy" onclick="event.stopPropagation();" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; flex: 1 0 auto; text-align: center; min-width: 70px; background: #fee2e2; color: #ef4444; border: 1px dashed #ef4444; opacity: 0.5; cursor: not-allowed; text-decoration: line-through;">1:00 PM</div>
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '2:00 PM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">2:00 PM</div>
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(101, '3:00 PM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">3:00 PM</div>
                     </div>
-                    <button class="book-btn" id="bookBtn101" onclick="bookRoom(101)" disabled>
+                    <button class="book-btn" id="bookBtn101" onclick="bookRoom(101)" disabled style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; opacity: 0.5;">
                         <i class="fa-regular fa-calendar-check"></i> Book Selected Slot
                     </button>
-                    <small class="select-hint">👆 Select a time slot first</small>
+                    <small class="select-hint" style="display: block; color: #64748b; font-size: 11px; margin-top: 8px; text-align: center;">👆 Select a time slot first</small>
                 </div>
                 
                 <!-- Room 102 -->
-                <div class="room-card available" id="room102" onclick="selectRoom(102)">
-                    <div class="room-header">
-                        <h3><i class="fa-regular fa-door-open"></i> Room 102</h3>
-                        <span class="room-capacity"><i class="fa-solid fa-users"></i> 6 people</span>
+                <div class="room-card available" id="room102" onclick="selectRoom(102)" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
+                    <div class="room-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #1e293b; font-size: 18px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-door-open" style="color: #3b82f6;"></i> Room 102</h3>
+                        <span class="room-capacity" style="color: #3b82f6; font-size: 14px;"><i class="fa-solid fa-users"></i> 6 people</span>
                     </div>
-                    <div class="room-features">
-                        <span class="feature"><i class="fa-solid fa-wifi"></i> WiFi</span>
-                        <span class="feature"><i class="fa-solid fa-chalkboard"></i> Whiteboard</span>
-                        <span class="feature"><i class="fa-solid fa-tv"></i> Projector</span>
+                    <div class="room-features" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-wifi" style="color: #3b82f6;"></i> WiFi</span>
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-chalkboard" style="color: #3b82f6;"></i> Whiteboard</span>
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-tv" style="color: #3b82f6;"></i> Projector</span>
                     </div>
-                    <div class="room-status available">
+                    <div class="room-status available" style="background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6; font-size: 14px; margin-bottom: 15px; padding: 8px; border-radius: 8px; text-align: center;">
                         <i class="fa-regular fa-circle-check"></i> Available Now
                     </div>
-                    <div class="time-slots" id="room102-slots">
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '10:00 AM')">10:00 AM</div>
-                        <div class="time-slot busy" onclick="event.stopPropagation();">11:00 AM</div>
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '12:00 PM')">12:00 PM</div>
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '1:00 PM')">1:00 PM</div>
-                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '2:00 PM')">2:00 PM</div>
-                        <div class="time-slot busy" onclick="event.stopPropagation();">3:00 PM</div>
+                    <div class="time-slots" id="room102-slots" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0;">
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '10:00 AM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">10:00 AM</div>
+                        <div class="time-slot busy" onclick="event.stopPropagation();" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; flex: 1 0 auto; text-align: center; min-width: 70px; background: #fee2e2; color: #ef4444; border: 1px dashed #ef4444; opacity: 0.5; cursor: not-allowed; text-decoration: line-through;">11:00 AM</div>
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '12:00 PM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">12:00 PM</div>
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '1:00 PM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">1:00 PM</div>
+                        <div class="time-slot available" onclick="event.stopPropagation(); selectTimeSlot(102, '2:00 PM')" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1 0 auto; text-align: center; min-width: 70px; background: #e2e8f0; color: #3b82f6; border: 1px solid #3b82f6;">2:00 PM</div>
+                        <div class="time-slot busy" onclick="event.stopPropagation();" style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; flex: 1 0 auto; text-align: center; min-width: 70px; background: #fee2e2; color: #ef4444; border: 1px dashed #ef4444; opacity: 0.5; cursor: not-allowed; text-decoration: line-through;">3:00 PM</div>
                     </div>
-                    <button class="book-btn" id="bookBtn102" onclick="bookRoom(102)" disabled>
+                    <button class="book-btn" id="bookBtn102" onclick="bookRoom(102)" disabled style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; opacity: 0.5;">
                         <i class="fa-regular fa-calendar-check"></i> Book Selected Slot
                     </button>
-                    <small class="select-hint">👆 Select a time slot first</small>
+                    <small class="select-hint" style="display: block; color: #64748b; font-size: 11px; margin-top: 8px; text-align: center;">👆 Select a time slot first</small>
                 </div>
                 
                 <!-- Room 103 - Conference Room -->
-                <div class="room-card busy">
-                    <div class="room-header">
-                        <h3><i class="fa-regular fa-door-open"></i> Room 103 <span class="premium-badge">PREMIUM</span></h3>
-                        <span class="room-capacity"><i class="fa-solid fa-users"></i> 8 people</span>
+                <div class="room-card busy" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; opacity: 0.7; cursor: not-allowed;">
+                    <div class="room-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #1e293b; font-size: 18px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-door-open" style="color: #3b82f6;"></i> Room 103 <span class="premium-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; margin-left: 10px; text-transform: uppercase;">PREMIUM</span></h3>
+                        <span class="room-capacity" style="color: #3b82f6; font-size: 14px;"><i class="fa-solid fa-users"></i> 8 people</span>
                     </div>
-                    <div class="room-features">
-                        <span class="feature"><i class="fa-solid fa-wifi"></i> WiFi</span>
-                        <span class="feature"><i class="fa-solid fa-chalkboard"></i> Whiteboard</span>
-                        <span class="feature"><i class="fa-solid fa-tv"></i> Projector</span>
-                        <span class="feature"><i class="fa-solid fa-phone"></i> Conference Phone</span>
+                    <div class="room-features" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-wifi" style="color: #3b82f6;"></i> WiFi</span>
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-chalkboard" style="color: #3b82f6;"></i> Whiteboard</span>
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-tv" style="color: #3b82f6;"></i> Projector</span>
+                        <span class="feature" style="background: #e2e8f0; padding: 5px 10px; border-radius: 20px; color: #1e293b; font-size: 11px;"><i class="fa-solid fa-phone" style="color: #3b82f6;"></i> Conference Phone</span>
                     </div>
-                    <div class="room-status busy">
+                    <div class="room-status busy" style="background: #fee2e2; color: #ef4444; border: 1px solid #ef4444; font-size: 14px; margin-bottom: 15px; padding: 8px; border-radius: 8px; text-align: center;">
                         <i class="fa-regular fa-clock"></i> Occupied until 3:00 PM
                     </div>
-                    <div class="next-available">
+                    <div class="next-available" style="color: #3b82f6; font-size: 13px; margin: 10px 0; text-align: center; padding: 5px; background: #e2e8f0; border-radius: 8px;">
                         <i class="fa-regular fa-hourglass"></i> Next available: 3:30 PM
                     </div>
-                    <button class="book-btn" disabled>
+                    <button class="book-btn" disabled style="width: 100%; padding: 12px; background: #94a3b8; border: none; border-radius: 10px; color: white; font-weight: 600; opacity: 0.5; cursor: not-allowed;">
                         <i class="fa-regular fa-bell"></i> Notify Me
                     </button>
                 </div>
             </div>
             
             <!-- Booking Summary -->
-            <div class="booking-summary" id="bookingSummary" style="display: none;">
-                <h3><i class="fa-regular fa-rectangle-list"></i> Booking Summary</h3>
-                <div class="summary-details">
-                    <p><i class="fa-regular fa-door-open"></i> <strong>Room:</strong> <span id="summaryRoom"></span></p>
-                    <p><i class="fa-regular fa-calendar"></i> <strong>Date:</strong> <span id="summaryDate"></span></p>
-                    <p><i class="fa-regular fa-clock"></i> <strong>Time:</strong> <span id="summaryTime"></span></p>
-                    <p><i class="fa-regular fa-star"></i> <strong>Points:</strong> 10 points (refundable)</p>
+            <div class="booking-summary" id="bookingSummary" style="display: none; margin-top: 30px; background: #f8fafc; border-radius: 15px; padding: 25px; border: 1px solid #3b82f6; animation: slideUp 0.3s ease;">
+                <h3 style="color: #1e293b; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-rectangle-list" style="color: #3b82f6;"></i> Booking Summary</h3>
+                <div class="summary-details" style="background: white; border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <p style="color: #1e293b; margin: 8px 0; display: flex; align-items: center; gap: 10px;"><i class="fa-regular fa-door-open" style="color: #3b82f6; width: 20px;"></i> <strong>Room:</strong> <span id="summaryRoom"></span></p>
+                    <p style="color: #1e293b; margin: 8px 0; display: flex; align-items: center; gap: 10px;"><i class="fa-regular fa-calendar" style="color: #3b82f6; width: 20px;"></i> <strong>Date:</strong> <span id="summaryDate"></span></p>
+                    <p style="color: #1e293b; margin: 8px 0; display: flex; align-items: center; gap: 10px;"><i class="fa-regular fa-clock" style="color: #3b82f6; width: 20px;"></i> <strong>Time:</strong> <span id="summaryTime"></span></p>
+                    <p style="color: #1e293b; margin: 8px 0; display: flex; align-items: center; gap: 10px;"><i class="fa-regular fa-star" style="color: #3b82f6; width: 20px;"></i> <strong>Points:</strong> 10 points (refundable)</p>
                 </div>
-                <div class="summary-actions">
-                    <button class="confirm-btn" onclick="confirmBooking()">
+                <div class="summary-actions" style="display: flex; gap: 15px; justify-content: flex-end;">
+                    <button class="confirm-btn" onclick="confirmBooking()" style="padding: 12px 25px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-regular fa-circle-check"></i> Confirm Booking
                     </button>
-                    <button class="cancel-btn" onclick="cancelSelection()">
+                    <button class="cancel-btn" onclick="cancelSelection()" style="padding: 12px 25px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-regular fa-circle-xmark"></i> Cancel
                     </button>
                 </div>
@@ -1881,74 +1373,74 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
 </div>
 
-<!-- PRINT SERVICES MODAL -->
+<!-- PRINT SERVICES MODAL - WHITE & BLUE VERSION -->
 <div id="printServicesModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2><i class="fa-solid fa-print"></i> Print Services</h2>
-            <span class="close-btn" onclick="closePrintServicesModal()">&times;</span>
+    <div class="modal-content" style="background: white;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+            <h2 style="color: white;"><i class="fa-solid fa-print" style="color: white;"></i> Print Services</h2>
+            <span class="close-btn" onclick="closePrintServicesModal()" style="color: white;">&times;</span>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="background: white;">
             
             <!-- Print Options -->
-            <div class="print-options">
-                <div class="print-card" id="printBW" onclick="selectPrintType('bw')">
-                    <i class="fa-solid fa-file-lines"></i>
-                    <h3>Black & White</h3>
-                    <div class="print-price">5 <small>points/page</small></div>
-                    <div class="print-description">Single-sided black & white printing</div>
+            <div class="print-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="print-card" id="printBW" onclick="selectPrintType('bw')" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
+                    <i class="fa-solid fa-file-lines" style="font-size: 40px; color: #3b82f6; margin-bottom: 15px;"></i>
+                    <h3 style="color: #1e293b; font-size: 18px; margin-bottom: 10px;">Black & White</h3>
+                    <div class="print-price" style="color: #3b82f6; font-size: 20px; font-weight: 700; margin-bottom: 10px;">5 <small style="font-size: 12px; color: #64748b;">points/page</small></div>
+                    <div class="print-description" style="color: #64748b; font-size: 12px; margin-bottom: 15px;">Single-sided black & white printing</div>
                 </div>
                 
-                <div class="print-card" id="printColor" onclick="selectPrintType('color')">
-                    <i class="fa-solid fa-file-image"></i>
-                    <h3>Color Print</h3>
-                    <div class="print-price">10 <small>points/page</small></div>
-                    <div class="print-description">Full color printing, high quality</div>
+                <div class="print-card" id="printColor" onclick="selectPrintType('color')" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
+                    <i class="fa-solid fa-file-image" style="font-size: 40px; color: #3b82f6; margin-bottom: 15px;"></i>
+                    <h3 style="color: #1e293b; font-size: 18px; margin-bottom: 10px;">Color Print</h3>
+                    <div class="print-price" style="color: #3b82f6; font-size: 20px; font-weight: 700; margin-bottom: 10px;">10 <small style="font-size: 12px; color: #64748b;">points/page</small></div>
+                    <div class="print-description" style="color: #64748b; font-size: 12px; margin-bottom: 15px;">Full color printing, high quality</div>
                 </div>
                 
-                <div class="print-card" id="printCopy" onclick="selectPrintType('copy')">
-                    <i class="fa-solid fa-copy"></i>
-                    <h3>Photocopy</h3>
-                    <div class="print-price">3 <small>points/page</small></div>
-                    <div class="print-description">Black & white photocopying</div>
+                <div class="print-card" id="printCopy" onclick="selectPrintType('copy')" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
+                    <i class="fa-solid fa-copy" style="font-size: 40px; color: #3b82f6; margin-bottom: 15px;"></i>
+                    <h3 style="color: #1e293b; font-size: 18px; margin-bottom: 10px;">Photocopy</h3>
+                    <div class="print-price" style="color: #3b82f6; font-size: 20px; font-weight: 700; margin-bottom: 10px;">3 <small style="font-size: 12px; color: #64748b;">points/page</small></div>
+                    <div class="print-description" style="color: #64748b; font-size: 12px; margin-bottom: 15px;">Black & white photocopying</div>
                 </div>
                 
-                <div class="print-card" id="printScan" onclick="selectPrintType('scan')">
-                    <i class="fa-solid fa-scanner"></i>
-                    <h3>Scan</h3>
-                    <div class="print-price">2 <small>points/page</small></div>
-                    <div class="print-description">Scan to PDF or image</div>
+                <div class="print-card" id="printScan" onclick="selectPrintType('scan')" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
+                    <i class="fa-solid fa-scanner" style="font-size: 40px; color: #3b82f6; margin-bottom: 15px;"></i>
+                    <h3 style="color: #1e293b; font-size: 18px; margin-bottom: 10px;">Scan</h3>
+                    <div class="print-price" style="color: #3b82f6; font-size: 20px; font-weight: 700; margin-bottom: 10px;">2 <small style="font-size: 12px; color: #64748b;">points/page</small></div>
+                    <div class="print-description" style="color: #64748b; font-size: 12px; margin-bottom: 15px;">Scan to PDF or image</div>
                 </div>
             </div>
             
             <!-- File Upload -->
-            <div class="print-info">
-                <h4><i class="fa-solid fa-cloud-arrow-up"></i> Upload Document</h4>
-                <div class="file-upload-area" onclick="document.getElementById('fileUpload').click()">
-                    <i class="fa-solid fa-cloud-upload-alt"></i>
-                    <p>Click to upload or drag and drop</p>
-                    <small>Supported: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</small>
-                    <div id="fileName" class="file-name"></div>
+            <div class="print-info" style="background: #f8fafc; border-radius: 15px; padding: 25px; border: 1px solid #e2e8f0; margin-top: 20px;">
+                <h4 style="color: #1e293b; font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-cloud-arrow-up" style="color: #3b82f6;"></i> Upload Document</h4>
+                <div class="file-upload-area" onclick="document.getElementById('fileUpload').click()" style="background: white; border: 2px dashed #e2e8f0; border-radius: 10px; padding: 30px; text-align: center; margin-bottom: 15px; cursor: pointer;">
+                    <i class="fa-solid fa-cloud-upload-alt" style="font-size: 40px; color: #3b82f6; margin-bottom: 10px;"></i>
+                    <p style="color: #1e293b; font-size: 14px;">Click to upload or drag and drop</p>
+                    <small style="color: #64748b; font-size: 12px;">Supported: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</small>
+                    <div id="fileName" class="file-name" style="color: #3b82f6; font-size: 14px; margin-top: 10px;"></div>
                 </div>
-                <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="updateFileName(this)">
+                <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="updateFileName(this)" style="display: none;">
                 
                 <!-- Pages Input -->
                 <div style="margin-top: 20px;">
-                    <label style="color: white; display: block; margin-bottom: 10px;"><i class="fa-regular fa-file"></i> Number of pages:</label>
-                    <input type="number" id="pageCount" min="1" max="100" value="1" style="width: 100px; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    <label style="color: #1e293b; display: block; margin-bottom: 10px; font-weight: 600;"><i class="fa-regular fa-file" style="color: #3b82f6;"></i> Number of pages:</label>
+                    <input type="number" id="pageCount" min="1" max="100" value="1" style="width: 100px; padding: 10px; border-radius: 8px; background: white; border: 1px solid #e2e8f0; color: #1e293b;">
                 </div>
                 
                 <!-- Print Summary -->
-                <div id="printSummary" class="print-summary" style="display: none;">
-                    <p><i class="fa-regular fa-circle-check"></i> <span id="printSummaryText"></span></p>
+                <div id="printSummary" class="print-summary" style="display: none; background: #e2e8f0; border-radius: 10px; padding: 15px; margin-top: 20px; border: 1px solid #3b82f6;">
+                    <p style="color: #1e293b; display: flex; align-items: center; gap: 10px; font-weight: 600;"><i class="fa-regular fa-circle-check" style="color: #3b82f6;"></i> <span id="printSummaryText"></span></p>
                 </div>
                 
                 <!-- Actions -->
-                <div class="print-actions">
-                    <button class="print-action-btn" id="printSubmitBtn" onclick="submitPrintJob()" disabled>
+                <div class="print-actions" style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px;">
+                    <button class="print-action-btn" id="printSubmitBtn" onclick="submitPrintJob()" disabled style="padding: 12px 30px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; opacity: 0.5;">
                         <i class="fa-regular fa-print"></i> Submit Print Job
                     </button>
-                    <button class="cancel-btn" onclick="closePrintServicesModal()">
+                    <button class="cancel-btn" onclick="closePrintServicesModal()" style="padding: 12px 25px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-regular fa-circle-xmark"></i> Cancel
                     </button>
                 </div>
@@ -2068,6 +1560,7 @@ function selectTimeSlot(roomId, time) {
     selectedRoom = roomId;
     
     document.getElementById(`bookBtn${roomId}`).disabled = false;
+    document.getElementById(`bookBtn${roomId}`).style.opacity = '1';
     showBookingSummary(roomId, time);
 }
 
@@ -2094,6 +1587,7 @@ function cancelSelection() {
     });
     document.querySelectorAll('[id^="bookBtn"]').forEach(btn => {
         btn.disabled = true;
+        btn.style.opacity = '0.5';
     });
     document.getElementById('bookingSummary').style.display = 'none';
 }
@@ -2128,9 +1622,11 @@ let selectedPrintPrice = 0;
 function selectPrintType(type) {
     document.querySelectorAll('.print-card').forEach(card => {
         card.classList.remove('selected');
+        card.style.border = '1px solid #e2e8f0';
     });
     
     document.getElementById(`print${type.toUpperCase()}`).classList.add('selected');
+    document.getElementById(`print${type.toUpperCase()}`).style.border = '2px solid #3b82f6';
     selectedPrintType = type;
     
     switch(type) {
@@ -2164,9 +1660,11 @@ function updatePrintSummary() {
             `${typeName} • ${pages} page${pages > 1 ? 's' : ''} • ${totalPoints} points`;
         document.getElementById('printSummary').style.display = 'block';
         document.getElementById('printSubmitBtn').disabled = false;
+        document.getElementById('printSubmitBtn').style.opacity = '1';
     } else {
         document.getElementById('printSummary').style.display = 'none';
         document.getElementById('printSubmitBtn').disabled = true;
+        document.getElementById('printSubmitBtn').style.opacity = '0.5';
     }
 }
 
@@ -2186,12 +1684,14 @@ function resetPrintSelection() {
     selectedPrintPrice = 0;
     document.querySelectorAll('.print-card').forEach(card => {
         card.classList.remove('selected');
+        card.style.border = '1px solid #e2e8f0';
     });
     document.getElementById('fileUpload').value = '';
     document.getElementById('fileName').textContent = '';
     document.getElementById('pageCount').value = '1';
     document.getElementById('printSummary').style.display = 'none';
     document.getElementById('printSubmitBtn').disabled = true;
+    document.getElementById('printSubmitBtn').style.opacity = '0.5';
 }
 
 document.getElementById('pageCount')?.addEventListener('input', updatePrintSummary);
