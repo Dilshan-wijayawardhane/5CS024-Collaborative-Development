@@ -1242,6 +1242,44 @@ $points = $user['PointsBalance'];
         <?php else: ?>
         <p>No upcoming events</p>
         <?php endif; ?>
+        <!-- CAMPUS HOTLINE -->
+<h4 style="margin-top: 20px;">📞 Campus Hotline</h4>
+
+<div class="route-mini">
+    <span class="route-name">Campus Security</span>
+    <span class="route-time">
+        <a href="tel:0112345678" style="color:#22d3ee; text-decoration:none;">
+            011-2345678
+        </a>
+    </span>
+</div>
+
+<div class="route-mini">
+    <span class="route-name">Medical Center</span>
+    <span class="route-time">
+        <a href="tel:0118765432" style="color:#22d3ee; text-decoration:none;">
+            011-8765432
+        </a>
+    </span>
+</div>
+
+<div class="route-mini">
+    <span class="route-name">IT Support</span>
+    <span class="route-time">
+        <a href="tel:0115678901" style="color:#22d3ee; text-decoration:none;">
+            011-5678901
+        </a>
+    </span>
+</div>
+
+<div class="route-mini">
+    <span class="route-name">Transport Help</span>
+    <span class="route-time">
+        <a href="tel:0113456789" style="color:#22d3ee; text-decoration:none;">
+            011-3456789
+        </a>
+    </span>
+</div>
     </aside>
 </main>
 
