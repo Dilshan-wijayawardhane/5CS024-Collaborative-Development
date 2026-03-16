@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>QR Scanner - Synergy Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .qr-container {
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .scanner-box {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        .video-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 3px solid #667eea;
+        }
+        
+        #video {
+            width: 100%;
+            height: auto;
+        }
+        
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+        }
+        
+        .result-title {
+            color: #22d3ee;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .result-content {
+            color: white;
+            font-size: 16px;
+        }
+        
+        .close-btn {
+            padding: 10px 30px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .start-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px;
+        }
+        
+        .start-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .camera-select {
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <div class="menu-btn" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </div>
+    
+    <h1 class="logo">Synergy <span>Hub</span></h1>
+    
+    <div class="icons">
+        <div class="points">
+            <i class="fa-solid fa-star"></i>
+            <span>120</span>
+        </div>
+        <a href="index.php" style="color: white; text-decoration: none;">
+            <i class="fa-solid fa-home"></i>
+        </a>
+    </div>
+</header>
+
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+    <a href="index.php">Home</a>
+    <a href="facilities.php">Facilities</a>
+    <a href="transport.php">Transport</a>
+    <a href="game.php">Game Field</a>
+    <a href="clubs.php">Club Hub</a>
+    <a href="qr.html">QR Scanner</a>
+</div>
+
+<div class="qr-container">
+    <h1 style="color: white; font-size: 36px;">QR Scanner</h1>
+    <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;">
+        Scan QR codes to check in to facilities, events, and more
+    </p>
+    
+    <div class="scanner-box">
+        <div class="video-container" id="video-container" style="display: none;">
+            <video id="video" playsinline></video>
+        </div>
+        
+        <select id="cameraSelect" class="camera-select" style="display: none;">
+            <option value="">Select Camera</option>
+        </select>
+        
+        <button class="start-btn" onclick="startScanner()">
+            <i class="fa-solid fa-camera"></i> Start Scanner
+        </button>
+        
+        <div class="result-box" id="resultBox">
+            <div class="result-title">Scan Result</div>
+            <div class="result-content" id="resultContent"></div>
+            <button class="close-btn" onclick="closeResult()">Close</button>
+        </div>
+        
+        <!-- Sample QR codes for demo -->
+        <div style="margin-top: 40px;">
+            <h3 style="color: white; margin-bottom: 20px;">Sample QR Codes</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <div onclick="demoScan('GYM001')" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; cursor: pointer;">
+                    <i class="fa-solid fa-dumbbell" style="font-size: 40px; color: #667eea;"></i>
+                    <p style="color: white;">Gym</p>
+                </div>
+                <div onclick="demoScan('LIB001')" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; cursor: pointer;">
+                    <i class="fa-solid fa-book" style="font-size: 40px; color: #667eea;"></i>
+                    <p style="color: white;">Library</p>
+                </div>
+                <div onclick="demoScan('CAFE001')" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; cursor: pointer;">
+                    <i class="fa-solid fa-mug-saucer" style="font-size: 40px; color: #667eea;"></i>
+                    <p style="color: white;">Café</p>
+                </div>
+                <div onclick="demoScan('EVENT001')" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; cursor: pointer;">
+                    <i class="fa-solid fa-calendar" style="font-size: 40px; color: #667eea;"></i>
+                    <p style="color: white;">Event</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+<script>
+function toggleSidebar() {
+    const sidebar = document.querySelector(".sidebar");
+    sidebar.style.left = sidebar.style.left === "0px" ? "-260px" : "0px";
+}
+
+let codeReader = null;
+let videoElement = document.getElementById('video');
+
+function startScanner() {
+    document.getElementById('video-container').style.display = 'block';
+    document.querySelector('.camera-select').style.display = 'block';
+    
+    if (!codeReader) {
+        codeReader = new ZXing.BrowserMultiFormatReader();
+    }
+    
+    codeReader.listVideoInputDevices()
+        .then(videoInputDevices => {
+            const select = document.getElementById('cameraSelect');
+            select.innerHTML = '';
+            
+            videoInputDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${select.length + 1}`;
+                select.appendChild(option);
+            });
+            
+            if (videoInputDevices.length > 0) {
+                startDecoding(videoInputDevices[0].deviceId);
+            }
+        })
+        .catch(err => {
+            console.error('Camera access error:', err);
+            alert('Could not access camera. Please check permissions.');
+        });
+}
+
+function startDecoding(deviceId) {
+    if (codeReader) {
+        codeReader.reset();
+        codeReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
+            if (result) {
+                // Successfully scanned
+                document.getElementById('video-container').style.display = 'none';
+                document.querySelector('.camera-select').style.display = 'none';
+                document.querySelector('.start-btn').style.display = 'inline-block';
+                
+                showResult(result.text);
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error('Scan error:', err);
+            }
+        });
+        
+        document.querySelector('.start-btn').style.display = 'none';
+    }
+}
+
+// Camera selection change
+document.getElementById('cameraSelect').addEventListener('change', function(e) {
+    if (this.value) {
+        startDecoding(this.value);
+    }
+});
+
+function showResult(text) {
+    document.getElementById('resultContent').innerHTML = `
+        <strong>Scanned:</strong> ${text}<br>
+        <strong>Type:</strong> ${getQRType(text)}<br>
+        <strong>Points:</strong> +10
+    `;
+    document.getElementById('resultBox').classList.add('show');
+    
+    // Simulate check-in
+    setTimeout(() => {
+        let points = document.querySelector('.points span');
+        let currentPoints = parseInt(points.innerText);
+        points.innerText = currentPoints + 10;
+        
+        // Animate points
+        document.querySelector('.points').classList.add('active');
+        setTimeout(() => {
+            document.querySelector('.points').classList.remove('active');
+        }, 500);
+    }, 500);
+}
+
+function getQRType(text) {
+    if (text.includes('GYM')) return 'Gym Facility';
+    if (text.includes('LIB')) return 'Library';
+    if (text.includes('CAFE')) return 'Café';
+    if (text.includes('EVENT')) return 'Event';
+    return 'Facility';
+}
+
+function closeResult() {
+    document.getElementById('resultBox').classList.remove('show');
+}
+
+function demoScan(code) {
+    showResult(code);
+}
+
+// Stop scanner when leaving page
+window.addEventListener('beforeunload', function() {
+    if (codeReader) {
+        codeReader.reset();
+    }
+});
+
+document.addEventListener("click", function(e) {
+    const sidebar = document.querySelector(".sidebar");
+    const btn = document.querySelector(".menu-btn");
+    if(sidebar && btn && !sidebar.contains(e.target) && !btn.contains(e.target)) {
+        sidebar.style.left = "-260px";
+    }
+});
+</script>
+
+</body>
+</html>
