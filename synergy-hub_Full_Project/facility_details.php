@@ -988,10 +988,10 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </a>
         
         <?php elseif($facility['Type'] == 'Library'): ?>
-        <!-- ==================== LIBRARY FEATURES ==================== -->
-        <a href="library_books.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+        <!-- ==================== LIBRARY FEATURES - නිවැරදි කළා ==================== -->
+        <a href="library_books.php?id=<?php echo $facility_id; ?>&tab=browse" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
-                <i class="fa-solid fa-book-open"></i>
+                <i class="fa-solid fa-magnifying-glass"></i>
             </div>
             <div class="feature-title">Browse Books</div>
             <div class="feature-description">
@@ -999,13 +999,13 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             </div>
         </a>
         
-        <a href="library_books.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+        <a href="library_books.php?id=<?php echo $facility_id; ?>&tab=borrowed" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-book"></i>
             </div>
-            <div class="feature-title">Borrow Books</div>
+            <div class="feature-title">My Borrowed Books</div>
             <div class="feature-description">
-                Borrow books from the library. 14-day lending period. Earn 5 points when you borrow!
+                View books you've borrowed, check due dates, and return books. Earn 2 points when you return!
             </div>
         </a>
         
@@ -1041,7 +1041,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             </div>
         </a>
         
-        <a href="gym_equipment.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+        <a href="gym_equipment.php?id=<?php echo $facility_id; ?>&tab=classes" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-people-group"></i>
             </div>
