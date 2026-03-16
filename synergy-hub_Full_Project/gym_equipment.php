@@ -28,13 +28,18 @@ mysqli_stmt_bind_param($bookings_stmt, "i", $user_id);
 mysqli_stmt_execute($bookings_stmt);
 $bookings_result = mysqli_stmt_get_result($bookings_stmt);
 
-// Get user points
-$user_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
+// Get user points and name
+$user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
 mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
+
+// Get facilities count for badge
+$facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
+$facilities_count_result = mysqli_query($conn, $facilities_count_sql);
+$facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +48,6 @@ $user = mysqli_fetch_assoc($user_result);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <meta charset="UTF-8">
     <title>Gym Equipment - Synergy Hub</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
@@ -108,6 +112,11 @@ $user = mysqli_fetch_assoc($user_result);
             color: white;
             font-size: 24px;
             cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-btn.active {
+            transform: rotate(90deg);
         }
         
         .points {
@@ -120,6 +129,12 @@ $user = mysqli_fetch_assoc($user_result);
             background: rgba(255,255,255,0.15);
             backdrop-filter: blur(10px);
             color: white;
+            transition: all 0.3s;
+        }
+        
+        .points.active {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         .home-link {
@@ -132,32 +147,384 @@ $user = mysqli_fetch_assoc($user_result);
             color: #22d3ee;
         }
         
-        /* SIDEBAR */
+        /* ========================================
+           SYNERGY HUB SIDEBAR - LAS SANATA
+           ======================================== */
+
+        /* Sidebar Base */
         .sidebar {
             position: fixed;
-            left: -260px;
+            left: -280px;
             top: 0;
-            width: 260px;
+            width: 280px;
             height: 100%;
-            background: #0f172a;
-            padding-top: 70px;
-            transition: .35s;
+            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
+            backdrop-filter: blur(10px);
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
         }
-        
-        .sidebar a {
-            display: block;
-            padding: 15px 20px;
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 25px 20px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .sidebar-header h2 {
             color: white;
-            text-decoration: none;
-            opacity: .8;
-            transition: all 0.3s;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 5px 0;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
-        .sidebar a:hover {
+
+        .sidebar-header p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .sidebar-header p i {
+            color: #22d3ee;
+            margin-right: 5px;
+            font-size: 10px;
+        }
+
+        /* User Info in Sidebar */
+        .sidebar-user {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            margin: 0 15px 20px 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-user-info h4 {
+            color: white;
+            font-size: 15px;
+            margin: 0 0 3px 0;
+            font-weight: 600;
+        }
+
+        .sidebar-user-info p {
+            color: #94a3b8;
+            font-size: 12px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sidebar-user-info p i {
+            color: #fbbf24;
+            font-size: 10px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav-item {
+            margin: 4px 12px;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            color: #b8c7de;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-nav-link i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: #5f7d9e;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .sidebar-nav-link:hover {
+            background: rgba(168, 192, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-nav-link:hover i {
+            color: #a5b4fc;
+        }
+
+        .sidebar-nav-link.active {
+            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
+            color: white;
+            border-left: 3px solid #a5b4fc;
+        }
+
+        .sidebar-nav-link.active i {
+            color: #a5b4fc;
+        }
+
+        /* Sidebar Badge */
+        .sidebar-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 30px;
+            margin-left: auto;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Sidebar Divider */
+        .sidebar-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 20px 20px;
+        }
+
+        /* Sidebar Section Title */
+        .sidebar-section-title {
+            padding: 0 20px;
+            margin: 25px 0 10px 0;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Club Preview in Sidebar */
+        .sidebar-club-preview {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 15px;
+            margin: 0 15px 20px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-club-preview h4 {
+            color: white;
+            font-size: 13px;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            opacity: 0.8;
+        }
+
+        .sidebar-club-preview h4 i {
+            color: #fbbf24;
+        }
+
+        .sidebar-club-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: transform 0.2s;
+        }
+
+        .sidebar-club-item:hover {
+            transform: translateX(5px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-club-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar-club-item h5 {
+            color: white;
+            font-size: 14px;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+        }
+
+        .sidebar-club-item p {
+            color: #94a3b8;
+            font-size: 11px;
+            margin: 0 0 6px 0;
+            line-height: 1.4;
+        }
+
+        .sidebar-club-tag {
+            background: #2d4c6e;
+            color: white;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 30px;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        /* Quick Stats */
+        .sidebar-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            margin: 0 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .sidebar-stat-item {
+            text-align: center;
+        }
+
+        .sidebar-stat-value {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-stat-label {
+            color: #94a3b8;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* Footer Links */
+        .sidebar-footer {
+            padding: 20px 20px 30px 20px;
+        }
+
+        .sidebar-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 11px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sidebar-footer-links a:hover {
+            color: white;
+        }
+
+        .sidebar-footer-links a i {
+            font-size: 10px;
+        }
+
+        .sidebar-copyright {
+            color: #64748b;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            z-index: 9998;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
             opacity: 1;
-            background: #1e293b;
-            padding-left: 30px;
+        }
+
+        /* Scrollbar Styling */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
         
         /* MAIN CONTENT */
@@ -175,14 +542,21 @@ $user = mysqli_fetch_assoc($user_result);
         }
         
         .points-badge {
-            background: #22d3ee;
-            color: #0f172a;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            color: white;
             padding: 15px 25px;
             border-radius: 50px;
             display: inline-block;
             margin-bottom: 30px;
             font-weight: 600;
             font-size: 18px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .points-badge i {
+            color: #22d3ee;
+            margin-right: 8px;
         }
         
         .section-title {
@@ -353,6 +727,7 @@ $user = mysqli_fetch_assoc($user_result);
         .booking-item {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 15px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             color: white;
@@ -362,11 +737,27 @@ $user = mysqli_fetch_assoc($user_result);
             border-bottom: none;
         }
         
+        .booking-item strong {
+            color: white;
+            font-size: 16px;
+        }
+        
+        .booking-item small {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+        }
+        
         .no-bookings {
             color: rgba(255,255,255,0.7);
             text-align: center;
-            padding: 20px;
+            padding: 30px;
             font-style: italic;
+        }
+        
+        .no-bookings i {
+            font-size: 40px;
+            color: #94a3b8;
+            margin-bottom: 10px;
         }
         
         .cancel-btn {
@@ -376,6 +767,12 @@ $user = mysqli_fetch_assoc($user_result);
             border-radius: 8px;
             color: white;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cancel-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
         }
         
         .back-btn {
@@ -387,11 +784,16 @@ $user = mysqli_fetch_assoc($user_result);
             padding: 10px 20px;
             background: rgba(255,255,255,0.1);
             border-radius: 30px;
+            transition: all 0.3s;
         }
         
         .back-btn:hover {
             background: rgba(255,255,255,0.2);
             color: #22d3ee;
+        }
+        
+        .back-btn i {
+            margin-right: 8px;
         }
         
         @media (max-width: 768px) {
@@ -417,13 +819,121 @@ $user = mysqli_fetch_assoc($user_result);
 
 <!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
-    <a href="index.php">Home</a>
-    <a href="facilities.php">Facilities</a>
-    <a href="transport.php">Transport</a>
-    <a href="game.php">Game Field</a>
-    <a href="clubs.php">Club Hub</a>
-    <a href="qr.html">QR Scanner</a>
+    <!-- Header -->
+    <div class="sidebar-header">
+        <h2>Synergy Hub</h2>
+        <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
+    </div>
+    
+    <!-- User Info -->
+    <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="sidebar-user-info">
+            <h4><?php echo htmlspecialchars($user['Name'] ?? 'User'); ?></h4>
+            <p><i class="fa-solid fa-star"></i> <?php echo $user['PointsBalance'] ?? 0; ?> points</p>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="index.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-home"></i>
+                <span>Home</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="facilities.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-building"></i>
+                <span>Facilities</span>
+                <span class="sidebar-badge"><?php echo $facilities_count; ?></span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="transport.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-bus"></i>
+                <span>Transport</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="game.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-futbol"></i>
+                <span>Game Field</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="clubs.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-users"></i>
+                <span>Club Hub</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="qr.html" class="sidebar-nav-link">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>QR Scanner</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="notifications.php" class="sidebar-nav-link active">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <span class="sidebar-badge">3</span>
+            </a>
+        </li>
+    </ul>
+    
+    <div class="sidebar-divider"></div>
+    
+    <!-- My Clubs Preview -->
+    <div class="sidebar-section-title">MY CLUBS</div>
+    
+    <div class="sidebar-club-preview">
+        <h4><i class="fa-regular fa-star"></i> Active Clubs</h4>
+        <div class="sidebar-club-item">
+            <h5>Coding Club</h5>
+            <p>Programming and software development...</p>
+            <span class="sidebar-club-tag">Academic</span>
+        </div>
+        <div class="sidebar-club-item">
+            <h5>IEEE Student Branch</h5>
+            <p>IEEE student chapter...</p>
+            <span class="sidebar-club-tag">Academic</span>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="sidebar-stats">
+        <div class="sidebar-stat-item">
+            <div class="sidebar-stat-value">4</div>
+            <div class="sidebar-stat-label">Clubs</div>
+        </div>
+        <div class="sidebar-stat-item">
+            <div class="sidebar-stat-value">12</div>
+            <div class="sidebar-stat-label">Events</div>
+        </div>
+        <div class="sidebar-stat-item">
+            <div class="sidebar-stat-value"><?php echo $user['PointsBalance'] ?? 0; ?></div>
+            <div class="sidebar-stat-label">Points</div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-links">
+            <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
+            <a href="#"><i class="fa-regular fa-gear"></i> Settings</a>
+            <a href="#"><i class="fa-regular fa-message"></i> Feedback</a>
+        </div>
+        <div class="sidebar-copyright">
+            © 2025 Synergy Hub
+        </div>
+    </div>
 </div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <!-- NAVBAR -->
 <header class="navbar">
@@ -468,10 +978,10 @@ $user = mysqli_fetch_assoc($user_result);
                 <?php while($item = mysqli_fetch_assoc($equip_result)): ?>
                 <div class="equipment-card">
                     <div class="equipment-icon">
-                        <i class="fa-solid <?php echo $item['image_icon']; ?>"></i>
+                        <i class="fa-solid <?php echo htmlspecialchars($item['image_icon']); ?>"></i>
                     </div>
-                    <div class="equipment-name"><?php echo escape($item['name']); ?></div>
-                    <div class="equipment-category"><?php echo escape($item['category']); ?></div>
+                    <div class="equipment-name"><?php echo htmlspecialchars($item['name']); ?></div>
+                    <div class="equipment-category"><?php echo htmlspecialchars($item['category']); ?></div>
                     <div class="equipment-stats">
                         <span>Total: <?php echo $item['quantity']; ?></span>
                         <span>Available: <?php echo $item['available']; ?></span>
@@ -502,9 +1012,9 @@ $user = mysqli_fetch_assoc($user_result);
                 ?>
                 <div class="class-item">
                     <div class="class-info">
-                        <h3><?php echo escape($class['name']); ?></h3>
+                        <h3><?php echo htmlspecialchars($class['name']); ?></h3>
                         <p><i class="fa-regular fa-clock"></i> <?php echo $class['time']; ?></p>
-                        <p><i class="fa-solid fa-user"></i> Instructor: <?php echo escape($class['instructor']); ?></p>
+                        <p><i class="fa-solid fa-user"></i> Instructor: <?php echo htmlspecialchars($class['instructor']); ?></p>
                     </div>
                     <div class="class-status">
                         <div class="spots-left"><?php echo $spots; ?> spots left</div>
@@ -533,15 +1043,16 @@ $user = mysqli_fetch_assoc($user_result);
                 <?php while($booking = mysqli_fetch_assoc($bookings_result)): ?>
                 <div class="booking-item">
                     <div>
-                        <strong><?php echo escape($booking['class_name']); ?></strong><br>
-                        <small><?php echo $booking['time']; ?> with <?php echo escape($booking['instructor']); ?></small>
+                        <strong><?php echo htmlspecialchars($booking['class_name']); ?></strong><br>
+                        <small><?php echo $booking['time']; ?> with <?php echo htmlspecialchars($booking['instructor']); ?></small>
                     </div>
                     <button class="cancel-btn" onclick="cancelBooking(<?php echo $booking['booking_id']; ?>)">Cancel</button>
                 </div>
                 <?php endwhile; ?>
             <?php else: ?>
                 <div class="no-bookings">
-                    <i class="fa-solid fa-calendar-xmark"></i> No class bookings yet. Join a class!
+                    <i class="fa-solid fa-calendar-xmark"></i><br>
+                    No class bookings yet. Join a class!
                 </div>
             <?php endif; ?>
         </div>
@@ -553,16 +1064,35 @@ $user = mysqli_fetch_assoc($user_result);
 </div>
 
 <script>
+// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
-    sidebar.style.left = sidebar.style.left === "0px" ? "-260px" : "0px";
+    const overlay = document.getElementById("sidebarOverlay");
+    const menuBtn = document.querySelector(".menu-btn");
+    
+    if(sidebar.style.left === "0px") {
+        sidebar.style.left = "-280px";
+        overlay.classList.remove("active");
+        menuBtn.classList.remove("active");
+    } else {
+        sidebar.style.left = "0px";
+        overlay.classList.add("active");
+        menuBtn.classList.add("active");
+    }
 }
 
 document.addEventListener("click", function(e) {
     const sidebar = document.querySelector(".sidebar");
     const btn = document.querySelector(".menu-btn");
-    if(sidebar && btn && !sidebar.contains(e.target) && !btn.contains(e.target)) {
-        sidebar.style.left = "-260px";
+    const overlay = document.getElementById("sidebarOverlay");
+    
+    if(sidebar && btn && overlay && 
+       !sidebar.contains(e.target) && 
+       !btn.contains(e.target) && 
+       sidebar.style.left === "0px") {
+        sidebar.style.left = "-280px";
+        overlay.classList.remove("active");
+        btn.classList.remove("active");
     }
 });
 
