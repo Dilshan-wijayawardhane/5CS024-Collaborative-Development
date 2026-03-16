@@ -272,6 +272,7 @@ CREATE TABLE IF NOT EXISTS fitness_classes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ---------------------------------------------------------------------
 This is class_bookings Table
+---------------------------
 
 CREATE TABLE IF NOT EXISTS class_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -286,6 +287,7 @@ CREATE TABLE IF NOT EXISTS class_bookings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -------------------------------------------------------------------
 This is cafe_menu Table
+------------------------
 
 CREATE TABLE IF NOT EXISTS cafe_menu (
     item_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -300,6 +302,7 @@ CREATE TABLE IF NOT EXISTS cafe_menu (
 
 ------------------------------------------------------------------
 This is field_bookings Table
+--------------------------
 
 CREATE TABLE IF NOT EXISTS field_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -315,6 +318,7 @@ CREATE TABLE IF NOT EXISTS field_bookings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ------------------------------------------------------------------
 This is study_rooms Table
+------------------------
 
 CREATE TABLE IF NOT EXISTS study_rooms (
     room_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -327,6 +331,7 @@ CREATE TABLE IF NOT EXISTS study_rooms (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ------------------------------------------------------------------
 This is room_bookings Table
+--------------------------
 
 CREATE TABLE IF NOT EXISTS room_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -342,6 +347,7 @@ CREATE TABLE IF NOT EXISTS room_bookings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ---------------------------------------------------------------------
 This is gym_status Table
+-----------------------
 
 CREATE TABLE IF NOT EXISTS gym_status (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -352,6 +358,7 @@ CREATE TABLE IF NOT EXISTS gym_status (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -------------------------------------------------------
 This is su_events Table
+-----------------------
 
 CREATE TABLE IF NOT EXISTS su_events (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -363,6 +370,7 @@ CREATE TABLE IF NOT EXISTS su_events (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -------------------------------------------
 This is campus_transport Table
+-----------------------------
 
 CREATE TABLE IF NOT EXISTS campus_transport (
     route_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -375,6 +383,7 @@ CREATE TABLE IF NOT EXISTS campus_transport (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -----------------------------------------------------------------------------
 This is special_offers Table
+--------------------------
 
 CREATE TABLE IF NOT EXISTS special_offers (
     offer_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -396,6 +405,8 @@ CREATE TABLE IF NOT EXISTS special_offers (
     INDEX idx_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ------------------------------------------------------------------------------
+This is table_reservations table
+--------------------------------
 
 CREATE TABLE IF NOT EXISTS table_reservations (
     reservation_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -415,7 +426,10 @@ CREATE TABLE IF NOT EXISTS table_reservations (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -------------------------------------------------------------------------
--- Pool Bookings Table
+This is Pool_Bookings Table
+----------------------------
+
+
 CREATE TABLE IF NOT EXISTS pool_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -434,8 +448,12 @@ CREATE TABLE IF NOT EXISTS pool_bookings (
     INDEX idx_status (status),
     UNIQUE KEY unique_booking (facility_id, booking_date, lane_number, time_slot)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+----------------------------------------------------------------------------------------------------------
 
--- Medical Reports Table
+
+This is Medical Reports Table
+-----------------------------
+
 CREATE TABLE IF NOT EXISTS medical_reports (
     report_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -457,16 +475,21 @@ CREATE TABLE IF NOT EXISTS medical_reports (
 
 --------------------------------------------------------------------------------------------------------------
 
--- Sample Data Insertion
+This is our Sample Data Insertion
+-----------------------------------
 
--- Insert sample users (passwords are hashed using bcrypt - 'password123' as example)
+These are insert sample users (passwords are hashed using bcrypt - 'password123' as example)
+------------------------------------------------------------------------------------------------
+
 INSERT INTO Users (StudentID, Name, Email, PasswordHash, Role, PointsBalance) VALUES
 ('STU001', 'Admin User', 'admin@university.lk', '$2y$10$YourHashedPasswordHere', 'Admin', 0),
 ('STU002', 'John Doe', 'john.doe@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 100),
 ('STU003', 'Jane Smith', 'jane.smith@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 150),
 ('STU004', 'Visitor User', 'visitor@university.lk', '$2y$10$YourHashedPasswordHere', 'Visitor', 0);
 
--- Insert sample facilities
+Insert sample facilities
+-------------------------
+
 INSERT INTO Facilities (Name, Type, Status, Capacity, ExtraInfo) VALUES
 ('Main Library', 'Library', 'Open', 500, '{"floors": 3, "wifi": true, "air_conditioned": true}'),
 ('University Gym', 'Gym', 'Open', 100, '{"equipment": ["treadmill", "weights"], "lockers": true}'),
@@ -474,52 +497,68 @@ INSERT INTO Facilities (Name, Type, Status, Capacity, ExtraInfo) VALUES
 ('Shuttle Service', 'Transport', 'Open', 50, '{"routes": ["Malabe", "Kaduwela"], "frequency": "30min"}'),
 ('Sports Field', 'GameField', 'Open', 200, '{"games": ["football", "cricket"], "lights": true}');
 
--- Insert sample clubs
+Insert sample clubs
+---------------------
+
 INSERT INTO Clubs (Name, Description, Category, Status) VALUES
 ('Coding Club', 'Programming and software development club', 'Academic', 'Active'),
 ('Cybersecurity Club', 'Ethical hacking and security enthusiasts', 'Academic', 'Active'),
 ('IEEE Student Branch', 'IEEE student chapter', 'Academic', 'Active'),
 ('Robotics Club', 'Robotics and automation', 'Technical', 'Active');
 
--- Insert sample events
+Insert sample events
+---------------------
+
 INSERT INTO Events (Title, Description, Location, StartTime, EndTime, Category, Status) VALUES
 ('Hackathon 2024', '24-hour coding competition', 'CS Building', DATE_ADD(NOW(), INTERVAL 7 DAY), DATE_ADD(NOW(), INTERVAL 8 DAY), 'Club', 'Upcoming'),
 ('Workshop: Web Development', 'Learn modern web development', 'Lab 101', DATE_ADD(NOW(), INTERVAL 3 DAY), DATE_ADD(NOW(), INTERVAL 3 DAY), 'Workshop', 'Upcoming'),
 ('SU Meeting', 'Student Union general meeting', 'Auditorium', DATE_ADD(NOW(), INTERVAL 2 DAY), DATE_ADD(NOW(), INTERVAL 2 DAY), 'SU', 'Upcoming');
 
--- Insert sample rewards
+ Insert sample rewards
+ ---------------------
+
 INSERT INTO Rewards (Name, Description, PointsRequired, Availability, Quantity) VALUES
 ('Free Café Coffee', 'Redeem for one free coffee at campus café', 50, 'Available', 100),
 ('Transport Pass', 'One-day unlimited transport pass', 100, 'Available', 50),
 ('Gym Day Pass', 'One-day gym access', 75, 'Available', 30),
 ('University Merch', 'University t-shirt', 200, 'Limited', 10);
 
--- Insert sample check-ins
+Insert sample check-ins
+------------------------
+
 INSERT INTO CheckIns (UserID, FacilityID, PointsAwarded) VALUES
 (2, 1, 10),
 (2, 3, 10),
 (3, 2, 10),
 (3, 1, 10);
 
--- Insert sample orders
+Insert sample orders
+----------------------
+
 INSERT INTO Orders (UserID, ItemName, Category, Price, Quantity, Status) VALUES
 (2, 'Chicken Sandwich', 'Food', 450.00, 1, 'Completed'),
 (2, 'Coffee', 'Beverage', 250.00, 2, 'Preparing'),
 (3, 'Chocolate Cake', 'Dessert', 350.00, 1, 'Pending');
 
--- Insert sample transport passes
+Insert sample transport passes
+------------------------------
+
 INSERT INTO TransportPasses (UserID, RouteName, ValidUntil, Status) VALUES
 (2, 'Malabe - Colombo', DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'Active'),
 (3, 'Malabe - Kandy', DATE_ADD(CURDATE(), INTERVAL 15 DAY), 'Active');
 
--- Insert sample club memberships
+Insert sample club memberships
+-----------------------------
+
 INSERT INTO ClubMemberships (ClubID, UserID, Role) VALUES
 (1, 2, 'Member'),
 (1, 3, 'Member'),
 (2, 2, 'Leader'),
 (3, 3, 'Member');
 
--- Insert sample notifications
+Insert sample notifications
+---------------------------
+
 INSERT INTO notifications (user_id, title, message, type) VALUES
 (2, 'Hackathon Reminder', 'Reminder: Hackathon registration closes tomorrow', 'event'),
 (2, 'Transport Pass Expiry', 'Your transport pass expires in 7 days', 'transport'),
@@ -527,14 +566,17 @@ INSERT INTO notifications (user_id, title, message, type) VALUES
 (1, 'WLV Gym Update', 'Gym closes at 10:00 PM tonight', 'gym'),
 (2, 'Points Earned', 'You earned 20 points from Memory Game!', 'general');
 
--- Insert sample game activity
+Insert sample game activity
+---------------------------
+
 INSERT INTO GameField (UserID, GameType, PointsUsed, PointsEarned) VALUES
 (2, 'Quiz Challenge', 0, 20),
 (2, 'AR Treasure Hunt', 10, 15),
 (3, 'Memory Game', 5, 10);
 
+Insert sample bus_routes
+------------------------
 
------------------------------------------------
 INSERT INTO bus_routes (route_id, location, updated_time) VALUES
 ('cinec', 'Malabe', '10:30 AM'),
 ('gampaha1', 'Gampaha', '10:15 AM'),
@@ -546,7 +588,9 @@ ON DUPLICATE KEY UPDATE
 location = VALUES(location),
 updated_time = VALUES(updated_time);
 
---------------------------------------------------------------
+Insert sample books
+-------------------
+
 INSERT INTO books (title, author, category, quantity, available, description) VALUES
 ('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 3, 3, 'A classic novel about the American Dream'),
 ('To Kill a Mockingbird', 'Harper Lee', 'Fiction', 2, 2, 'A story of racial injustice in the Deep South'),
@@ -559,7 +603,9 @@ INSERT INTO books (title, author, category, quantity, available, description) VA
 ('Database Systems', 'Elmasri & Navathe', 'Academic', 3, 3, 'Complete database textbook'),
 ('Harry Potter and the Philosopher\'s Stone', 'J.K. Rowling', 'Fantasy', 4, 4, 'First book in the Harry Potter series');
 
---------------------------------------------------------------------------------
+Insert sample gym_equipment
+---------------------------
+
 INSERT INTO gym_equipment (name, quantity, available, category, image_icon) VALUES
 ('Treadmill', 5, 3, 'Cardio', 'fa-person-running'),
 ('Dumbbells Set', 20, 15, 'Strength', 'fa-dumbbell'),
@@ -569,13 +615,20 @@ INSERT INTO gym_equipment (name, quantity, available, category, image_icon) VALU
 ('Rowing Machine', 2, 1, 'Cardio', 'fa-oar'),
 ('Yoga Mats', 15, 8, 'Accessories', 'fa-circle'),
 ('Kettlebells', 10, 6, 'Strength', 'fa-circle');
-------------------------------------------------------
+
+Insert sample fitness_classes
+-----------------------------
+
 INSERT INTO fitness_classes (name, time, instructor, capacity, booked) VALUES
 ('Morning Yoga', '8:00 AM', 'Ms. Perera', 20, 12),
 ('Zumba Dance', '10:00 AM', 'Mr. Silva', 25, 18),
 ('HIIT Workout', '5:00 PM', 'Mr. Fernando', 15, 10),
 ('Strength Training', '6:30 PM', 'Ms. Kumari', 12, 5);
------------------------------------------------------------
+
+
+Insert sample cafe_menu 
+--------------------------
+
 INSERT INTO cafe_menu (name, category, price, points_price, image_icon) VALUES ('Chicken Sandwich', 'Food', 450.00, 45, 'fa-burger'),
 ('Veggie Wrap', 'Food', 350.00, 35, 'fa-leaf'),
 ('Chicken Rice', 'Food', 550.00, 55, 'fa-bowl-food'),
@@ -585,52 +638,72 @@ INSERT INTO cafe_menu (name, category, price, points_price, image_icon) VALUES (
 ('Fresh Juice', 'Beverage', 300.00, 30, 'fa-glass-water'),('Chocolate Cake', 'Dessert', 350.00, 35, 'fa-cake-candles'),
 ('Ice Cream', 'Dessert', 250.00, 25, 'fa-ice-cream'),
 ('Fruit Salad', 'Dessert', 280.00, 28, 'fa-bowl-food');
------------------------------------------------------------
+
+Insert sample study_rooms
+------------------------
+
+
 INSERT INTO study_rooms (room_name, capacity, has_projector, has_whiteboard) VALUES
 ('Study Room 1', 4, TRUE, TRUE),
 ('Study Room 2', 6, TRUE, TRUE),
 ('Group Study Hall', 10, TRUE, TRUE),
 ('Quiet Reading Room', 2, FALSE, FALSE);
-----------------------------------------------
+
+Insert sample gym_status
+------------------------
+
 INSERT INTO gym_status (status, closing_time, pool_available) 
 VALUES ('Open', '10:00 PM', TRUE);
--------------------------------------------------------------
+
+Insert sample su_events
+-----------------------
 
 INSERT INTO su_events (title, event_time, location, description) VALUES
 ('Quiz Night', DATE_ADD(NOW(), INTERVAL 2 DAY), 'Main Hall', 'Test your knowledge!'),
 ('SU Meeting', DATE_ADD(NOW(), INTERVAL 1 DAY), 'Room 101', 'Weekly student union meeting'),
 ('Movie Night', DATE_ADD(NOW(), INTERVAL 3 DAY), 'Lecture Theatre', 'Free movie screening');
------------------------------------------------------------------------
+
+Insert sample campus_transport
+------------------------------
 
 INSERT INTO campus_transport (from_campus, to_campus, next_departure, status, frequency) VALUES
 ('City', 'Walsall', '15 mins', 'On Time', 'Every 30 mins'),
 ('Walsall', 'City', '20 mins', 'On Time', 'Every 30 mins'),
 ('City', 'Telford', '45 mins', 'On Time', 'Every 60 mins'),
 ('Telford', 'City', '50 mins', 'On Time', 'Every 60 mins');
-----------------------------------------------------------------
 
-------------------------------------------------------
+Insert sample special_offers
+-----------------------------
+
 INSERT INTO special_offers (facility_id, title, description, discount_type, discount_value, original_price, offer_price, points_required, valid_until, image_url) VALUES
 (3, 'Happy Hour Special', 'Get 20% off on all beverages from 4 PM to 6 PM', 'percentage', 20, NULL, NULL, 0, DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'https://images.unsplash.com/photo-1470119693884-47d3a1d1f180?w=300&h=200&fit=crop'),
 (3, 'Combo Meal Deal', 'Chicken Rice + Soft Drink for only 450 points', 'points', 450, 550.00, NULL, 450, DATE_ADD(CURDATE(), INTERVAL 15 DAY), 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=300&h=200&fit=crop'),
 (3, 'Buy 1 Get 1 Free', 'Buy any coffee and get one free', 'bogo', 1, 250.00, NULL, 0, DATE_ADD(CURDATE(), INTERVAL 7 DAY), 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop');
-------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ALTER TABLE Facilities 
 MODIFY COLUMN Type ENUM('Gym', 'Library', 'Café', 'Transport', 'GameField', 'Pool') NOT NULL;
 
--- Insert a sample pool facility
+ Insert a sample pool facility
+ --------------------------------
+
 INSERT INTO Facilities (Name, Type, Status, Capacity, ExtraInfo) VALUES
 ('Olympic Swimming Pool', 'Pool', 'Open', 80, '{"depth": "1.2m-2.5m", "lanes": 8, "waterTemp": 27, "lifeguards": 4, "medicalRequired": true, "amenities": ["Changing Rooms", "Showers", "Lockers", "Pool Equipment", "First Aid Station"]}');
 
--- Add medical_report_id to pool_bookings if not exists
+Add medical_report_id to pool_bookings if not exists
+--------------------------------------------------------
 ALTER TABLE pool_bookings 
 ADD COLUMN IF NOT EXISTS medical_report_id INT,
 ADD FOREIGN KEY (medical_report_id) REFERENCES medical_reports(report_id) ON DELETE SET NULL;
 
--- Create admin tables that match your existing schema
+--------------------------------------------------------
+ Create admin tables that match your existing schema
+ -----------------------------------------------------
 
--- Points Configuration table
+This is Points Configuration table
+-----------------------------------
+
 CREATE TABLE IF NOT EXISTS PointsConfig (
     ConfigID INT PRIMARY KEY AUTO_INCREMENT,
     ActionType VARCHAR(50) NOT NULL UNIQUE,
@@ -641,7 +714,9 @@ CREATE TABLE IF NOT EXISTS PointsConfig (
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Insert default points configuration
+Insert default points configuration
+-------------------------------------
+
 INSERT INTO PointsConfig (ActionType, Points, Description) VALUES
 ('LOGIN', 10, 'Daily login bonus'),
 ('FACILITY_VISIT', 20, 'Check in to a facility'),
@@ -652,7 +727,9 @@ INSERT INTO PointsConfig (ActionType, Points, Description) VALUES
 ('REFERRAL', 100, 'Refer a friend'),
 ('ADMIN_ADJUSTMENT', 0, 'Manual adjustment by admin');
 
--- Points History table (fixing the column names)
+This is Points History table (fixing the column names)
+--------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS PointsHistory (
     HistoryID INT PRIMARY KEY AUTO_INCREMENT,
     UserID INT NOT NULL,
@@ -663,7 +740,9 @@ CREATE TABLE IF NOT EXISTS PointsHistory (
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
--- Membership Tiers table
+This is Membership Tiers table
+-------------------------------
+
 CREATE TABLE IF NOT EXISTS MembershipTiers (
     TierID INT PRIMARY KEY AUTO_INCREMENT,
     TierName VARCHAR(50) NOT NULL,
@@ -676,14 +755,18 @@ CREATE TABLE IF NOT EXISTS MembershipTiers (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default tiers
+Insert default tiers
+----------------------
+
 INSERT INTO MembershipTiers (TierName, MinPoints, MaxPoints, Multiplier, Benefits, Color, Icon) VALUES
 ('Bronze', 0, 499, 1.0, '{"points_multiplier": 1.0}', '#CD7F32', 'fa-bronze'),
 ('Silver', 500, 1999, 1.2, '{"points_multiplier": 1.2, "free_drinks": 1}', '#C0C0C0', 'fa-silver'),
 ('Gold', 2000, 4999, 1.5, '{"points_multiplier": 1.5, "free_drinks": 2, "priority_booking": true}', '#FFD700', 'fa-gold'),
 ('Platinum', 5000, NULL, 2.0, '{"points_multiplier": 2.0, "free_drinks": 4, "priority_booking": true, "free_events": true}', '#E5E4E2', 'fa-crown');
 
--- Rewards Catalog table
+This is Rewards Catalog table
+-----------------------------
+
 CREATE TABLE IF NOT EXISTS Rewards (
     RewardID INT PRIMARY KEY AUTO_INCREMENT,
     Name VARCHAR(100) NOT NULL,
@@ -696,7 +779,9 @@ CREATE TABLE IF NOT EXISTS Rewards (
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Rewards Redemption table
+This is Rewards Redemption table
+---------------------------------
+
 CREATE TABLE IF NOT EXISTS RewardsRedemption (
     RedemptionID INT PRIMARY KEY AUTO_INCREMENT,
     UserID INT NOT NULL,
@@ -709,7 +794,8 @@ CREATE TABLE IF NOT EXISTS RewardsRedemption (
     FOREIGN KEY (RewardID) REFERENCES Rewards(RewardID) ON DELETE CASCADE
 );
 
--- Import History table
+This is Import History table
+-------------------------------
 CREATE TABLE IF NOT EXISTS ImportHistory (
     ImportID INT PRIMARY KEY AUTO_INCREMENT,
     FileName VARCHAR(255) NOT NULL,
@@ -720,7 +806,9 @@ CREATE TABLE IF NOT EXISTS ImportHistory (
     FOREIGN KEY (ImportedBy) REFERENCES Users(UserID) ON DELETE SET NULL
 );
 
--- Points Expiration settings
+This is  Points Expiration settings
+-----------------------------------
+
 CREATE TABLE IF NOT EXISTS PointsExpiration (
     ExpirationID INT PRIMARY KEY AUTO_INCREMENT,
     ExpiryDays INT DEFAULT 365,
@@ -730,12 +818,16 @@ CREATE TABLE IF NOT EXISTS PointsExpiration (
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Insert default expiration settings
+Insert default expiration settings
+------------------------------------
+
 INSERT INTO PointsExpiration (ExpirationID, ExpiryDays, LastEarnedPointsExpire, NotificationDays, Enabled) 
 VALUES (1, 365, TRUE, 30, TRUE)
 ON DUPLICATE KEY UPDATE ExpirationID = ExpirationID;
 
--- Streak Bonuses table
+This is Streak Bonuses table
+----------------------------
+
 CREATE TABLE IF NOT EXISTS StreakBonuses (
     StreakID INT PRIMARY KEY AUTO_INCREMENT,
     StreakType ENUM('Daily', 'Weekly') NOT NULL,
@@ -745,18 +837,17 @@ CREATE TABLE IF NOT EXISTS StreakBonuses (
     Description TEXT
 );
 
--- Insert default streak bonuses
+Insert default streak bonuses
+--------------------------------
+
 INSERT INTO StreakBonuses (StreakType, StreakDays, Multiplier, BonusPoints, Description) VALUES
 ('Daily', 7, 1.5, 50, '7-day daily streak bonus'),
 ('Daily', 30, 2.0, 200, '30-day daily streak bonus'),
 ('Weekly', 4, 1.2, 100, '4-week weekly streak bonus');
 
 
-
-
-
-
--- Create ActivityLogs table if it doesn't exist
+This is Create ActivityLogs table 
+---------------------------------
 CREATE TABLE IF NOT EXISTS ActivityLogs (
     LogID INT PRIMARY KEY AUTO_INCREMENT,
     UserID INT NOT NULL,
@@ -766,15 +857,16 @@ CREATE TABLE IF NOT EXISTS ActivityLogs (
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
--- Also create index for better performance
+Also create index for better performance
+-----------------------------------------
+
 CREATE INDEX idx_activity_user ON ActivityLogs(UserID);
 CREATE INDEX idx_activity_timestamp ON ActivityLogs(Timestamp);
 
 
+This is Notification Templates table
+----------------------------------------
 
-
-
--- Notification Templates table
 CREATE TABLE IF NOT EXISTS NotificationTemplates (
     TemplateID INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
@@ -788,7 +880,12 @@ CREATE TABLE IF NOT EXISTS NotificationTemplates (
     INDEX idx_type (Type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Notification History/Log table
+
+
+
+This is Notification History/Log table
+-----------------------------------------
+
 CREATE TABLE IF NOT EXISTS NotificationLog (
     LogID INT AUTO_INCREMENT PRIMARY KEY,
     NotificationID INT NULL,
@@ -811,7 +908,9 @@ CREATE TABLE IF NOT EXISTS NotificationLog (
     INDEX idx_type_target (Type, TargetType)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- User Groups for targeting
+This is User Groups for targeting
+------------------------------------
+
 CREATE TABLE IF NOT EXISTS UserGroups (
     GroupID INT AUTO_INCREMENT PRIMARY KEY,
     GroupName VARCHAR(100) NOT NULL UNIQUE,
@@ -821,7 +920,9 @@ CREATE TABLE IF NOT EXISTS UserGroups (
     FOREIGN KEY (CreatedBy) REFERENCES Users(UserID) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- User Group Members
+This is User Group Members
+--------------------------
+
 CREATE TABLE IF NOT EXISTS UserGroupMembers (
     GroupID INT NOT NULL,
     UserID INT NOT NULL,
@@ -831,7 +932,9 @@ CREATE TABLE IF NOT EXISTS UserGroupMembers (
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Notification Opens tracking
+This is Notification Opens tracking
+---------------------------------------
+
 CREATE TABLE IF NOT EXISTS NotificationOpens (
     OpenID INT AUTO_INCREMENT PRIMARY KEY,
     NotificationID INT NOT NULL,
@@ -843,7 +946,9 @@ CREATE TABLE IF NOT EXISTS NotificationOpens (
     INDEX idx_notification_user (NotificationID, UserID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insert default user groups
+Insert default user groups
+-----------------------------
+
 INSERT INTO UserGroups (GroupName, Description) VALUES
 ('All Students', 'All registered students'),
 ('Active Users', 'Users who logged in within last 30 days'),
@@ -853,11 +958,9 @@ INSERT INTO UserGroups (GroupName, Description) VALUES
 ON DUPLICATE KEY UPDATE GroupID=GroupID;
 
 
+This is  lifeguards table
+--------------------------
 
-
-
-
--- Create lifeguards table
 CREATE TABLE IF NOT EXISTS lifeguards (
     lifeguard_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -871,7 +974,9 @@ CREATE TABLE IF NOT EXISTS lifeguards (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create lifeguard schedule table
+This is lifeguard schedule table
+--------------------------------
+
 CREATE TABLE IF NOT EXISTS lifeguard_schedule (
     schedule_id INT AUTO_INCREMENT PRIMARY KEY,
     lifeguard_id INT NOT NULL,
@@ -885,7 +990,9 @@ CREATE TABLE IF NOT EXISTS lifeguard_schedule (
     UNIQUE KEY unique_schedule (lifeguard_id, schedule_date, time_slot)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insert some sample lifeguards
+Insert some sample lifeguards
+------------------------------
+
 INSERT INTO lifeguards (name, email, phone, certification, experience, status) VALUES
 ('Kumara Sangakra', 'Kumara.doe@example.com', '0771234567', 'Lifeguard Certificate', 5, 'active'),
 ('John kells', 'john.smith@example.com', '0772345678', 'Water Safety Instructor', 3, 'active'),
