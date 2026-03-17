@@ -1229,194 +1229,466 @@ $points = $user['PointsBalance'];
         }
         
         /* CHAT */
-        .chat-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            z-index: 9996;
-            transition: transform 0.3s;
-        }
-        
-        .chat-btn:hover {
-            transform: scale(1.1);
-        }
-        
-        .chat-box {
+        .chat-container {
             position: fixed;
             bottom: 100px;
             right: 30px;
-            width: 350px;
-            height: 500px;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             display: none;
             flex-direction: column;
             z-index: 9997;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .chat-box.show {
+
+        .chat-container.show {
             display: flex;
+            animation: slideIn 0.3s ease;
         }
-        
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Chat Header */
         .chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 20px;
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
+            cursor: move;
         }
-        
-        .chat-header span {
-            cursor: pointer;
-            font-size: 20px;
-            width: 30px;
-            height: 30px;
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-header-info h3 {
+            font-size: 16px;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+        }
+
+        .chat-header-info p {
+            font-size: 12px;
+            margin: 0;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
             border-radius: 50%;
-            transition: background 0.3s;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
         }
-        
-        .chat-header span:hover {
-            background: rgba(255,255,255,0.2);
+
+        .chat-close {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
         }
-        
+
+        .chat-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        /* Chat Messages Area */
         .chat-messages {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
+            background: #f8fafc;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            background: rgba(255,255,255,0.5);
+            gap: 16px;
         }
-        
-        .chat-messages p {
-            max-width: 80%;
+
+        /* Message Groups */
+        .message-group {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+        }
+
+        .message-group.bot {
+            align-self: flex-start;
+        }
+
+        .message-group.user {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
             padding: 12px 16px;
             border-radius: 18px;
-            margin: 0;
             word-wrap: break-word;
             line-height: 1.4;
             font-size: 14px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
-        
-        .chat-messages .bot {
-            background: #f0f0f0;
-            color: #333;
-            align-self: flex-start;
+
+        .message-group.bot .message-bubble {
+            background: white;
+            color: #1e293b;
             border-bottom-left-radius: 5px;
+            border: 1px solid #e2e8f0;
         }
-        
-        .chat-messages .user {
+
+        .message-group.user .message-bubble {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            align-self: flex-end;
             border-bottom-right-radius: 5px;
         }
-        
-        .chat-input {
-            padding: 15px;
-            border-top: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            gap: 10px;
-            background: white;
+
+        .message-time {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+            margin-left: 8px;
+            margin-right: 8px;
         }
-        
-        .chat-input input {
+
+        .message-group.user .message-time {
+            text-align: right;
+        }
+
+        /* Quick Replies */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quick-reply-btn {
+            padding: 8px 14px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .quick-reply-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            width: fit-content;
+            border: 1px solid #e2e8f0;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: 0.1s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        /* Chat Input Area */
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f1f5f9;
+            border-radius: 30px;
+            padding: 6px;
+            transition: all 0.3s;
+        }
+
+        .chat-input-wrapper:focus-within {
+            background: white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .chat-input-wrapper input {
             flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
+            padding: 12px 18px;
+            border: none;
+            background: transparent;
             outline: none;
             font-size: 14px;
-            transition: border-color 0.3s;
+            color: #1e293b;
         }
-        
-        .chat-input input:focus {
-            border-color: #667eea;
+
+        .chat-input-wrapper input::placeholder {
+            color: #94a3b8;
         }
-        
-        .chat-input button {
-            padding: 12px 20px;
+
+        .chat-input-actions {
+            display: flex;
+            gap: 4px;
+            padding-right: 6px;
+        }
+
+        .action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .action-btn:hover {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .action-btn.send {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+        }
+
+        .action-btn.send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Chat Features */
+        .chat-features {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 0 8px;
+        }
+
+        .chat-feature-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .feature-btn {
+            background: transparent;
             border: none;
-            border-radius: 25px;
+            color: #64748b;
+            font-size: 12px;
             cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.3s;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
-        
-        .chat-input button:hover {
-            transform: scale(1.05);
+
+        .feature-btn:hover {
+            color: #667eea;
         }
-        
-        #typingIndicator {
-            font-style: italic;
-            opacity: 0.7;
+
+        .feature-btn i {
+            font-size: 14px;
         }
-        
-        .footer {
+
+        .chat-timestamp {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        /* Emoji Picker */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100px;
+            right: 0;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            display: none;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            z-index: 9998;
+            border: 1px solid #e2e8f0;
+        }
+
+        .emoji-picker.show {
+            display: grid;
+        }
+
+        .emoji-item {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .emoji-item:hover {
+            background: #f1f5f9;
+            transform: scale(1.1);
+        }
+
+        /* Chat Bubble Animation */
+        @keyframes messagePop {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .message-group {
+            animation: messagePop 0.3s ease;
+        }
+
+        /* Chat Button */
+        .chat-btn {
             position: fixed;
-            bottom: 15px;
-            width: 100%;
-            text-align: center;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            font-size: 13px;
-            opacity: .8;
-            z-index: 1;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            z-index: 9996;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid rgba(255, 255, 255, 0.3);
         }
-        
-        @media (max-width: 1024px) {
-            .layout {
-                flex-direction: column;
-            }
-            
-            .grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+
+        .chat-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
         }
-        
+
+        .chat-btn-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 22px;
+            height: 22px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            border: 2px solid white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .search-wrapper input {
-                width: 90%;
-            }
-            
-            .search-results {
-                width: 90%;
-            }
-            
-            .notification-dropdown {
-                width: 300px;
-                right: -10px;
-            }
-            
-            .chat-box {
-                width: 300px;
+            .chat-container {
+                width: 320px;
+                height: 500px;
                 right: 15px;
+                bottom: 85px;
+            }
+            
+            .chat-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 22px;
+                right: 20px;
+                bottom: 20px;
+            }
+            
+            .quick-replies {
+                flex-wrap: wrap;
+            }
+            
+            .quick-reply-btn {
+                padding: 6px 12px;
+                font-size: 11px;
             }
         }
     </style>
@@ -1655,7 +1927,7 @@ $points = $user['PointsBalance'];
         <h3>Live Campus Updates</h3>
         
         <!-- WLV GYM STATUS -->
-        <h4>🏋️ WLV Gym</h4>
+        <h4>🏋️  Gym</h4>
         <?php if($gym): ?>
         <div class="gym-status-item">
             <span class="gym-label">Status:</span>
@@ -1796,24 +2068,109 @@ $points = $user['PointsBalance'];
     </div>
 </div>
 
-<!-- CHAT BUTTON -->
+<!-- IMPROVED CHAT BUTTON -->
 <div class="chat-btn" onclick="toggleChat()">
     <i class="fa-solid fa-comment"></i>
+    <span class="chat-btn-badge" id="chatBadge" style="display: none;">1</span>
 </div>
 
-<!-- CHAT BOX -->
-<div class="chat-box" id="chatBox">
-    <div class="chat-header">
-        Campus Chat
-        <span onclick="toggleChat()">✖</span>
+<!-- IMPROVED CHAT CONTAINER -->
+<div class="chat-container" id="chatContainer">
+    <!-- Chat Header -->
+    <div class="chat-header" id="chatHeader">
+        <div class="chat-header-left">
+            <div class="chat-avatar">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="chat-header-info">
+                <h3>Campus Assistant</h3>
+                <p>
+                    <span class="status-dot"></span>
+                    Online · AI Powered
+                </p>
+            </div>
+        </div>
+        <div class="chat-close" onclick="toggleChat()">
+            <i class="fa-solid fa-times"></i>
+        </div>
     </div>
+    
+    <!-- Chat Messages Area -->
     <div class="chat-messages" id="chatMessages">
-        <p class="bot">Hi <?php echo htmlspecialchars($user['Name']); ?>! 👋 I'm your campus assistant. How can I help you today?</p>
-        <p class="bot">You can ask me about gym status, events, transport, clubs, or games!</p>
+        <!-- Welcome Message -->
+        <div class="message-group bot">
+            <div class="message-bubble">
+                👋 Hi <?php echo htmlspecialchars($user['Name']); ?>! I'm your AI campus assistant. How can I help you today?
+            </div>
+            <div class="message-time">
+                <i class="fa-regular fa-clock"></i> Just now
+            </div>
+        </div>
+        
+        <!-- Suggestions -->
+        <div class="message-group bot">
+            <div class="message-bubble">
+                Here's what I can help you with:
+            </div>
+            <div class="quick-replies">
+                <button class="quick-reply-btn" onclick="quickReply('gym')">🏋️ Gym Status</button>
+                <button class="quick-reply-btn" onclick="quickReply('events')">📅 Events</button>
+                <button class="quick-reply-btn" onclick="quickReply('transport')">🚌 Transport</button>
+                <button class="quick-reply-btn" onclick="quickReply('clubs')">👥 Clubs</button>
+                <button class="quick-reply-btn" onclick="quickReply('games')">🎮 Games</button>
+                <button class="quick-reply-btn" onclick="quickReply('points')">⭐ Points</button>
+            </div>
+            <div class="message-time">
+                <i class="fa-regular fa-clock"></i> Just now
+            </div>
+        </div>
     </div>
-    <div class="chat-input">
-        <input id="chatInput" placeholder="Type message…" onkeypress="if(event.key==='Enter') sendMessage()">
-        <button onclick="sendMessage()">Send</button>
+    
+    <!-- Chat Input Area -->
+    <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+            <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
+            <div class="chat-input-actions">
+                <button class="action-btn" onclick="toggleEmojiPicker()" title="Add emoji">
+                    <i class="fa-regular fa-face-smile"></i>
+                </button>
+                <button class="action-btn send" onclick="sendMessage()" title="Send message">
+                    <i class="fa-regular fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Emoji Picker -->
+        <div class="emoji-picker" id="emojiPicker">
+            <div class="emoji-item" onclick="addEmoji('😊')">😊</div>
+            <div class="emoji-item" onclick="addEmoji('😂')">😂</div>
+            <div class="emoji-item" onclick="addEmoji('❤️')">❤️</div>
+            <div class="emoji-item" onclick="addEmoji('👍')">👍</div>
+            <div class="emoji-item" onclick="addEmoji('🎉')">🎉</div>
+            <div class="emoji-item" onclick="addEmoji('🤔')">🤔</div>
+            <div class="emoji-item" onclick="addEmoji('😎')">😎</div>
+            <div class="emoji-item" onclick="addEmoji('👋')">👋</div>
+            <div class="emoji-item" onclick="addEmoji('🔥')">🔥</div>
+            <div class="emoji-item" onclick="addEmoji('💯')">💯</div>
+            <div class="emoji-item" onclick="addEmoji('✅')">✅</div>
+            <div class="emoji-item" onclick="addEmoji('❌')">❌</div>
+        </div>
+        
+        <!-- Chat Features -->
+        <div class="chat-features">
+            <div class="chat-feature-buttons">
+                <button class="feature-btn" onclick="clearChat()" title="Clear chat">
+                    <i class="fa-regular fa-trash-can"></i> Clear
+                </button>
+                <button class="feature-btn" onclick="exportChat()" title="Save chat">
+                    <i class="fa-regular fa-download"></i> Save
+                </button>
+            </div>
+            <div class="chat-timestamp">
+                <i class="fa-regular fa-clock"></i> 
+                <span id="chatTime"><?php echo date('h:i A'); ?></span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -2167,75 +2524,506 @@ if (searchInput) {
 }
 
 // ==================== CHAT FUNCTIONS ====================
+// ==================== IMPROVED CHAT SYSTEM ====================
+
+// Chat state
+let chatHistory = [];
+let isTyping = false;
+let unreadCount = 1;
+
+// Initialize chat
+document.addEventListener('DOMContentLoaded', function() {
+    loadChatHistory();
+    updateChatBadge();
+    
+    // Load chat history from localStorage
+    function loadChatHistory() {
+        const saved = localStorage.getItem('chatHistory');
+        if (saved) {
+            chatHistory = JSON.parse(saved);
+            displayChatHistory();
+        }
+    }
+    
+    // Set up enter key
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    // Make chat draggable
+    makeChatDraggable();
+});
+
+// Toggle chat
 function toggleChat() {
-    document.getElementById("chatBox").classList.toggle("show");
+    const container = document.getElementById('chatContainer');
+    container.classList.toggle('show');
+    
+    if (container.classList.contains('show')) {
+        // Reset unread badge when opened
+        unreadCount = 0;
+        updateChatBadge();
+        
+        // Scroll to bottom
+        scrollToBottom();
+        
+        // Focus input
+        setTimeout(() => {
+            document.getElementById('chatInput').focus();
+        }, 300);
+    }
 }
 
+// Send message
 function sendMessage() {
-    let input = document.getElementById("chatInput");
-    let message = input.value.trim();
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
     if (!message) return;
     
-    let messagesDiv = document.getElementById("chatMessages");
+    // Add user message
+    addMessage(message, 'user');
     
-    let userMsg = document.createElement("p");
-    userMsg.className = "user";
-    userMsg.innerText = message;
-    messagesDiv.appendChild(userMsg);
+    // Clear input
+    input.value = '';
     
-    input.value = "";
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    // Show typing indicator
+    showTypingIndicator();
     
-    let typingIndicator = document.createElement("p");
-    typingIndicator.className = "bot";
-    typingIndicator.id = "typingIndicator";
-    typingIndicator.innerText = "🤖 Typing...";
-    messagesDiv.appendChild(typingIndicator);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    
+    // Simulate AI response after delay
     setTimeout(() => {
-        let indicator = document.getElementById("typingIndicator");
-        if (indicator) indicator.remove();
+        removeTypingIndicator();
+        const response = getAIResponse(message);
+        addMessage(response, 'bot');
         
-        let botMsg = document.createElement("p");
-        botMsg.className = "bot";
-        
-        let response = getBotResponse(message);
-        botMsg.innerText = response;
-        
-        messagesDiv.appendChild(botMsg);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }, 1500);
+        // Add quick replies if appropriate
+        if (shouldShowQuickReplies(message)) {
+            addQuickReplies(message);
+        }
+    }, 1500 + Math.random() * 1000);
+    
+    // Save to history
+    saveToHistory(message, 'user');
 }
 
-function getBotResponse(userMessage) {
-    let msg = userMessage.toLowerCase();
+// Add message to chat
+function addMessage(text, sender) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageGroup = document.createElement('div');
+    messageGroup.className = `message-group ${sender}`;
     
-    if (msg.includes("hello") || msg.includes("hi") || msg.includes("hey")) {
-        return "Hello! 👋 How can I help you today?";
-    }
-    else if (msg.includes("gym")) {
-        return "🏋️ WLV Gym is currently Open. Closes at 10:00 PM. Pool is available.";
-    }
-    else if (msg.includes("event") || msg.includes("events")) {
-        return "Check out our Students' Union events and campus events in the panel! 🎉";
-    }
-    else if (msg.includes("transport") || msg.includes("bus")) {
-        return "🚌 CINEC bus schedule: Morning pickups from Negombo (6:15 AM), Gampaha (6:20 AM), Hendala (6:30 AM), Moratuwa (6:20 AM). All buses depart from CINEC at 5:05 PM.";
-    }
-    else if (msg.includes("club") || msg.includes("clubs")) {
-        return "Join Coding Club, Cybersecurity Club, IEEE, or Robotics Club! Check Club Hub for more info. 👥";
-    }
-    else if (msg.includes("game") || msg.includes("play")) {
-        return "Play Memory Game, Math Challenge, or Tic-Tac-Toe in the Game Field! Earn points! 🎮";
-    }
-    else if (msg.includes("point") || msg.includes("points")) {
-        return "You earn points by:\n- Checking in to facilities (+10)\n- Playing games (10-50)\n- Joining clubs (+20)";
-    }
-    else {
-        return "Thanks for your message! Try asking about gym, events, transport, clubs, or games.";
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.textContent = text;
+    
+    const time = document.createElement('div');
+    time.className = 'message-time';
+    time.innerHTML = `<i class="fa-regular fa-clock"></i> ${getCurrentTime()}`;
+    
+    messageGroup.appendChild(bubble);
+    messageGroup.appendChild(time);
+    messagesDiv.appendChild(messageGroup);
+    
+    // Save to history
+    saveToHistory(text, sender, getCurrentTime());
+    
+    scrollToBottom();
+    
+    // Increment unread count if chat is closed
+    if (!document.getElementById('chatContainer').classList.contains('show') && sender === 'bot') {
+        unreadCount++;
+        updateChatBadge();
     }
 }
+
+// Get AI response
+function getAIResponse(message) {
+    const msg = message.toLowerCase();
+    
+    // Gym related queries
+    if (msg.includes('gym') || msg.includes('workout') || msg.includes('exercise')) {
+        const gymStatus = <?php echo json_encode($gym); ?>;
+        if (gymStatus) {
+            return `🏋️ **WLV Gym Status**\n\n` +
+                   `• Status: ${gymStatus.status}\n` +
+                   `• Closes: ${gymStatus.closing_time}\n` +
+                   `• Pool: ${gymStatus.pool_available ? '✅ Available' : '❌ Not Available'}\n` +
+                   `• Last Updated: ${new Date('<?php echo $gym['last_updated']; ?>').toLocaleTimeString()}\n\n` +
+                   `Want to check-in to the gym? You can earn 10 points!`;
+        }
+        return "🏋️ The gym is currently open from 6:00 AM to 10:00 PM. Pool is available!";
+    }
+    
+    // Events related
+    else if (msg.includes('event') || msg.includes('calendar') || msg.includes('upcoming')) {
+        return "📅 **Upcoming Events**\n\n" +
+               "• Tech Workshop - Tomorrow 2:00 PM\n" +
+               "• Career Fair - Friday 10:00 AM\n" +
+               "• Sports Day - Saturday 8:00 AM\n\n" +
+               "Check the Events panel for more details!";
+    }
+    
+    // Transport related
+    else if (msg.includes('bus') || msg.includes('transport') || msg.includes('shuttle')) {
+        return "🚌 **CINEC Bus Schedule**\n\n" +
+               "**Morning Pickups:**\n" +
+               "• Negombo → CINEC: 6:15 AM\n" +
+               "• Gampaha → CINEC: 6:20 AM\n" +
+               "• Hendala → CINEC: 6:30 AM\n" +
+               "• Moratuwa → CINEC: 6:20 AM\n\n" +
+               "**Evening Departure:**\n" +
+               "• All buses depart CINEC at 5:05 PM";
+    }
+    
+    // Clubs related
+    else if (msg.includes('club') || msg.includes('society') || msg.includes('join')) {
+        return "👥 **Active Clubs**\n\n" +
+               "• Coding Club - Meets Wednesdays\n" +
+               "• Robotics Club - Meets Tuesdays\n" +
+               "• IEEE Student Branch\n" +
+               "• Photography Club\n" +
+               "• Drama Society\n\n" +
+               "Want to join any club? I can help you with that!";
+    }
+    
+    // Games related
+    else if (msg.includes('game') || msg.includes('play') || msg.includes('fun')) {
+        return "🎮 **Available Games**\n\n" +
+               "• Memory Game - Test your memory\n" +
+               "• Math Challenge - Solve problems\n" +
+               "• Tic-Tac-Toe - Play with friends\n" +
+               "• Quiz Battle - Compete with others\n\n" +
+               "You can earn 10-50 points by playing games!";
+    }
+    
+    // Points related
+    else if (msg.includes('point') || msg.includes('score') || msg.includes('earn')) {
+        return "⭐ **How to Earn Points**\n\n" +
+               "• Check-in to facilities: +10 points\n" +
+               "• Play games: 10-50 points\n" +
+               "• Join clubs: +20 points\n" +
+               "• Attend events: +15 points\n" +
+               "• Refer friends: +30 points\n\n" +
+               `Your current balance: ${<?php echo $points; ?>} points`;
+    }
+    
+    // Help related
+    else if (msg.includes('help') || msg.includes('support') || msg.includes('contact')) {
+        return "🆘 **Need Help?**\n\n" +
+               "• Campus Security: 011-2345678\n" +
+               "• Medical Center: 011-8765432\n" +
+               "• IT Support: 011-5678901\n" +
+               "• Transport Help: 011-3456789\n\n" +
+               "You can also visit the admin office in person.";
+    }
+    
+    // Greetings
+    else if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) {
+        return `Hello ${<?php echo json_encode($user['Name']); ?>}! 👋 How can I assist you today?`;
+    }
+    
+    // Thanks
+    else if (msg.includes('thank') || msg.includes('thanks')) {
+        return "You're welcome! 😊 Let me know if you need anything else!";
+    }
+    
+    // Default response
+    else {
+        return "I understand you're asking about " + message + ". Could you please be more specific? You can ask me about:\n\n" +
+               "• Gym status 🏋️\n" +
+               "• Events 📅\n" +
+               "• Transport 🚌\n" +
+               "• Clubs 👥\n" +
+               "• Games 🎮\n" +
+               "• Points ⭐\n" +
+               "• Help 🆘";
+    }
+}
+
+// Add quick replies
+function addQuickReplies(originalMessage) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const msg = originalMessage.toLowerCase();
+    
+    let replies = [];
+    
+    if (msg.includes('gym')) {
+        replies = ['Check-in to Gym', 'Pool Status', 'Gym Timings', 'Book Court'];
+    } else if (msg.includes('event')) {
+        replies = ['Register for Event', 'Create Event', 'My Events', 'Event Calendar'];
+    } else if (msg.includes('bus')) {
+        replies = ['Track Bus', 'Bus Routes', 'Schedule PDF', 'Report Delay'];
+    } else if (msg.includes('club')) {
+        replies = ['Join Club', 'Club Events', 'My Clubs', 'Create Club'];
+    } else {
+        return; // Don't add quick replies
+    }
+    
+    const quickReplyGroup = document.createElement('div');
+    quickReplyGroup.className = 'message-group bot';
+    
+    const quickReplyDiv = document.createElement('div');
+    quickReplyDiv.className = 'quick-replies';
+    
+    replies.forEach(reply => {
+        const btn = document.createElement('button');
+        btn.className = 'quick-reply-btn';
+        btn.textContent = reply;
+        btn.onclick = () => quickReply(reply.toLowerCase());
+        quickReplyDiv.appendChild(btn);
+    });
+    
+    quickReplyGroup.appendChild(quickReplyDiv);
+    messagesDiv.appendChild(quickReplyGroup);
+    scrollToBottom();
+}
+
+// Quick reply handler
+function quickReply(action) {
+    addMessage(action, 'user');
+    
+    // Show typing
+    showTypingIndicator();
+    
+    setTimeout(() => {
+        removeTypingIndicator();
+        const response = getAIResponse(action);
+        addMessage(response, 'bot');
+    }, 1000);
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+    if (isTyping) return;
+    
+    const messagesDiv = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message-group bot';
+    typingDiv.id = 'typingIndicator';
+    
+    const indicator = document.createElement('div');
+    indicator.className = 'typing-indicator';
+    indicator.innerHTML = '<span></span><span></span><span></span>';
+    
+    typingDiv.appendChild(indicator);
+    messagesDiv.appendChild(typingDiv);
+    
+    isTyping = true;
+    scrollToBottom();
+}
+
+// Remove typing indicator
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.remove();
+    }
+    isTyping = false;
+}
+
+// Toggle emoji picker
+function toggleEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    picker.classList.toggle('show');
+}
+
+// Add emoji to input
+function addEmoji(emoji) {
+    const input = document.getElementById('chatInput');
+    input.value += emoji;
+    input.focus();
+    
+    // Hide picker
+    document.getElementById('emojiPicker').classList.remove('show');
+}
+
+// Clear chat
+function clearChat() {
+    if (confirm('Clear all messages?')) {
+        const messagesDiv = document.getElementById('chatMessages');
+        messagesDiv.innerHTML = '';
+        
+        // Add welcome message back
+        addMessage(`👋 Hi ${<?php echo json_encode($user['Name']); ?>}! I'm your AI campus assistant. How can I help you today?`, 'bot');
+        
+        // Clear history
+        chatHistory = [];
+        localStorage.removeItem('chatHistory');
+    }
+}
+
+// Export chat
+function exportChat() {
+    const messages = document.querySelectorAll('.message-group');
+    let chatText = "Campus Assistant Chat - " + new Date().toLocaleString() + "\n\n";
+    
+    messages.forEach(msg => {
+        const sender = msg.classList.contains('user') ? 'You' : 'Assistant';
+        const text = msg.querySelector('.message-bubble')?.textContent || '';
+        const time = msg.querySelector('.message-time')?.textContent || '';
+        chatText += `${sender} (${time}): ${text}\n`;
+    });
+    
+    // Create download
+    const blob = new Blob([chatText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-${new Date().toISOString().slice(0,10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Save to history
+function saveToHistory(message, sender, time) {
+    chatHistory.push({
+        message: message,
+        sender: sender,
+        time: time || getCurrentTime(),
+        date: new Date().toISOString()
+    });
+    
+    // Keep only last 100 messages
+    if (chatHistory.length > 100) {
+        chatHistory = chatHistory.slice(-100);
+    }
+    
+    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+}
+
+// Display chat history
+function displayChatHistory() {
+    const messagesDiv = document.getElementById('chatMessages');
+    messagesDiv.innerHTML = '';
+    
+    chatHistory.forEach(item => {
+        const messageGroup = document.createElement('div');
+        messageGroup.className = `message-group ${item.sender}`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.textContent = item.message;
+        
+        const time = document.createElement('div');
+        time.className = 'message-time';
+        time.innerHTML = `<i class="fa-regular fa-clock"></i> ${item.time}`;
+        
+        messageGroup.appendChild(bubble);
+        messageGroup.appendChild(time);
+        messagesDiv.appendChild(messageGroup);
+    });
+    
+    scrollToBottom();
+}
+
+// Get current time
+function getCurrentTime() {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return `${hours}:${minutes} ${ampm}`;
+}
+
+// Scroll to bottom
+function scrollToBottom() {
+    const messagesDiv = document.getElementById('chatMessages');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Update chat badge
+function updateChatBadge() {
+    const badge = document.getElementById('chatBadge');
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// Check if should show quick replies
+function shouldShowQuickReplies(message) {
+    const keywords = ['gym', 'event', 'bus', 'club', 'game', 'help'];
+    return keywords.some(keyword => message.toLowerCase().includes(keyword));
+}
+
+// Make chat draggable
+function makeChatDraggable() {
+    const chatContainer = document.getElementById('chatContainer');
+    const chatHeader = document.getElementById('chatHeader');
+    
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+    
+    chatHeader.addEventListener('mousedown', startDrag);
+    
+    function startDrag(e) {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        const rect = chatContainer.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        
+        chatContainer.style.transition = 'none';
+    }
+    
+    function drag(e) {
+        if (!isDragging) return;
+        
+        e.preventDefault();
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+        
+        // Keep within window bounds
+        const maxLeft = window.innerWidth - chatContainer.offsetWidth;
+        const maxTop = window.innerHeight - chatContainer.offsetHeight;
+        
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop = Math.max(0, Math.min(newTop, maxTop));
+        
+        chatContainer.style.left = newLeft + 'px';
+        chatContainer.style.right = 'auto';
+        chatContainer.style.bottom = 'auto';
+    }
+    
+    function stopDrag() {
+        isDragging = false;
+        chatContainer.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', stopDrag);
+    }
+}
+
+// Close emoji picker when clicking outside
+document.addEventListener('click', function(e) {
+    const picker = document.getElementById('emojiPicker');
+    const emojiBtn = document.querySelector('.action-btn:first-child');
+    
+    if (picker && emojiBtn && !picker.contains(e.target) && !emojiBtn.contains(e.target)) {
+        picker.classList.remove('show');
+    }
+});
+
+// Update time every minute
+setInterval(() => {
+    document.getElementById('chatTime').textContent = getCurrentTime();
+}, 60000);
+
 </script>
 
 </body>
