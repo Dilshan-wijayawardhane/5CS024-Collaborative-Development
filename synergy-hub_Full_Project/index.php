@@ -1228,6 +1228,87 @@ $points = $user['PointsBalance'];
             background: #d0d0d0;
         }
         
+        .emergency-btn {
+            position: fixed;
+            bottom: 110px;  /* Position above the chat button */
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.5);
+            z-index: 9996;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            animation: emergencyPulse 2s infinite;
+        }
+
+        .emergency-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.8);
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        .emergency-btn-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: white;
+            color: #ef4444;
+            font-size: 10px;
+            font-weight: 800;
+            min-width: 30px;
+            height: 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            border: 2px solid #ef4444;
+            animation: pulse 1.5s infinite;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes emergencyPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* Adjust chat button position to make room for emergency button */
+        .chat-btn {
+            bottom: 110px;  /* Changed from 30px to 110px */
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .emergency-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 22px;
+                right: 20px;
+                bottom: 100px;
+            }
+            
+            .chat-btn {
+                bottom: 100px;
+            }
+        }
+
+
         /* CHAT */
         .chat-container {
             position: fixed;
@@ -1690,7 +1771,7 @@ $points = $user['PointsBalance'];
                 padding: 6px 12px;
                 font-size: 11px;
             }
-        }
+        }        
     </style>
 </head>
 <body>
@@ -2067,6 +2148,11 @@ $points = $user['PointsBalance'];
         <button onclick="closeEdit()">Cancel</button>
     </div>
 </div>
+
+<a href="emergency.php" class="emergency-btn" title="Emergency Response">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span class="emergency-btn-badge">SOS</span>
+</a>
 
 <!-- IMPROVED CHAT BUTTON -->
 <div class="chat-btn" onclick="toggleChat()">
@@ -3023,6 +3109,104 @@ document.addEventListener('click', function(e) {
 setInterval(() => {
     document.getElementById('chatTime').textContent = getCurrentTime();
 }, 60000);
+
+// ==================== EMERGENCY ALERT CHECKER ====================
+function checkEmergencyAlerts() {
+    fetch('get_emergency_alerts.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.count > 0) {
+                // Update the emergency button badge with alert count
+                const badge = document.querySelector('.emergency-btn-badge');
+                if (badge) {
+                    badge.textContent = data.count > 9 ? '9+' : data.count;
+                }
+                
+                // Optionally show a toast notification for critical alerts
+                const criticalAlerts = data.alerts.filter(a => a.severity === 'critical');
+                if (criticalAlerts.length > 0 && !sessionStorage.getItem('alertShown')) {
+                    // Show a notification (you can customize this)
+                    const alert = criticalAlerts[0];
+                    showEmergencyNotification(alert.title, alert.message);
+                    sessionStorage.setItem('alertShown', 'true');
+                    
+                    // Clear after 1 hour
+                    setTimeout(() => {
+                        sessionStorage.removeItem('alertShown');
+                    }, 3600000);
+                }
+            }
+        })
+        .catch(error => console.error('Error checking alerts:', error));
+}
+
+// Show emergency notification
+function showEmergencyNotification(title, message) {
+    // Check if browser supports notifications
+    if (Notification.permission === 'granted') {
+        new Notification('🚨 EMERGENCY ALERT: ' + title, {
+            body: message,
+            icon: 'https://i.pravatar.cc/80?u=emergency',
+            badge: 'https://i.pravatar.cc/80?u=emergency',
+            vibrate: [200, 100, 200],
+            requireInteraction: true
+        });
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                showEmergencyNotification(title, message);
+            }
+        });
+    }
+    
+    // Also show an in-page toast
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 10001;
+        animation: slideIn 0.3s ease;
+        max-width: 350px;
+        border-left: 5px solid white;
+        cursor: pointer;
+    `;
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 20px;"></i>
+            <strong style="font-size: 16px;">${title}</strong>
+        </div>
+        <p style="margin: 0; font-size: 14px; opacity: 0.9;">${message}</p>
+        <small style="display: block; margin-top: 8px; opacity: 0.7;">Click to view details</small>
+    `;
+    toast.onclick = () => {
+        window.location.href = 'emergency.php';
+    };
+    document.body.appendChild(toast);
+    
+    // Auto remove after 10 seconds
+    setTimeout(() => {
+        toast.remove();
+    }, 10000);
+}
+
+// Check for alerts every 30 seconds
+setInterval(checkEmergencyAlerts, 30000);
+
+// Check on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkEmergencyAlerts();
+    
+    // Request notification permission
+    if (Notification && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+});
 
 </script>
 
