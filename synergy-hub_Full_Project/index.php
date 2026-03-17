@@ -37,10 +37,6 @@ $gym_sql = "SELECT * FROM gym_status ORDER BY id DESC LIMIT 1";
 $gym_result = mysqli_query($conn, $gym_sql);
 $gym = mysqli_fetch_assoc($gym_result);
 
-// Get Inter-Campus Transport
-$campus_transport_sql = "SELECT * FROM campus_transport ORDER BY from_campus";
-$campus_transport_result = mysqli_query($conn, $campus_transport_sql);
-
 // Get user points
 $points = $user['PointsBalance'];
 ?>
@@ -54,7 +50,7 @@ $points = $user['PointsBalance'];
     <title>Synergy Hub - Dashboard</title>
     <style>
         /* ========================================
-           COMPLETE STYLES WITH WORKING SEARCH BAR
+           COMPLETE STYLES
            ======================================== */
         
         * {
@@ -124,6 +120,11 @@ $points = $user['PointsBalance'];
             color: white;
             font-size: 24px;
             cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-btn.active {
+            transform: rotate(90deg);
         }
         
         .points {
@@ -137,6 +138,12 @@ $points = $user['PointsBalance'];
             backdrop-filter: blur(10px);
             color: white;
             cursor: default;
+            transition: all 0.3s;
+        }
+        
+        .points.active {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         .points i {
@@ -602,394 +609,370 @@ $points = $user['PointsBalance'];
             font-weight: 600;
         }
         
-       /* ========================================
-   SYNERGY HUB SIDEBAR - LAS SANATA
-   ======================================== */
+        /* ========================================
+           SYNERGY HUB SIDEBAR - LAS SANATA
+           ======================================== */
 
-/* Sidebar Base */
-.sidebar {
-    position: fixed;
-    left: -280px;
-    top: 0;
-    width: 280px;
-    height: 100%;
-    background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
-    backdrop-filter: blur(10px);
-    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 9999;
-    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    overflow-y: auto;
-}
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
+            backdrop-filter: blur(10px);
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+        }
 
-.sidebar.active {
-    left: 0;
-}
+        .sidebar.active {
+            left: 0;
+        }
 
-/* Sidebar Header */
-.sidebar-header {
-    padding: 25px 20px 20px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 15px;
-    position: relative;
-    overflow: hidden;
-}
+        .sidebar-header {
+            padding: 25px 20px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
 
-.sidebar-header::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-}
+        .sidebar-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
 
-.sidebar-header h2 {
-    color: white;
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0 0 5px 0;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
+        .sidebar-header h2 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 5px 0;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-.sidebar-header p {
-    color: #94a3b8;
-    font-size: 13px;
-    margin: 0;
-    font-weight: 400;
-}
+        .sidebar-header p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin: 0;
+            font-weight: 400;
+        }
 
-.sidebar-header p i {
-    color: #22d3ee;
-    margin-right: 5px;
-    font-size: 10px;
-}
+        .sidebar-header p i {
+            color: #22d3ee;
+            margin-right: 5px;
+            font-size: 10px;
+        }
 
-/* User Info in Sidebar */
-.sidebar-user {
-    padding: 15px 20px;
-    background: rgba(255, 255, 255, 0.03);
-    margin: 0 15px 20px 15px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+        .sidebar-user {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            margin: 0 15px 20px 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.sidebar-user-avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-}
+        .sidebar-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
 
-.sidebar-user-info h4 {
-    color: white;
-    font-size: 15px;
-    margin: 0 0 3px 0;
-    font-weight: 600;
-}
+        .sidebar-user-info h4 {
+            color: white;
+            font-size: 15px;
+            margin: 0 0 3px 0;
+            font-weight: 600;
+        }
 
-.sidebar-user-info p {
-    color: #94a3b8;
-    font-size: 12px;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
+        .sidebar-user-info p {
+            color: #94a3b8;
+            font-size: 12px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-.sidebar-user-info p i {
-    color: #fbbf24;
-    font-size: 10px;
-}
+        .sidebar-user-info p i {
+            color: #fbbf24;
+            font-size: 10px;
+        }
 
-/* Sidebar Navigation */
-.sidebar-nav {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-.sidebar-nav-item {
-    margin: 4px 12px;
-}
+        .sidebar-nav-item {
+            margin: 4px 12px;
+        }
 
-.sidebar-nav-link {
-    display: flex;
-    align-items: center;
-    padding: 12px 18px;
-    color: #b8c7de;
-    text-decoration: none;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    gap: 12px;
-    font-weight: 500;
-    font-size: 15px;
-    position: relative;
-    overflow: hidden;
-}
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            color: #b8c7de;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+        }
 
-.sidebar-nav-link i {
-    width: 22px;
-    font-size: 1.1rem;
-    color: #5f7d9e;
-    transition: all 0.3s ease;
-    text-align: center;
-}
+        .sidebar-nav-link i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: #5f7d9e;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
 
-.sidebar-nav-link:hover {
-    background: rgba(168, 192, 255, 0.1);
-    color: white;
-    transform: translateX(5px);
-}
+        .sidebar-nav-link:hover {
+            background: rgba(168, 192, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
 
-.sidebar-nav-link:hover i {
-    color: #a5b4fc;
-}
+        .sidebar-nav-link:hover i {
+            color: #a5b4fc;
+        }
 
-.sidebar-nav-link.active {
-    background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
-    color: white;
-    border-left: 3px solid #a5b4fc;
-}
+        .sidebar-nav-link.active {
+            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
+            color: white;
+            border-left: 3px solid #a5b4fc;
+        }
 
-.sidebar-nav-link.active i {
-    color: #a5b4fc;
-}
+        .sidebar-nav-link.active i {
+            color: #a5b4fc;
+        }
 
-/* Sidebar Badge */
-.sidebar-badge {
-    background: #ef4444;
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 30px;
-    margin-left: auto;
-    animation: pulse 1.5s infinite;
-}
+        .sidebar-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 30px;
+            margin-left: auto;
+            animation: pulse 1.5s infinite;
+        }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
 
-/* Sidebar Divider */
-.sidebar-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    margin: 20px 20px;
-}
+        .sidebar-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 20px 20px;
+        }
 
-/* Sidebar Section Title */
-.sidebar-section-title {
-    padding: 0 20px;
-    margin: 25px 0 10px 0;
-    color: #94a3b8;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+        .sidebar-section-title {
+            padding: 0 20px;
+            margin: 25px 0 10px 0;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-/* Club Preview in Sidebar */
-.sidebar-club-preview {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 16px;
-    padding: 15px;
-    margin: 0 15px 20px 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
+        .sidebar-club-preview {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 15px;
+            margin: 0 15px 20px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-.sidebar-club-preview h4 {
-    color: white;
-    font-size: 13px;
-    margin: 0 0 12px 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    opacity: 0.8;
-}
+        .sidebar-club-preview h4 {
+            color: white;
+            font-size: 13px;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            opacity: 0.8;
+        }
 
-.sidebar-club-preview h4 i {
-    color: #fbbf24;
-}
+        .sidebar-club-preview h4 i {
+            color: #fbbf24;
+        }
 
-.sidebar-club-item {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    transition: transform 0.2s;
-}
+        .sidebar-club-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: transform 0.2s;
+        }
 
-.sidebar-club-item:hover {
-    transform: translateX(5px);
-    background: rgba(0, 0, 0, 0.3);
-}
+        .sidebar-club-item:hover {
+            transform: translateX(5px);
+            background: rgba(0, 0, 0, 0.3);
+        }
 
-.sidebar-club-item:last-child {
-    margin-bottom: 0;
-}
+        .sidebar-club-item h5 {
+            color: white;
+            font-size: 14px;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+        }
 
-.sidebar-club-item h5 {
-    color: white;
-    font-size: 14px;
-    margin: 0 0 4px 0;
-    font-weight: 600;
-}
+        .sidebar-club-item p {
+            color: #94a3b8;
+            font-size: 11px;
+            margin: 0 0 6px 0;
+            line-height: 1.4;
+        }
 
-.sidebar-club-item p {
-    color: #94a3b8;
-    font-size: 11px;
-    margin: 0 0 6px 0;
-    line-height: 1.4;
-}
+        .sidebar-club-tag {
+            background: #2d4c6e;
+            color: white;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 30px;
+            display: inline-block;
+            text-transform: uppercase;
+        }
 
-.sidebar-club-tag {
-    background: #2d4c6e;
-    color: white;
-    font-size: 9px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 30px;
-    display: inline-block;
-    text-transform: uppercase;
-}
+        .sidebar-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            margin: 0 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
 
-/* Quick Stats */
-.sidebar-stats {
-    display: flex;
-    justify-content: space-around;
-    padding: 15px 10px;
-    margin: 0 15px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-}
+        .sidebar-stat-item {
+            text-align: center;
+        }
 
-.sidebar-stat-item {
-    text-align: center;
-}
+        .sidebar-stat-value {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-.sidebar-stat-value {
-    color: white;
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 3px;
-    background: linear-gradient(135deg, #fff, #a5b4fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
+        .sidebar-stat-label {
+            color: #94a3b8;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
 
-.sidebar-stat-label {
-    color: #94a3b8;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
+        .sidebar-footer {
+            padding: 20px 20px 30px 20px;
+        }
 
-/* Footer Links */
-.sidebar-footer {
-    padding: 20px 20px 30px 20px;
-}
+        .sidebar-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
 
-.sidebar-footer-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 15px;
-}
+        .sidebar-footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 11px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-.sidebar-footer-links a {
-    color: #94a3b8;
-    text-decoration: none;
-    font-size: 11px;
-    transition: color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+        .sidebar-footer-links a:hover {
+            color: white;
+        }
 
-.sidebar-footer-links a:hover {
-    color: white;
-}
+        .sidebar-footer-links a i {
+            font-size: 10px;
+        }
 
-.sidebar-footer-links a i {
-    font-size: 10px;
-}
+        .sidebar-copyright {
+            color: #64748b;
+            font-size: 10px;
+            text-align: center;
+        }
 
-.sidebar-copyright {
-    color: #64748b;
-    font-size: 10px;
-    text-align: center;
-}
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            z-index: 9998;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-/* Toggle Button Animation */
-.menu-btn {
-    transition: transform 0.3s ease;
-}
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
 
-.menu-btn.active {
-    transform: rotate(90deg);
-}
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
 
-/* Overlay for mobile */
-.sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(3px);
-    z-index: 9998;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
 
-.sidebar-overlay.active {
-    display: block;
-    opacity: 1;
-}
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
 
-/* Scrollbar Styling */
-.sidebar::-webkit-scrollbar {
-    width: 4px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
         /* MAIN LAYOUT */
         .layout {
             display: flex;
@@ -1118,12 +1101,14 @@ $points = $user['PointsBalance'];
             color: #ef4444;
         }
         
+        /* Bus Schedule Styles */
         .route-mini {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             color: white;
+            font-size: 14px;
         }
         
         .route-mini:last-child {
@@ -1132,14 +1117,39 @@ $points = $user['PointsBalance'];
         
         .route-name {
             font-weight: 500;
+            color: rgba(255,255,255,0.9);
         }
         
         .route-time {
+            color: #fbbf24;
+            font-weight: 600;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 13px;
+        }
+        
+        .route-time.evening {
             color: #22d3ee;
+            background: rgba(34, 211, 238, 0.1);
+            font-weight: 700;
         }
         
         .on-time {
             color: #10b981;
+        }
+        
+        .bus-schedule-header {
+            margin-top: 10px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+            padding-top: 10px;
+        }
+        
+        .bus-note {
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
         }
         
         /* EDIT MODAL */
@@ -1610,10 +1620,10 @@ $points = $user['PointsBalance'];
         </a>
         
         <a href="https://www.google.com/maps/place/CINEC+Campus+Malabe" target="_blank" class="card">
-<i class="fa-solid fa-earth-asia icon"></i>
-<h4>360° Map & Navigation</h4>
-<p>Explore CINEC campus and get directions</p>
-</a>
+            <i class="fa-solid fa-earth-asia icon"></i>
+            <h4>360° Map & Navigation</h4>
+            <p>Explore CINEC campus and get directions</p>
+        </a>
         
         <a href="facilities.php" class="card">
             <i class="fa-solid fa-dumbbell icon"></i>
@@ -1682,20 +1692,43 @@ $points = $user['PointsBalance'];
         <p>No SU events scheduled</p>
         <?php endif; ?>
         
-        <!-- INTER-CAMPUS TRANSPORT -->
-        <h4 style="margin-top: 20px;">🚌 Inter-Campus Transport</h4>
-        <?php if(mysqli_num_rows($campus_transport_result) > 0): ?>
-            <?php while($route = mysqli_fetch_assoc($campus_transport_result)): ?>
-            <div class="route-mini">
-                <span class="route-name"><?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?></span>
-                <span class="route-time <?php echo strtolower(str_replace(' ', '-', $route['status'])); ?>">
-                    <?php echo $route['next_departure']; ?>
-                </span>
-            </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-        <p>Transport schedules unavailable</p>
-        <?php endif; ?>
+        <!-- ========== CINEC BUS SCHEDULE - UPDATED ========== -->
+        <h4 style="margin-top: 20px;">🚌 CINEC Bus Schedule</h4>
+        
+        <!-- Morning Pickup Times -->
+        <div class="route-mini">
+            <span class="route-name">Negombo → CINEC</span>
+            <span class="route-time">6:15 AM</span>
+        </div>
+        
+        <div class="route-mini">
+            <span class="route-name">Gampaha → CINEC</span>
+            <span class="route-time">6:20 AM</span>
+        </div>
+        
+        <div class="route-mini">
+            <span class="route-name">Gampaha (via Oruthota) → CINEC</span>
+            <span class="route-time">6:25 AM</span>
+        </div>
+        
+        <div class="route-mini">
+            <span class="route-name">Hendala → CINEC</span>
+            <span class="route-time">6:30 AM</span>
+        </div>
+        
+        <div class="route-mini">
+            <span class="route-name">Moratuwa → CINEC</span>
+            <span class="route-time">6:20 AM</span>
+        </div>
+        
+        <!-- Evening Departure -->
+        <div class="route-mini bus-schedule-header">
+            <span class="route-name" style="font-weight: 700;">🚍 Departure from CINEC</span>
+            <span class="route-time evening">5:05 PM</span>
+        </div>
+        <div class="bus-note">
+            <i class="fa-solid fa-clock"></i> All buses depart at 5:05 PM
+        </div>
         
         <!-- CAMPUS EVENTS -->
         <h4 style="margin-top: 20px;">📅 Campus Events</h4>
@@ -1709,45 +1742,45 @@ $points = $user['PointsBalance'];
         <?php else: ?>
         <p>No upcoming events</p>
         <?php endif; ?>
-<!-- CAMPUS HOTLINE -->
-<h4 style="margin-top: 20px;">📞 Campus Hotline</h4>
+        
+        <!-- CAMPUS HOTLINE -->
+        <h4 style="margin-top: 20px;">📞 Campus Hotline</h4>
 
-<div class="route-mini">
-    <span class="route-name">Campus Security</span>
-    <span class="route-time">
-        <a href="tel:0112345678" style="color:#22d3ee; text-decoration:none;">
-            011-2345678
-        </a>
-    </span>
-</div>
+        <div class="route-mini">
+            <span class="route-name">Campus Security</span>
+            <span class="route-time">
+                <a href="tel:0112345678" style="color:#22d3ee; text-decoration:none;">
+                    011-2345678
+                </a>
+            </span>
+        </div>
 
-<div class="route-mini">
-    <span class="route-name">Medical Center</span>
-    <span class="route-time">
-        <a href="tel:0118765432" style="color:#22d3ee; text-decoration:none;">
-            011-8765432
-        </a>
-    </span>
-</div>
+        <div class="route-mini">
+            <span class="route-name">Medical Center</span>
+            <span class="route-time">
+                <a href="tel:0118765432" style="color:#22d3ee; text-decoration:none;">
+                    011-8765432
+                </a>
+            </span>
+        </div>
 
-<div class="route-mini">
-    <span class="route-name">IT Support</span>
-    <span class="route-time">
-        <a href="tel:0115678901" style="color:#22d3ee; text-decoration:none;">
-            011-5678901
-        </a>
-    </span>
-</div>
+        <div class="route-mini">
+            <span class="route-name">IT Support</span>
+            <span class="route-time">
+                <a href="tel:0115678901" style="color:#22d3ee; text-decoration:none;">
+                    011-5678901
+                </a>
+            </span>
+        </div>
 
-<div class="route-mini">
-    <span class="route-name">Transport Help</span>
-    <span class="route-time">
-        <a href="tel:0113456789" style="color:#22d3ee; text-decoration:none;">
-            011-3456789
-        </a>
-    </span>
-</div>
-
+        <div class="route-mini">
+            <span class="route-name">Transport Help</span>
+            <span class="route-time">
+                <a href="tel:0113456789" style="color:#22d3ee; text-decoration:none;">
+                    011-3456789
+                </a>
+            </span>
+        </div>
     </aside>
 </main>
 
@@ -1790,7 +1823,6 @@ $points = $user['PointsBalance'];
 
 <script>
 // ==================== SIDEBAR ====================
-// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1821,6 +1853,7 @@ document.addEventListener("click", function(e) {
         btn.classList.remove("active");
     }
 });
+
 // ==================== PROFILE MENU ====================
 function toggleProfileMenu(e) {
     e.stopPropagation();
@@ -2188,7 +2221,7 @@ function getBotResponse(userMessage) {
         return "Check out our Students' Union events and campus events in the panel! 🎉";
     }
     else if (msg.includes("transport") || msg.includes("bus")) {
-        return "🚌 Inter-campus transport: City to Walsall every 30 mins, City to Telford every 60 mins.";
+        return "🚌 CINEC bus schedule: Morning pickups from Negombo (6:15 AM), Gampaha (6:20 AM), Hendala (6:30 AM), Moratuwa (6:20 AM). All buses depart from CINEC at 5:05 PM.";
     }
     else if (msg.includes("club") || msg.includes("clubs")) {
         return "Join Coding Club, Cybersecurity Club, IEEE, or Robotics Club! Check Club Hub for more info. 👥";
