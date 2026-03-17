@@ -667,10 +667,12 @@ Insert sample campus_transport
 ------------------------------
 
 INSERT INTO campus_transport (from_campus, to_campus, next_departure, status, frequency) VALUES
-('City', 'Walsall', '15 mins', 'On Time', 'Every 30 mins'),
-('Walsall', 'City', '20 mins', 'On Time', 'Every 30 mins'),
-('City', 'Telford', '45 mins', 'On Time', 'Every 60 mins'),
-('Telford', 'City', '50 mins', 'On Time', 'Every 60 mins');
+('Negombo', 'CINEC', '6:15 AM', 'On Time', 'Morning Pickup'),
+('Gampaha', 'CINEC', '6:20 AM', 'On Time', 'Morning Pickup'),
+('Gampaha (via Oruthota)', 'CINEC', '6:25 AM', 'On Time', 'Morning Pickup'),
+('Hendala', 'CINEC', '6:30 AM', 'On Time', 'Morning Pickup'),
+('Moratuwa', 'CINEC', '6:20 AM', 'On Time', 'Morning Pickup'),
+('CINEC', 'All Locations', '5:05 PM', 'On Time', 'Evening Departure');
 
 Insert sample special_offers
 -----------------------------
