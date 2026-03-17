@@ -20,8 +20,12 @@ $passes_result = mysqli_stmt_get_result($passes_stmt);
 $bus_routes_sql = "SELECT * FROM bus_routes ORDER BY route_id";
 $bus_routes_result = mysqli_query($conn, $bus_routes_sql);
 
-// Get inter-campus transport
-$campus_transport_sql = "SELECT * FROM campus_transport ORDER BY from_campus";
+// Get CINEC bus schedule from database
+$campus_transport_sql = "SELECT * FROM campus_transport ORDER BY 
+                          CASE 
+                              WHEN from_campus = 'CINEC' THEN 1 
+                              ELSE 0 
+                          END, from_campus";
 $campus_transport_result = mysqli_query($conn, $campus_transport_sql);
 
 // Get user points and name
@@ -713,7 +717,7 @@ $route_details = [
             margin: 0;
         }
         
-        /* Inter-Campus Transport Cards */
+        /* CINEC Bus Schedule Cards */
         .campus-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -775,6 +779,17 @@ $route_details = [
             font-weight: 600;
         }
         
+        /* CINEC Bus Schedule Specific Styles */
+        .next-departure.morning {
+            color: #fbbf24; /* Gold color for morning pickups */
+        }
+        
+        .next-departure.evening {
+            color: #22d3ee; /* Blue color for evening departure */
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
         .status-badge {
             padding: 5px 12px;
             border-radius: 20px;
@@ -784,6 +799,11 @@ $route_details = [
         
         .status-On-Time {
             background: #10b981;
+            color: white;
+        }
+        
+        .status-Sharp {
+            background: #22d3ee;
             color: white;
         }
         
@@ -1069,35 +1089,53 @@ $route_details = [
         <i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span>
     </div>
     
-    <!-- INTER-CAMPUS TRANSPORT SECTION (NEW) -->
-    <h2 class="section-title">🚌 Inter-Campus Transport</h2>
+    <!-- CINEC BUS SCHEDULE SECTION (UPDATED) -->
+    <h2 class="section-title">🚌 CINEC Bus Schedule</h2>
     <div class="campus-grid">
         <?php 
         if(mysqli_num_rows($campus_transport_result) > 0):
             while($route = mysqli_fetch_assoc($campus_transport_result)):
+                $is_evening = ($route['from_campus'] == 'CINEC');
         ?>
         <div class="campus-card">
             <div class="campus-header">
                 <div class="campus-icon">
                     <i class="fa-solid fa-bus"></i>
                 </div>
-                <div class="campus-route"><?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?></div>
+                <div class="campus-route">
+                    <?php if($is_evening): ?>
+                        <?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?>
+                    <?php else: ?>
+                        <?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="campus-details">
                 <div>
-                    <div class="next-departure"><?php echo $route['next_departure']; ?></div>
+                    <div class="next-departure <?php echo $is_evening ? 'evening' : 'morning'; ?>">
+                        <?php echo $route['next_departure']; ?>
+                    </div>
                     <div class="frequency"><?php echo $route['frequency']; ?></div>
                 </div>
-                <span class="status-badge status-<?php echo str_replace(' ', '-', $route['status']); ?>">
+                <span class="status-badge status-On-Time <?php echo $is_evening ? 'status-Sharp' : ''; ?>">
                     <?php echo $route['status']; ?>
                 </span>
             </div>
         </div>
         <?php 
             endwhile;
-        endif;
+        else:
         ?>
+        <p style="color: white;">No bus schedules available</p>
+        <?php endif; ?>
     </div>
+    
+    <?php if(mysqli_num_rows($campus_transport_result) > 0): ?>
+    <!-- Bus Schedule Note -->
+    <div style="color: rgba(255,255,255,0.6); font-size: 13px; text-align: center; margin-top: -20px; margin-bottom: 30px;">
+        <i class="fa-solid fa-clock"></i> All buses depart from CINEC at 5:05 PM
+    </div>
+    <?php endif; ?>
     
     <!-- BUS TRACKING SECTION -->
     <h2 class="section-title">🚍 Live Bus Tracking</h2>
