@@ -6,7 +6,7 @@
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication & Input
+/
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -19,7 +19,7 @@ $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $menu_sql = "SELECT * FROM cafe_menu WHERE available = TRUE ORDER BY category, name";
 $menu_result = mysqli_query($conn, $menu_sql);
 
-// Get current user info (points + name)
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -27,18 +27,18 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Count open facilities for sidebar badge
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-//Group items by category for display
+
 $menu_by_category = [];
 while($item = mysqli_fetch_assoc($menu_result)) {
     $menu_by_category[$item['category']][] = $item;
 }
 
-// Local image mapping
+
 $food_images = [
     'Chicken Rice' => 'chickenrice.jpg',
     'Chicken Sandwich' => 'Chicken Sandwich.jfif',
@@ -172,10 +172,7 @@ $food_images = [
             color: #22d3ee;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
+        
         .sidebar {
             position: fixed;
             left: -280px;
@@ -604,7 +601,7 @@ $food_images = [
             object-fit: cover;
         }
         
-        /* Stock Badge */
+        
         .stock-badge {
             position: absolute;
             top: 10px;
@@ -632,7 +629,7 @@ $food_images = [
             margin-bottom: 10px;
         }
         
-        /* Availability Bar */
+        
         .availability-section {
             margin: 15px 0;
         }
@@ -728,7 +725,7 @@ $food_images = [
             color: #22d3ee;
         }
         
-        /* Order Now Floating Button */
+        
         .floating-order-btn {
             position: fixed;
             bottom: 30px;
@@ -904,10 +901,10 @@ $food_images = [
     <h2 class="menu-category"><?php echo $category; ?></h2>
     <div class="menu-grid">
         <?php foreach($items as $item):
-            // Image fallback logic
+            
             $image_url = isset($food_images[$item['name']]) ? $food_images[$item['name']] : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
             
-            // Stock handling
+            
             $stock = $item['stock'] ?? 10;
             $stock_percent = ($stock / 20) * 100;
         ?>
@@ -976,7 +973,7 @@ function toggleSidebar() {
     }
 }
 
-// Close sidebar when clicking outside
+
 document.addEventListener("click", function(e) {
     const sidebar = document.querySelector(".sidebar");
     const btn = document.querySelector(".menu-btn");
