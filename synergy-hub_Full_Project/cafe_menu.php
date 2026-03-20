@@ -15,7 +15,7 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Fresh menu items (Only available ones)
+
 $menu_sql = "SELECT * FROM cafe_menu WHERE available = TRUE ORDER BY category, name";
 $menu_result = mysqli_query($conn, $menu_sql);
 
