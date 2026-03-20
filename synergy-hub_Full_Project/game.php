@@ -1,7 +1,18 @@
 <?php
+/**
+ * Mini Game Hub page for Synergy Hub application.
+ * 
+ * This page provides a fun and interactive gaming experience for users, allowing them to play simple games like Memory Match, Math Quiz, and Tic-Tac-Toe.
+ * 
+ * Features:
+ *  - Points are awarded client-side but shuold be validated server-side in save_game_score.php
+ *  - Games are fully client-side (no cheating prevention yet)
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -9,7 +20,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get user points and name
+// Load user points & name
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -17,7 +28,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+// Count open facilities
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -117,11 +128,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             text-decoration: none;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
-        /* Sidebar Base */
         .sidebar {
             position: fixed;
             left: -280px;
@@ -141,7 +147,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             left: 0;
         }
 
-        /* Sidebar Header */
         .sidebar-header {
             padding: 25px 20px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -187,7 +192,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 10px;
         }
 
-        /* User Info in Sidebar */
         .sidebar-user {
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.03);
@@ -233,7 +237,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 10px;
         }
 
-        /* Sidebar Navigation */
         .sidebar-nav {
             list-style: none;
             padding: 0;
@@ -287,7 +290,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             color: #a5b4fc;
         }
 
-        /* Sidebar Badge */
         .sidebar-badge {
             background: #ef4444;
             color: white;
@@ -304,14 +306,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             50% { transform: scale(1.1); }
         }
 
-        /* Sidebar Divider */
         .sidebar-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
-        /* Sidebar Section Title */
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
@@ -322,7 +322,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             letter-spacing: 0.5px;
         }
 
-        /* Club Preview in Sidebar */
         .sidebar-club-preview {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -390,7 +389,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             text-transform: uppercase;
         }
 
-        /* Quick Stats */
         .sidebar-stats {
             display: flex;
             justify-content: space-around;
@@ -423,7 +421,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             letter-spacing: 0.3px;
         }
 
-        /* Footer Links */
         .sidebar-footer {
             padding: 20px 20px 30px 20px;
         }
@@ -459,7 +456,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             text-align: center;
         }
 
-        /* Overlay for mobile */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -479,7 +475,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             opacity: 1;
         }
 
-        /* Scrollbar Styling */
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -510,7 +505,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             padding: 30px;
         }
         
-        /* Game Tabs */
         .game-tabs {
             display: flex;
             justify-content: center;
@@ -550,7 +544,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             border-color: transparent;
         }
         
-        /* Game Panels */
         .game-panel {
             display: none;
         }
@@ -559,7 +552,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             display: block;
         }
         
-        /* Memory Game Styles */
         .memory-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -595,7 +587,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             opacity: 0.7;
         }
         
-        /* Math Game Styles */
         .math-game {
             text-align: center;
             padding: 20px;
@@ -653,7 +644,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             75% { transform: translateX(10px); }
         }
         
-        /* Tic-Tac-Toe Styles */
         .tictactoe-board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -691,7 +681,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             50% { transform: scale(1.05); }
         }
         
-        /* Common Game Elements */
         .game-header {
             display: flex;
             justify-content: space-between;
@@ -820,15 +809,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
-    <!-- Header -->
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
     
-    <!-- User Info -->
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
@@ -839,7 +825,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
-    <!-- Navigation -->
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
@@ -889,7 +874,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     
     <div class="sidebar-divider"></div>
     
-    <!-- My Clubs Preview -->
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -906,7 +890,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
-    <!-- Quick Stats -->
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
@@ -922,7 +905,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
-    <!-- Footer -->
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -935,10 +917,8 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -960,7 +940,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 <div class="game-container">
     <div class="game-hub">
         
-        <!-- Game Tabs -->
         <div class="game-tabs">
             <button class="tab-btn active" onclick="switchGame('memory')">
                 <i class="fa-solid fa-cards"></i> Memory Game
@@ -973,7 +952,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             </button>
         </div>
         
-        <!-- MEMORY GAME PANEL -->
         <div id="memoryGame" class="game-panel active">
             <div class="game-header">
                 <h2 style="color: white;">🎴 Memory Card Game</h2>
@@ -1000,7 +978,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             <div id="memoryResult" style="text-align: center; color: #22d3ee; margin-top: 20px; font-size: 18px;"></div>
         </div>
         
-        <!-- MATH GAME PANEL -->
         <div id="mathGame" class="game-panel">
             <div class="game-header">
                 <h2 style="color: white;">🧮 Quick Math Challenge</h2>
@@ -1033,7 +1010,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             <div id="mathResult" style="text-align: center; color: #22d3ee; margin-top: 20px; font-size: 18px;"></div>
         </div>
         
-        <!-- TIC-TAC-TOE PANEL (FIXED VERSION) -->
         <div id="tictactoeGame" class="game-panel">
             <div class="game-header">
                 <h2 style="color: white;">🎮 Tic-Tac-Toe</h2>
@@ -1061,7 +1037,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1093,19 +1068,16 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// ==================== GAME SWITCHING ====================
+// Switch between game panels
 function switchGame(game) {
-    // Hide all panels
     document.getElementById('memoryGame').classList.remove('active');
     document.getElementById('mathGame').classList.remove('active');
     document.getElementById('tictactoeGame').classList.remove('active');
     
-    // Remove active class from all tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    // Show selected panel
     if (game === 'memory') {
         document.getElementById('memoryGame').classList.add('active');
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
@@ -1120,7 +1092,7 @@ function switchGame(game) {
     }
 }
 
-// ==================== MEMORY GAME ====================
+// Memory game logic
 let memoryCards = [];
 let memoryFlipped = [];
 let memoryMatched = 0;
@@ -1214,7 +1186,7 @@ function updateMemoryDisplay() {
     document.getElementById('memoryMatches').textContent = memoryMatched;
 }
 
-// ==================== MATH GAME ====================
+// Math game logic
 let mathScore = 0;
 let mathQuestion = 1;
 let mathTimeLeft = 10;
@@ -1239,7 +1211,6 @@ function nextMathQuestion() {
     
     document.getElementById('mathQuestion').textContent = `${mathQuestion}/10`;
     
-    // Generate question
     let operators = ['+', '-', '×'];
     let op = operators[Math.floor(Math.random() * operators.length)];
     let num1, num2, answer;
@@ -1269,7 +1240,6 @@ function nextMathQuestion() {
     
     document.getElementById('mathQuestionText').textContent = currentMathQuestion.text;
     
-    // Generate options
     let options = [answer];
     while(options.length < 4) {
         let wrong = answer + (Math.floor(Math.random() * 10) - 5);
@@ -1285,7 +1255,6 @@ function nextMathQuestion() {
     });
     document.getElementById('mathOptions').innerHTML = optionsHtml;
     
-    // Timer
     mathTimeLeft = 10;
     updateMathTimer();
     if (mathTimer) clearInterval(mathTimer);
@@ -1344,7 +1313,7 @@ function endMathGame() {
     saveGameScore('Math Game', points);
 }
 
-// ==================== TIC-TAC-TOE (FIXED) ====================
+// Tic-Tac-Toe Logic
 let tttBoard = ['', '', '', '', '', '', '', '', ''];
 let tttPlayer = 'X';
 let tttActive = true;
@@ -1370,47 +1339,37 @@ function renderTTT() {
 }
 
 function makeTTTMove(pos) {
-    // Game active check
     if (!tttActive || tttGameOver) return;
     
-    // Cell already filled check
     if (tttBoard[pos] !== '') return;
     
-    // In CPU mode, only allow X (player) to move, O (CPU) moves automatically
     if (tttMode === 'cpu' && tttPlayer === 'O') return;
     
-    // Make the move
     tttBoard[pos] = tttPlayer;
     document.getElementById(`ttt-cell-${pos}`).textContent = tttPlayer;
     
-    // Check win after player move
     if (checkTTTWin()) {
         endTTT(tttPlayer);
         return;
     }
     
-    // Check draw after player move
     if (checkTTTDraw()) {
         endTTT('draw');
         return;
     }
     
-    // Switch player for next turn
     tttPlayer = tttPlayer === 'X' ? 'O' : 'X';
     document.getElementById('tttTurn').innerHTML = `Your turn (${tttPlayer})`;
     
-    // If CPU mode and now it's O's turn (CPU), make CPU move
     if (tttMode === 'cpu' && tttPlayer === 'O' && tttActive && !tttGameOver) {
         setTimeout(makeCPUTTTMove, 600);
     }
 }
 
 function makeCPUTTTMove() {
-    // Double check if game is still active
     if (!tttActive || tttGameOver) return;
     if (tttPlayer !== 'O') return;
     
-    // Find all empty cells
     let emptyCells = [];
     tttBoard.forEach((cell, index) => {
         if (cell === '') emptyCells.push(index);
@@ -1418,33 +1377,26 @@ function makeCPUTTTMove() {
     
     if (emptyCells.length === 0) return;
     
-    // Get best move using AI
     let moveIndex = getBestCPUMove(emptyCells);
     
-    // Make the CPU move
     tttBoard[moveIndex] = 'O';
     document.getElementById(`ttt-cell-${moveIndex}`).textContent = 'O';
     
-    // Check win after CPU move
     if (checkTTTWin()) {
         endTTT('O');
         return;
     }
     
-    // Check draw after CPU move
     if (checkTTTDraw()) {
         endTTT('draw');
         return;
     }
     
-    // Switch back to player (X)
     tttPlayer = 'X';
     document.getElementById('tttTurn').innerHTML = `Your turn (${tttPlayer})`;
 }
 
-// AI for CPU - tries to win, block player, or make smart move
 function getBestCPUMove(emptyCells) {
-    // 1. Check if CPU can win
     for (let i = 0; i < emptyCells.length; i++) {
         let pos = emptyCells[i];
         tttBoard[pos] = 'O';
@@ -1455,7 +1407,6 @@ function getBestCPUMove(emptyCells) {
         tttBoard[pos] = '';
     }
     
-    // 2. Check if player can win next move (block)
     for (let i = 0; i < emptyCells.length; i++) {
         let pos = emptyCells[i];
         tttBoard[pos] = 'X';
@@ -1466,16 +1417,13 @@ function getBestCPUMove(emptyCells) {
         tttBoard[pos] = '';
     }
     
-    // 3. Take center if available
     if (emptyCells.includes(4)) return 4;
     
-    // 4. Take corners
     let corners = [0, 2, 6, 8].filter(pos => emptyCells.includes(pos));
     if (corners.length > 0) {
         return corners[Math.floor(Math.random() * corners.length)];
     }
     
-    // 5. Random move
     return emptyCells[Math.floor(Math.random() * emptyCells.length)];
 }
 
@@ -1489,7 +1437,6 @@ function checkTTTWin() {
     for (let pattern of winPatterns) {
         let [a,b,c] = pattern;
         if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
-            // Highlight winning cells
             pattern.forEach(index => {
                 let cell = document.getElementById(`ttt-cell-${index}`);
                 if (cell) cell.classList.add('winner');
@@ -1543,7 +1490,7 @@ function resetTTT() {
     initTTT();
 }
 
-// ==================== COMMON FUNCTIONS ====================
+//Utility functions
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1552,6 +1499,7 @@ function shuffleArray(array) {
     return array;
 }
 
+// Save game scores & update points UI
 function saveGameScore(gameType, points) {
     fetch('save_game_score.php', {
         method: 'POST',
@@ -1578,7 +1526,7 @@ function saveGameScore(gameType, points) {
     });
 }
 
-// Initialize first game
+// Initialize first game on page load
 window.onload = function() {
     initMemoryGame();
 };

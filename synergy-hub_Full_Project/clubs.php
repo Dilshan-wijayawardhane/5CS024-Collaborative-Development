@@ -1,7 +1,19 @@
 <?php
+/**
+ * Club Hub page - main interface for viewing and managing campus clubs.
+ * 
+ * Features:
+ *  - Displays all active clubs with details
+ *  - Join button awards 20 points
+ *  - Leave button to exit club
+ *  - Sidebar stats: my clubs count, total clubs count, points
+ *  - Responsive grid layout for club cards
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -9,7 +21,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get all clubs
+// Load all active clubs
 $clubs_sql = "SELECT c.*, u.Name as LeaderName 
               FROM Clubs c 
               LEFT JOIN Users u ON c.LeaderID = u.UserID 
@@ -17,7 +29,7 @@ $clubs_sql = "SELECT c.*, u.Name as LeaderName
               ORDER BY c.Name";
 $clubs_result = mysqli_query($conn, $clubs_sql);
 
-// Get user's club memberships
+// Load users' active club memberships
 $my_clubs_sql = "SELECT c.*, cm.Role 
                  FROM ClubMemberships cm
                  JOIN Clubs c ON cm.ClubID = c.ClubID
@@ -27,7 +39,7 @@ mysqli_stmt_bind_param($my_clubs_stmt, "i", $user_id);
 mysqli_stmt_execute($my_clubs_stmt);
 $my_clubs_result = mysqli_stmt_get_result($my_clubs_stmt);
 
-// Get user points and name
+// Load user points & name
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -35,12 +47,11 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+// Prepare arrays for easier frontend use
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Convert results to arrays for easier handling
 $my_clubs_array = [];
 while($row = mysqli_fetch_assoc($my_clubs_result)) {
     $my_clubs_array[] = $row;
@@ -148,11 +159,6 @@ $total_clubs_count = count($all_clubs_array);
             text-decoration: none;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
-        /* Sidebar Base */
         .sidebar {
             position: fixed;
             left: -280px;
@@ -172,7 +178,6 @@ $total_clubs_count = count($all_clubs_array);
             left: 0;
         }
 
-        /* Sidebar Header */
         .sidebar-header {
             padding: 25px 20px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -218,7 +223,6 @@ $total_clubs_count = count($all_clubs_array);
             font-size: 10px;
         }
 
-        /* User Info in Sidebar */
         .sidebar-user {
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.03);
@@ -264,7 +268,6 @@ $total_clubs_count = count($all_clubs_array);
             font-size: 10px;
         }
 
-        /* Sidebar Navigation */
         .sidebar-nav {
             list-style: none;
             padding: 0;
@@ -318,7 +321,6 @@ $total_clubs_count = count($all_clubs_array);
             color: #a5b4fc;
         }
 
-        /* Sidebar Badge */
         .sidebar-badge {
             background: #ef4444;
             color: white;
@@ -335,14 +337,12 @@ $total_clubs_count = count($all_clubs_array);
             50% { transform: scale(1.1); }
         }
 
-        /* Sidebar Divider */
         .sidebar-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
-        /* Sidebar Section Title */
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
@@ -353,7 +353,6 @@ $total_clubs_count = count($all_clubs_array);
             letter-spacing: 0.5px;
         }
 
-        /* Club Preview in Sidebar */
         .sidebar-club-preview {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -421,7 +420,6 @@ $total_clubs_count = count($all_clubs_array);
             text-transform: uppercase;
         }
 
-        /* Quick Stats */
         .sidebar-stats {
             display: flex;
             justify-content: space-around;
@@ -454,7 +452,6 @@ $total_clubs_count = count($all_clubs_array);
             letter-spacing: 0.3px;
         }
 
-        /* Footer Links */
         .sidebar-footer {
             padding: 20px 20px 30px 20px;
         }
@@ -490,7 +487,6 @@ $total_clubs_count = count($all_clubs_array);
             text-align: center;
         }
 
-        /* Overlay for mobile */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -510,7 +506,6 @@ $total_clubs_count = count($all_clubs_array);
             opacity: 1;
         }
 
-        /* Scrollbar Styling */
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -708,15 +703,12 @@ $total_clubs_count = count($all_clubs_array);
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
-    <!-- Header -->
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
     
-    <!-- User Info -->
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
@@ -727,7 +719,6 @@ $total_clubs_count = count($all_clubs_array);
         </div>
     </div>
     
-    <!-- Navigation -->
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
@@ -777,7 +768,6 @@ $total_clubs_count = count($all_clubs_array);
     
     <div class="sidebar-divider"></div>
     
-    <!-- My Clubs Preview -->
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -804,7 +794,6 @@ $total_clubs_count = count($all_clubs_array);
         <?php endif; ?>
     </div>
     
-    <!-- Quick Stats -->
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value"><?php echo $my_clubs_count; ?></div>
@@ -820,7 +809,6 @@ $total_clubs_count = count($all_clubs_array);
         </div>
     </div>
     
-    <!-- Footer -->
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -833,10 +821,8 @@ $total_clubs_count = count($all_clubs_array);
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -861,7 +847,6 @@ $total_clubs_count = count($all_clubs_array);
         <i class="fa-solid fa-star"></i> Your Points: <?php echo $user['PointsBalance']; ?>
     </div>
     
-    <!-- MY CLUBS -->
     <?php if(!empty($my_clubs_array)): ?>
     <div class="my-clubs-section">
         <h2 class="section-title">My Clubs</h2>
@@ -892,10 +877,9 @@ $total_clubs_count = count($all_clubs_array);
     </div>
     <?php endif; ?>
     
-    <!-- ALL CLUBS -->
     <h2 class="section-title">All Clubs</h2>
     <div class="clubs-grid">
-        <?php foreach($all_clubs_array as $club): 
+        <?php foreach($all_clubs_array as $club):
             // Check if user is already a member
             $is_member = false;
             foreach($my_clubs_array as $my_club) {
@@ -905,7 +889,7 @@ $total_clubs_count = count($all_clubs_array);
                 }
             }
             
-            // Set icon based on club name
+            // Dynamic icon based on club name (fun touch)
             $icon = 'fa-users';
             if(strpos($club['Name'], 'Coding') !== false) $icon = 'fa-code';
             else if(strpos($club['Name'], 'Cyber') !== false) $icon = 'fa-shield';
@@ -944,7 +928,6 @@ $total_clubs_count = count($all_clubs_array);
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -976,7 +959,10 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// ==================== CLUB FUNCTIONS ====================
+/**
+ * Join a club via AJAX (calls join_club.php)
+ * Awards 20 points on success
+ */
 function joinClub(clubId) {
     if(confirm('Join this club? You will get 20 points!')) {
         fetch('join_club.php', {
@@ -989,18 +975,19 @@ function joinClub(clubId) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('✅ Successfully joined the club! +20 points');
-                location.reload();
+                alert('Successfully joined the club! +20 points');
+                location.reload();  // Refresh to update UI
             } else {
-                alert('❌ Error: ' + data.message);
+                alert('Error: ' + data.message);
             }
         })
         .catch(error => {
-            alert('❌ Error processing request');
+            alert('Error processing request');
         });
     }
 }
 
+// Leave a club via AJAX (calls leave_club.php)
 function leaveClub(clubId) {
     if(confirm('Are you sure you want to leave this club?')) {
         fetch('leave_club.php', {
@@ -1018,7 +1005,7 @@ function leaveClub(clubId) {
             }
         })
         .catch(error => {
-            alert('❌ Error processing request');
+            alert('Error processing request');
         });
     }
 }

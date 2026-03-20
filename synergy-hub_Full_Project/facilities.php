@@ -1,7 +1,24 @@
 <?php
+/**
+ * Main facilities overview page
+ * 
+ * Features:
+ *  - Displays all facilities stored by Type and Name
+ *  - Shows real-time stats
+ *  - Visual crowd meter (hardcoded demo data for now)
+ *  - Special section for Café
+ *  - Check-in teaser (+10 points)
+ * 
+ * Notes:
+ *  - Crowd data is currently hardcoded
+ *  - Check-in link is static text
+ *  - Responsive grid layout for card
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -9,13 +26,13 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get all facilities
+// Load all facilities
 $sql = "SELECT * FROM Facilities ORDER BY Type, Name";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
-// Get user points
+// Load user points & name (for sidebar)
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -23,12 +40,12 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+//Count open facilities (sidebar badge)
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Crowd data (you can make this dynamic from database)
+// Hardcoded crowd data (demo only)
 $crowd_data = [
     'Gym' => ['current' => 82, 'total' => 150, 'hours' => '06:00 - 22:00'],
     'Library' => ['current' => 234, 'total' => 300, 'hours' => '08:00 - 23:59'],
@@ -132,11 +149,6 @@ $crowd_data = [
             text-decoration: none;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
-        /* Sidebar Base */
         .sidebar {
             position: fixed;
             left: -280px;
@@ -156,7 +168,6 @@ $crowd_data = [
             left: 0;
         }
 
-        /* Sidebar Header */
         .sidebar-header {
             padding: 25px 20px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -202,7 +213,6 @@ $crowd_data = [
             font-size: 10px;
         }
 
-        /* User Info in Sidebar */
         .sidebar-user {
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.03);
@@ -248,7 +258,6 @@ $crowd_data = [
             font-size: 10px;
         }
 
-        /* Sidebar Navigation */
         .sidebar-nav {
             list-style: none;
             padding: 0;
@@ -302,7 +311,6 @@ $crowd_data = [
             color: #a5b4fc;
         }
 
-        /* Sidebar Badge */
         .sidebar-badge {
             background: #ef4444;
             color: white;
@@ -319,14 +327,12 @@ $crowd_data = [
             50% { transform: scale(1.1); }
         }
 
-        /* Sidebar Divider */
         .sidebar-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
-        /* Sidebar Section Title */
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
@@ -337,7 +343,6 @@ $crowd_data = [
             letter-spacing: 0.5px;
         }
 
-        /* Club Preview in Sidebar */
         .sidebar-club-preview {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -405,7 +410,6 @@ $crowd_data = [
             text-transform: uppercase;
         }
 
-        /* Quick Stats */
         .sidebar-stats {
             display: flex;
             justify-content: space-around;
@@ -438,7 +442,6 @@ $crowd_data = [
             letter-spacing: 0.3px;
         }
 
-        /* Footer Links */
         .sidebar-footer {
             padding: 20px 20px 30px 20px;
         }
@@ -474,7 +477,6 @@ $crowd_data = [
             text-align: center;
         }
 
-        /* Overlay for mobile */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -494,7 +496,6 @@ $crowd_data = [
             opacity: 1;
         }
 
-        /* Scrollbar Styling */
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -520,7 +521,6 @@ $crowd_data = [
             text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         
-        /* FACILITIES GRID */
         .facility-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -615,7 +615,6 @@ $crowd_data = [
             margin-right: 5px;
         }
         
-        /* NEW: Crowd Info with Progress Bar */
         .crowd-info {
             margin: 15px 0;
             padding: 10px;
@@ -653,7 +652,6 @@ $crowd_data = [
             color: #22d3ee;
         }
         
-        /* Hours */
         .hours {
             display: flex;
             align-items: center;
@@ -667,7 +665,6 @@ $crowd_data = [
             color: #22d3ee;
         }
         
-        /* Cafe Special */
         .cafe-special {
             margin: 10px 0;
             padding: 10px;
@@ -731,15 +728,12 @@ $crowd_data = [
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
-    <!-- Header -->
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
     
-    <!-- User Info -->
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
@@ -750,7 +744,6 @@ $crowd_data = [
         </div>
     </div>
     
-    <!-- Navigation -->
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
@@ -800,7 +793,6 @@ $crowd_data = [
     
     <div class="sidebar-divider"></div>
     
-    <!-- My Clubs Preview -->
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -817,7 +809,6 @@ $crowd_data = [
         </div>
     </div>
     
-    <!-- Quick Stats -->
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
@@ -833,7 +824,6 @@ $crowd_data = [
         </div>
     </div>
     
-    <!-- Footer -->
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -846,10 +836,8 @@ $crowd_data = [
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -868,17 +856,17 @@ $crowd_data = [
     </div>
 </header>
 
-<!-- PAGE TITLE -->
 <h1 class="page-title">🏛️ Campus Facilities</h1>
 
-<!-- FACILITIES GRID -->
 <div class="facility-grid">
     <?php while($facility = mysqli_fetch_assoc($result)): 
         $type = $facility['Type'];
+
+        // Get crowd data or fallback to random demo values
         $crowd = isset($crowd_data[$type]) ? $crowd_data[$type] : ['current' => rand(10, 50), 'total' => 100, 'hours' => '09:00 - 17:00'];
         $crowd_percent = ($crowd['current'] / $crowd['total']) * 100;
         
-        // Set icon based on type
+        // Dynamic icon based on facility type
         $icon = 'fa-building';
         if($type == 'Gym') $icon = 'fa-dumbbell';
         else if($type == 'Library') $icon = 'fa-book';
@@ -901,7 +889,6 @@ $crowd_data = [
             <?php echo $facility['Status']; ?>
         </div>
         
-        <!-- CROWD INFO WITH PROGRESS BAR (NEW) -->
         <div class="crowd-info">
             <div class="crowd-header">
                 <span>Current Crowd</span>
@@ -912,13 +899,11 @@ $crowd_data = [
             </div>
         </div>
         
-        <!-- HOURS -->
         <div class="hours">
             <i class="fa-regular fa-calendar"></i>
             <span><?php echo $crowd['hours']; ?></span>
         </div>
         
-        <!-- CAFE SPECIAL INFO (Only for Café) -->
         <?php if($type == 'Café'): ?>
         <div class="cafe-special">
             <div class="cuisine-tags">
@@ -947,7 +932,6 @@ $crowd_data = [
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");

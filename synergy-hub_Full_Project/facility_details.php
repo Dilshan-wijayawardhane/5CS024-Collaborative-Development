@@ -1,16 +1,31 @@
 <?php
+/**
+ * Detailed view page for a single campus facility.
+ * 
+ * This page displays comprehensive information about a specific facility, including its status, features, and user check-in options. 
+ * It also integrates with the user's points balance and provides interactive modals for additional services.
+ * 
+ * Security / Notes:
+ *  - Requires login 
+ *  - Uses prepared statements
+ *  - Check-in calls external endpoint
+ *  - Many features are placeholders ("coming soon")
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
+// Get facility ID from URL
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get facility details
+// Load facility details
 $facility_sql = "SELECT * FROM Facilities WHERE FacilityID = ?";
 $facility_stmt = mysqli_prepare($conn, $facility_sql);
 mysqli_stmt_bind_param($facility_stmt, "i", $facility_id);
@@ -26,7 +41,7 @@ mysqli_stmt_execute($check_stmt);
 $check_result = mysqli_stmt_get_result($check_stmt);
 $already_checked_in = mysqli_num_rows($check_result) > 0;
 
-// Get user points and name
+// Load user points & name (for display)
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -34,7 +49,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+// Count open facilities (sidebar badge)
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -146,10 +161,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .home-link:hover {
             color: #22d3ee;
         }
-        
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
 
         .sidebar {
             position: fixed;
@@ -515,7 +526,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             margin: 0 auto;
         }
         
-        /* FACILITY HEADER */
         .facility-header {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -580,7 +590,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             color: white;
         }
         
-        /* CHECK-IN SECTION */
         .checkin-section {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -646,7 +655,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 16px;
         }
         
-        /* FEATURES GRID */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -721,7 +729,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             margin-right: 8px;
         }
         
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -829,7 +836,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
@@ -931,7 +937,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -950,10 +955,8 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <div class="container">
     
-    <!-- FACILITY HEADER -->
     <div class="facility-header">
         <?php
         $icon = 'fa-building';
@@ -975,7 +978,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
-    <!-- CHECK-IN SECTION -->
     <div class="checkin-section">
         <div class="points-info">
             <div class="points-badge">
@@ -997,12 +999,10 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
-    <!-- FACILITY FEATURES -->
     <h2 style="color: white; margin: 40px 0 20px; font-size: 28px;">📍 Facility Features</h2>
     <div class="features-grid">
         
         <?php if($facility['Type'] == 'Café'): ?>
-        <!-- ==================== CAFE FEATURES ==================== -->
         <a href="cafe_menu.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-mug-saucer"></i>
@@ -1044,7 +1044,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </a>
         
         <?php elseif($facility['Type'] == 'Library'): ?>
-        <!-- ==================== LIBRARY FEATURES ==================== -->
         <a href="library_books.php?id=<?php echo $facility_id; ?>&tab=browse" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -1065,7 +1064,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             </div>
         </a>
         
-        <!-- Study Rooms Card -->
         <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="openStudyRoomsModal()">
             <div class="feature-icon">
                 <i class="fa-solid fa-door-open"></i>
@@ -1076,7 +1074,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             </div>
         </div>
         
-        <!-- Print Services Card -->
         <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="openPrintServicesModal()">
             <div class="feature-icon">
                 <i class="fa-solid fa-print"></i>
@@ -1088,7 +1085,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
         
         <?php elseif($facility['Type'] == 'Gym'): ?>
-        <!-- ==================== GYM FEATURES ==================== -->
         <a href="gym_equipment.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-dumbbell"></i>
@@ -1130,7 +1126,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
         
         <?php elseif($facility['Type'] == 'GameField'): ?>
-        <!-- ==================== GAME FIELD FEATURES ==================== -->
         <a href="game_field.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-calendar-check"></i>
@@ -1172,7 +1167,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
         
         <?php elseif($facility['Type'] == 'Transport'): ?>
-        <!-- ==================== TRANSPORT FEATURES ==================== -->
         <a href="transport.php" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-bus"></i>
@@ -1214,7 +1208,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
 
         <?php elseif($facility['Type'] == 'Pool'): ?>
-        <!-- ==================== POOL FEATURES ==================== -->
         <a href="pool.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
             <div class="feature-icon">
                 <i class="fa-solid fa-person-swimming"></i>
@@ -1253,7 +1246,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </a>
 </div>
 
-<!-- STUDY ROOMS MODAL - WHITE & BLUE VERSION -->
 <div id="studyRoomsModal" class="modal">
     <div class="modal-content" style="background: white;">
         <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
@@ -1262,15 +1254,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
         <div class="modal-body" style="background: white;">
             
-            <!-- Date Selector -->
             <div class="date-selector" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                 <label style="color: #1e293b; font-size: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar" style="color: #3b82f6;"></i> Select Date:</label>
                 <input type="date" id="bookingDate" class="date-input" value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" style="padding: 10px 15px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b; font-size: 14px; flex: 1; max-width: 200px;">
             </div>
             
-            <!-- Room Cards -->
             <div class="room-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                <!-- Room 101 -->
                 <div class="room-card available" id="room101" onclick="selectRoom(101)" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
                     <div class="room-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 style="color: #1e293b; font-size: 18px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-door-open" style="color: #3b82f6;"></i> Room 101</h3>
@@ -1298,7 +1287,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                     <small class="select-hint" style="display: block; color: #64748b; font-size: 11px; margin-top: 8px; text-align: center;">👆 Select a time slot first</small>
                 </div>
                 
-                <!-- Room 102 -->
                 <div class="room-card available" id="room102" onclick="selectRoom(102)" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
                     <div class="room-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 style="color: #1e293b; font-size: 18px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-door-open" style="color: #3b82f6;"></i> Room 102</h3>
@@ -1326,7 +1314,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                     <small class="select-hint" style="display: block; color: #64748b; font-size: 11px; margin-top: 8px; text-align: center;">👆 Select a time slot first</small>
                 </div>
                 
-                <!-- Room 103 - Conference Room -->
                 <div class="room-card busy" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 15px; padding: 20px; opacity: 0.7; cursor: not-allowed;">
                     <div class="room-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 style="color: #1e293b; font-size: 18px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-door-open" style="color: #3b82f6;"></i> Room 103 <span class="premium-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; margin-left: 10px; text-transform: uppercase;">PREMIUM</span></h3>
@@ -1350,7 +1337,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 </div>
             </div>
             
-            <!-- Booking Summary -->
             <div class="booking-summary" id="bookingSummary" style="display: none; margin-top: 30px; background: #f8fafc; border-radius: 15px; padding: 25px; border: 1px solid #3b82f6; animation: slideUp 0.3s ease;">
                 <h3 style="color: #1e293b; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-rectangle-list" style="color: #3b82f6;"></i> Booking Summary</h3>
                 <div class="summary-details" style="background: white; border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
@@ -1373,7 +1359,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
 </div>
 
-<!-- PRINT SERVICES MODAL - WHITE & BLUE VERSION -->
 <div id="printServicesModal" class="modal">
     <div class="modal-content" style="background: white;">
         <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
@@ -1382,7 +1367,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
         <div class="modal-body" style="background: white;">
             
-            <!-- Print Options -->
             <div class="print-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="print-card" id="printBW" onclick="selectPrintType('bw')" style="background: white; border: 1px solid #e2e8f0; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s;">
                     <i class="fa-solid fa-file-lines" style="font-size: 40px; color: #3b82f6; margin-bottom: 15px;"></i>
@@ -1413,7 +1397,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 </div>
             </div>
             
-            <!-- File Upload -->
             <div class="print-info" style="background: #f8fafc; border-radius: 15px; padding: 25px; border: 1px solid #e2e8f0; margin-top: 20px;">
                 <h4 style="color: #1e293b; font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-cloud-arrow-up" style="color: #3b82f6;"></i> Upload Document</h4>
                 <div class="file-upload-area" onclick="document.getElementById('fileUpload').click()" style="background: white; border: 2px dashed #e2e8f0; border-radius: 10px; padding: 30px; text-align: center; margin-bottom: 15px; cursor: pointer;">
@@ -1424,18 +1407,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 </div>
                 <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="updateFileName(this)" style="display: none;">
                 
-                <!-- Pages Input -->
                 <div style="margin-top: 20px;">
                     <label style="color: #1e293b; display: block; margin-bottom: 10px; font-weight: 600;"><i class="fa-regular fa-file" style="color: #3b82f6;"></i> Number of pages:</label>
                     <input type="number" id="pageCount" min="1" max="100" value="1" style="width: 100px; padding: 10px; border-radius: 8px; background: white; border: 1px solid #e2e8f0; color: #1e293b;">
                 </div>
                 
-                <!-- Print Summary -->
                 <div id="printSummary" class="print-summary" style="display: none; background: #e2e8f0; border-radius: 10px; padding: 15px; margin-top: 20px; border: 1px solid #3b82f6;">
                     <p style="color: #1e293b; display: flex; align-items: center; gap: 10px; font-weight: 600;"><i class="fa-regular fa-circle-check" style="color: #3b82f6;"></i> <span id="printSummaryText"></span></p>
                 </div>
                 
-                <!-- Actions -->
                 <div class="print-actions" style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px;">
                     <button class="print-action-btn" id="printSubmitBtn" onclick="submitPrintJob()" disabled style="padding: 12px 30px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; opacity: 0.5;">
                         <i class="fa-regular fa-print"></i> Submit Print Job
@@ -1451,7 +1431,8 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
+
+// Sidebar Toggle
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1483,7 +1464,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// ==================== CHECK-IN FUNCTION ====================
+// Check-in Functionality (AJAX)
 function checkIn(facilityId) {
     fetch('checkin.php', {
         method: 'POST',
@@ -1495,19 +1476,23 @@ function checkIn(facilityId) {
     .then(response => response.json())
     .then(data => {
         if(data.success) {
+            // Update points display in navbar & header
             let pointsSpan = document.getElementById('pointsDisplay');
             let currentPoints = parseInt(pointsSpan.textContent);
             pointsSpan.textContent = data.new_points;
             document.getElementById('currentPoints').textContent = data.new_points;
             
+            // Visual feedback
             document.querySelector('.points').classList.add('active');
             setTimeout(() => {
                 document.querySelector('.points').classList.remove('active');
             }, 500);
             
+            // Disable check-in button
             document.getElementById('checkinBtn').disabled = true;
             document.getElementById('checkinMessage').innerHTML = '✅ Check-in successful! +10 points added. You can now access all features.';
             
+            // Enable all feature cards
             document.querySelectorAll('.feature-card').forEach(card => {
                 card.classList.add('active');
             });
@@ -1517,9 +1502,7 @@ function checkIn(facilityId) {
     });
 }
 
-// ==================== MODAL FUNCTIONS ====================
-
-// Study Rooms Modal
+// Modal Controls (Study rooms & Print Services)
 function openStudyRoomsModal() {
     document.getElementById('studyRoomsModal').style.display = 'block';
 }
@@ -1529,7 +1512,6 @@ function closeStudyRoomsModal() {
     cancelSelection();
 }
 
-// Print Services Modal
 function openPrintServicesModal() {
     document.getElementById('printServicesModal').style.display = 'block';
 }
@@ -1539,7 +1521,6 @@ function closePrintServicesModal() {
     resetPrintSelection();
 }
 
-// ==================== STUDY ROOMS FUNCTIONS ====================
 let selectedRoom = null;
 let selectedTime = null;
 
@@ -1615,7 +1596,6 @@ document.getElementById('bookingDate')?.addEventListener('change', function() {
     cancelSelection();
 });
 
-// ==================== PRINT SERVICES FUNCTIONS ====================
 let selectedPrintType = null;
 let selectedPrintPrice = 0;
 
@@ -1696,7 +1676,6 @@ function resetPrintSelection() {
 
 document.getElementById('pageCount')?.addEventListener('input', updatePrintSummary);
 
-// ==================== CLOSE MODAL WHEN CLICKING OUTSIDE ====================
 window.onclick = function(event) {
     const studyModal = document.getElementById('studyRoomsModal');
     const printModal = document.getElementById('printServicesModal');
@@ -1711,7 +1690,7 @@ window.onclick = function(event) {
     }
 }
 
-// ==================== FEATURE ACTION ====================
+// Placeholder / Coming Soon Actions
 function featureAction(feature) {
     alert(`🔧 "${feature}" feature is coming soon! We're working on it.`);
 }
