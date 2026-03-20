@@ -1,7 +1,12 @@
 <?php
+/**
+ * Displays the campus café menu for cafeteria
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication & Input
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -10,11 +15,11 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get menu from database
+// Fresh menu items (Only available ones)
 $menu_sql = "SELECT * FROM cafe_menu WHERE available = TRUE ORDER BY category, name";
 $menu_result = mysqli_query($conn, $menu_sql);
 
-// Get user points and name
+// Get current user info (points + name)
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -22,18 +27,18 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+// Count open facilities for sidebar badge
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Organize menu by category
+//Group items by category for display
 $menu_by_category = [];
 while($item = mysqli_fetch_assoc($menu_result)) {
     $menu_by_category[$item['category']][] = $item;
 }
 
-// Food Images Array
+// Local image mapping
 $food_images = [
     'Chicken Rice' => 'chickenrice.jpg',
     'Chicken Sandwich' => 'Chicken Sandwich.jfif',
@@ -869,7 +874,6 @@ $food_images = [
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -888,7 +892,6 @@ $food_images = [
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <div class="container">
     
     <div class="points-badge">
@@ -897,12 +900,14 @@ $food_images = [
     
     <h1 class="page-title">☕ Campus Café Menu</h1>
     
-    <!-- MENU BY CATEGORY -->
     <?php foreach($menu_by_category as $category => $items): ?>
     <h2 class="menu-category"><?php echo $category; ?></h2>
     <div class="menu-grid">
-        <?php foreach($items as $item): 
+        <?php foreach($items as $item):
+            // Image fallback logic
             $image_url = isset($food_images[$item['name']]) ? $food_images[$item['name']] : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
+            
+            // Stock handling
             $stock = $item['stock'] ?? 10;
             $stock_percent = ($stock / 20) * 100;
         ?>
@@ -918,7 +923,6 @@ $food_images = [
             
             <div class="item-name"><?php echo htmlspecialchars($item['name']); ?></div>
             
-            <!-- Availability Bar -->
             <div class="availability-section">
                 <div class="availability-header">
                     <span>Availability</span>
@@ -930,7 +934,6 @@ $food_images = [
                 </div>
             </div>
             
-            <!-- Prices -->
             <div class="item-prices">
                 <div class="price-tag">
                     <small>Cash</small>
@@ -951,13 +954,12 @@ $food_images = [
     </a>
 </div>
 
-<!-- Floating Order Button -->
 <a href="cafe_order.php?id=<?php echo $facility_id; ?>" class="floating-order-btn">
     <i class="fa-solid fa-cart-shopping"></i> Order Food
 </a>
 
 <script>
-// ==================== SIDEBAR ====================
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -974,6 +976,7 @@ function toggleSidebar() {
     }
 }
 
+// Close sidebar when clicking outside
 document.addEventListener("click", function(e) {
     const sidebar = document.querySelector(".sidebar");
     const btn = document.querySelector(".menu-btn");

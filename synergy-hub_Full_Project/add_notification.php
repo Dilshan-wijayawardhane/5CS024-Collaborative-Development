@@ -1,38 +1,50 @@
 <?php
-require_once 'config.php';
-require_once 'functions.php';
+/**
+ * Allow ADMIN users to create and send notifications to specific users
+ * 
+ * Security Notes:
+ * - Uses prepared statements to prevent SQL injection
+ * - Access control: Only users with 'Admin' role can access this page
+ */
 
+require_once 'config.php';      //Database connection and constants
+require_once 'functions.php';   //Contains isLoggedIn() and other helper functions
+
+//Redirect to login if user is not authenticated
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
-// Only admin can add notifications 
+//Only admin can create notifications
 if ($_SESSION['user_role'] != 'Admin') {
     header("Location: index.php");
     exit();
 }
 
-$message = '';
+$message = '';      //Feedback message to show on page
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    //Get and sanitize input
     $user_id = intval($_POST['user_id']);
     $title = $_POST['title'];
     $message_text = $_POST['message'];
     $type = $_POST['type'];
     
+    //Prepare INSERT query with placeholders
     $sql = "INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "isss", $user_id, $title, $message_text, $type);
-    
+    // "isss" means: integer (user_id), string (title), string (message), string (type)
+
     if (mysqli_stmt_execute($stmt)) {
-        $message = '<div class="success">✅ Notification added successfully!</div>';
+        $message = '<div class="success">Notification added successfully!</div>';
     } else {
-        $message = '<div class="error">❌ Error adding notification</div>';
+        $message = '<div class="error">Error adding notification</div>';
     }
 }
 
-// Get all users for dropdown
+
 $users_sql = "SELECT UserID, Name FROM Users";
 $users_result = mysqli_query($conn, $users_sql);
 ?>

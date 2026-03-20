@@ -1,11 +1,21 @@
 <?php
+/**
+ * Final checkout page for food orders.
+ * 
+ * Security / Design notes:
+ *  - Requires login + non-empty cart
+ *  - Redirects back to cafe_order.php if cart is empty
+ *  - Card details are client-side only (no real processing here)
+ *  - Points payment option checks if user has enough points before allowing selection, but final validation should also be done server-side when processing the order (not implemented here for simplicity)
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
-// Turn on error reporting for debugging (remove in production)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Authentication check
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -14,13 +24,13 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Check if cart exists and has items
+// Redirect if no cart
 if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
     header("Location: cafe_menu.php?id=" . $facility_id);
     exit();
 }
 
-// Get user details
+// Load user data
 $user_sql = "SELECT UserID, Name, Email, PointsBalance FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -28,18 +38,17 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get cart from session
+// Calculate cart totals
 $cart_items = $_SESSION['cart'];
 
-// Calculate totals
 $subtotal = 0;
 $total_points = 0;
 foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
     $total_points += $item['points_price'] * $item['quantity'];
 }
-$tax = $subtotal * 0.1; // 10% tax
-$total = $subtotal + $tax;
+$tax = $subtotal * 0.1;     //10% tax
+$total = $subtotal + $tax;  //Final cash total
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -585,7 +594,6 @@ $total = $subtotal + $tax;
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
     <a href="index.php">Home</a>
     <a href="facilities.php">Facilities</a>
@@ -595,7 +603,6 @@ $total = $subtotal + $tax;
     <a href="qr.html">QR Scanner</a>
 </div>
 
-<!-- CHECKOUT NAVIGATION -->
 <div class="checkout-nav">
     <a href="cafe_order.php?id=<?php echo $facility_id; ?>">
         <i class="fa-solid fa-arrow-left"></i> Back to Cart
@@ -608,9 +615,7 @@ $total = $subtotal + $tax;
     </div>
 </div>
 
-<!-- MAIN CHECKOUT CONTENT -->
 <div class="container">
-    <!-- CHECKOUT FORM -->
     <div class="checkout-form">
         <h3 class="section-title">
             <i class="fa-regular fa-circle-check"></i> 1. Pickup Details
@@ -654,7 +659,6 @@ $total = $subtotal + $tax;
         </h3>
         
         <div class="payment-methods">
-            <!-- Card Payment -->
             <label class="payment-option" onclick="selectPayment('card')">
                 <input type="radio" name="payment" value="card" checked>
                 <div class="method-icon">
@@ -666,7 +670,6 @@ $total = $subtotal + $tax;
                 </div>
             </label>
             
-            <!-- Points Payment -->
             <label class="payment-option" onclick="selectPayment('points')">
                 <input type="radio" name="payment" value="points">
                 <div class="method-icon">
@@ -681,7 +684,6 @@ $total = $subtotal + $tax;
                 </div>
             </label>
             
-            <!-- Cash on Pickup -->
             <label class="payment-option" onclick="selectPayment('cash')">
                 <input type="radio" name="payment" value="cash">
                 <div class="method-icon">
@@ -694,7 +696,6 @@ $total = $subtotal + $tax;
             </label>
         </div>
         
-        <!-- Card Details Form -->
         <div class="card-details show" id="cardDetails">
             <div class="card-display">
                 <div class="card-chip"></div>
@@ -730,7 +731,6 @@ $total = $subtotal + $tax;
         </div>
     </div>
     
-    <!-- ORDER SUMMARY -->
     <div class="order-summary">
         <div class="summary-header">
             <i class="fa-solid fa-cart-shopping"></i> Your Order
@@ -784,19 +784,18 @@ $total = $subtotal + $tax;
 </a>
 
 <script>
-// Cart data from PHP
+    // Global variables from PHP
 let cart = <?php echo json_encode($cart_items); ?>;
 let userPoints = <?php echo $user['PointsBalance']; ?>;
 let facilityId = <?php echo $facility_id; ?>;
 let totalPoints = <?php echo $total_points; ?>;
 
-// Select payment method
+// Payment method selection
 function selectPayment(method) {
     document.querySelectorAll('input[name="payment"]').forEach(radio => {
         radio.checked = radio.value === method;
     });
     
-    // Show/hide card details
     const cardDetails = document.getElementById('cardDetails');
     if (method === 'card') {
         cardDetails.classList.add('show');
@@ -804,7 +803,7 @@ function selectPayment(method) {
         cardDetails.classList.remove('show');
     }
     
-    // Check points balance
+    // Disable button if paying with points but insufficient balance
     if (method === 'points' && userPoints < totalPoints) {
         document.getElementById('placeOrderBtn').disabled = true;
         showError('Insufficient points! You need ' + totalPoints + ' points.');
@@ -814,7 +813,7 @@ function selectPayment(method) {
     }
 }
 
-// Format card number
+// Card Input Formatting & Validation
 function formatCardNumber(input) {
     let value = input.value.replace(/\s/g, '');
     let formatted = '';
@@ -827,7 +826,6 @@ function formatCardNumber(input) {
     validateCardNumber();
 }
 
-// Validate card number
 function validateCardNumber() {
     const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
     const msg = document.getElementById('cardNumberMsg');
@@ -844,7 +842,6 @@ function validateCardNumber() {
     }
 }
 
-// Detect card type
 function detectCardType(number) {
     const logo = document.getElementById('cardLogo');
     if (number.startsWith('4')) {
@@ -858,7 +855,6 @@ function detectCardType(number) {
     }
 }
 
-// Format card expiry
 function formatCardExpiry(input) {
     let value = input.value.replace(/\//g, '');
     if (value.length >= 2) {
@@ -869,7 +865,6 @@ function formatCardExpiry(input) {
     validateCardExpiry();
 }
 
-// Validate card expiry
 function validateCardExpiry() {
     const expiry = document.getElementById('cardExpiry').value;
     const msg = document.getElementById('cardExpiryMsg');
@@ -890,7 +885,6 @@ function validateCardExpiry() {
     return false;
 }
 
-// Validate CVV
 function validateCardCvv(input) {
     const value = input.value;
     const msg = document.getElementById('cardCvvMsg');
@@ -906,68 +900,60 @@ function validateCardCvv(input) {
     }
 }
 
-// Update card holder display
 function updateCardHolder(input) {
     const value = input.value.toUpperCase();
     document.getElementById('displayCardHolder').textContent = value || 'CARD HOLDER';
 }
 
-// Show error message
+// Error/Success Messages
 function showError(message) {
     const errorDiv = document.getElementById('errorMsg');
     errorDiv.textContent = message;
     errorDiv.style.display = 'block';
     
-    // Hide after 5 seconds
     setTimeout(() => {
         errorDiv.style.display = 'none';
     }, 5000);
 }
 
-// Hide error message
 function hideError() {
     document.getElementById('errorMsg').style.display = 'none';
 }
 
-// Show success message
 function showSuccess(message) {
     const successDiv = document.getElementById('successMsg');
     successDiv.textContent = message;
     successDiv.style.display = 'block';
     
-    // Hide after 3 seconds
     setTimeout(() => {
         successDiv.style.display = 'none';
     }, 3000);
 }
 
-// Place order
+// Place Order (AJAX to process_checkout.php)
 function placeOrder() {
     const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
     
-    // Validate form
     const fullName = document.getElementById('fullName').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
-    
+    // Basic validation
     if (!fullName || !email || !phone) {
         showError('Please fill in all required fields');
         return;
     }
     
-    // Simple email validation
     if (!email.includes('@') || !email.includes('.')) {
         showError('Please enter a valid email address');
         return;
     }
     
-    // Simple phone validation
     if (phone.length < 10) {
         showError('Please enter a valid phone number');
         return;
     }
     
-    // Validate card if selected
+    // Card validation (if selected)
     if (paymentMethod === 'card') {
         if (!validateCardNumber() || !validateCardExpiry() || !validateCardCvv(document.getElementById('cardCvv'))) {
             showError('Please enter valid card details');
@@ -975,7 +961,7 @@ function placeOrder() {
         }
     }
     
-    // Check points if selected
+    //Points check (client-side reminder - server must re-validate)
     if (paymentMethod === 'points' && userPoints < totalPoints) {
         showError('Insufficient points!');
         return;
@@ -995,12 +981,10 @@ function placeOrder() {
         points_used: paymentMethod === 'points' ? totalPoints : 0
     };
     
-    // Show loading
     const btn = document.getElementById('placeOrderBtn');
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
     btn.disabled = true;
     
-    // Send to server
     fetch('process_checkout.php', {
         method: 'POST',
         headers: {
@@ -1013,7 +997,7 @@ function placeOrder() {
         if (data.success) {
             showSuccess('Order placed successfully!');
             
-            // Redirect to confirmation page
+            // Clear cart after success
             setTimeout(() => {
                 window.location.href = 'order_confirmation.php?order_id=' + data.order_ids.join(',');
             }, 1500);
@@ -1031,7 +1015,7 @@ function placeOrder() {
     });
 }
 
-// Sidebar function
+// Sidebar toggle
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     sidebar.style.left = sidebar.style.left === "0px" ? "-260px" : "0px";
