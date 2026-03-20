@@ -1,13 +1,4 @@
 <?php
-/**
- * Final checkout page for food orders.
- * 
- * Security / Design notes:
- *  - Requires login + non-empty cart
- *  - Redirects back to cafe_order.php if cart is empty
- *  - Card details are client-side only (no real processing here)
- *  - Points payment option checks if user has enough points before allowing selection, but final validation should also be done server-side when processing the order (not implemented here for simplicity)
- */
 
 require_once 'config.php';
 require_once 'functions.php';
@@ -15,7 +6,7 @@ require_once 'functions.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Authentication check
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -24,13 +15,13 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Redirect if no cart
+
 if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
     header("Location: cafe_menu.php?id=" . $facility_id);
     exit();
 }
 
-// Load user data
+
 $user_sql = "SELECT UserID, Name, Email, PointsBalance FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -38,7 +29,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Calculate cart totals
+
 $cart_items = $_SESSION['cart'];
 
 $subtotal = 0;
@@ -47,8 +38,8 @@ foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
     $total_points += $item['points_price'] * $item['quantity'];
 }
-$tax = $subtotal * 0.1;     //10% tax
-$total = $subtotal + $tax;  //Final cash total
+$tax = $subtotal * 0.1;     
+$total = $subtotal + $tax;  
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -784,13 +775,13 @@ $total = $subtotal + $tax;  //Final cash total
 </a>
 
 <script>
-    // Global variables from PHP
+    
 let cart = <?php echo json_encode($cart_items); ?>;
 let userPoints = <?php echo $user['PointsBalance']; ?>;
 let facilityId = <?php echo $facility_id; ?>;
 let totalPoints = <?php echo $total_points; ?>;
 
-// Payment method selection
+
 function selectPayment(method) {
     document.querySelectorAll('input[name="payment"]').forEach(radio => {
         radio.checked = radio.value === method;
@@ -803,7 +794,7 @@ function selectPayment(method) {
         cardDetails.classList.remove('show');
     }
     
-    // Disable button if paying with points but insufficient balance
+    
     if (method === 'points' && userPoints < totalPoints) {
         document.getElementById('placeOrderBtn').disabled = true;
         showError('Insufficient points! You need ' + totalPoints + ' points.');
@@ -813,7 +804,7 @@ function selectPayment(method) {
     }
 }
 
-// Card Input Formatting & Validation
+
 function formatCardNumber(input) {
     let value = input.value.replace(/\s/g, '');
     let formatted = '';
@@ -930,7 +921,7 @@ function showSuccess(message) {
     }, 3000);
 }
 
-// Place Order (AJAX to process_checkout.php)
+
 function placeOrder() {
     const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
     
