@@ -6,7 +6,7 @@
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -15,13 +15,13 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-//Initialize cart if not exists
+
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// AJAX Handlers
-// 1. Add item to cart
+
+
 if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
     header('Content-Type: application/json');
     
@@ -52,7 +52,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
         ];
     }
     
-    // Calculate totals for response
+    
     $cart_count = 0;
     $cart_total = 0;
     foreach ($_SESSION['cart'] as $item) {
@@ -69,7 +69,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
     exit();
 }
 
-// 2. Get current cart contents
+
 if (isset($_GET['action']) && $_GET['action'] == 'get_cart') {
     header('Content-Type: application/json');
     
@@ -92,7 +92,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_cart') {
     exit();
 }
 
-// 3. Remove item from cart
+
 if (isset($_POST['action']) && $_POST['action'] == 'remove_from_cart') {
     header('Content-Type: application/json');
     
@@ -111,7 +111,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'remove_from_cart') {
     exit();
 }
 
-// 4. Update item quantity in cart
+
 if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
     header('Content-Type: application/json');
     
@@ -136,7 +136,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
     exit();
 }
 
-// Page data loading (non-AJAX)
+
 $menu_sql = "SELECT * FROM cafe_menu WHERE available = TRUE ORDER BY category, name";
 $menu_result = mysqli_query($conn, $menu_sql);
 
@@ -156,7 +156,7 @@ while($item = mysqli_fetch_assoc($menu_result)) {
     $menu_by_category[$item['category']][] = $item;
 }
 
-// Local image mapping
+
 $food_images = [
     'Chicken Rice' => 'chickenrice.jpg',
     'Chicken Sandwich' => 'Chicken Sandwich.jfif',
@@ -170,7 +170,7 @@ $food_images = [
     'Ice Cream' => 'Ice Cream.jpg',
     'Fruit Salad' => 'Fruit Salad.jpg',
 ];
-// Current cart for initial count
+
 $cart_items = $_SESSION['cart'];
 $cart_count = 0;
 foreach ($cart_items as $item) {
@@ -277,10 +277,7 @@ foreach ($cart_items as $item) {
             color: #22d3ee;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
+        
         .sidebar {
             position: fixed;
             left: -280px;
@@ -1375,7 +1372,7 @@ function loadCart() {
         });
 }
 
-// Render cart items + total in sidebar
+
 function updateCartDisplay(data) {
     let cartItems = document.getElementById('cartItems');
     let cartFooter = document.getElementById('cartFooter');
@@ -1412,7 +1409,7 @@ function updateCartDisplay(data) {
     cartFooter.style.display = 'block';
 }
 
-// Update quantity in cart (via AJAX)
+
 function updateCartItem(itemId, newQty) {
     if (newQty < 1) {
         removeFromCart(itemId);
@@ -1434,7 +1431,7 @@ function updateCartItem(itemId, newQty) {
     });
 }
 
-// Remove item from cart
+
 function removeFromCart(itemId) {
     if (confirm('Remove this item from cart?')) {
         fetch('cafe_order.php', {
@@ -1454,18 +1451,18 @@ function removeFromCart(itemId) {
     }
 }
 
-// Toggle cart sidebar visibility
+
 function toggleCart() {
     document.getElementById('cartSidebar').classList.toggle('open');
     loadCart();
 }
 
-//Redirect to checkout page
+
 function goToCheckout() {
     window.location.href = 'checkout.php?id=<?php echo $facility_id; ?>';
 }
 
-// Show temp toast message
+
 function showToast(message) {
     let toast = document.getElementById('toast');
     toast.textContent = message;
@@ -1475,7 +1472,7 @@ function showToast(message) {
     }, 2000);
 }
 
-// Close sidebar when clicking outside
+
 document.addEventListener("click", function(e) {
     const cart = document.getElementById('cartSidebar');
     const cartBtn = document.querySelector('.cart-toggle');
@@ -1484,7 +1481,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Load cart on page ready
+
 document.addEventListener('DOMContentLoaded', function() {
     loadCart();
 });
