@@ -1002,3 +1002,191 @@ INSERT INTO lifeguards (name, email, phone, certification, experience, status) V
 ('Sanath jayasuriya ', 'sanat.wilson@example.com', '0774567890', 'First Aid', 2, 'active'),
 ('Tom Brown', 'tom.brown@example.com', '0775678901', 'Pool Operator', 4, 'on_leave')
 ON DUPLICATE KEY UPDATE lifeguard_id=lifeguard_id;
+
+-----------------------------------------------------------------------------------------------------------
+This is Emergency contacts table
+--------------------------------
+
+CREATE TABLE IF NOT EXISTS EmergencyContacts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type ENUM('security', 'medical', 'support', 'other') NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    description VARCHAR(255),
+    display_order INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+This is  Emergency alerts table
+--------------------------------
+
+CREATE TABLE IF NOT EXISTS EmergencyAlerts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    severity ENUM('info', 'warning', 'critical') NOT NULL DEFAULT 'info',
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NULL,
+    created_by INT, -- references Users(UserID) if you want to track who created it
+    is_active BOOLEAN DEFAULT TRUE,
+    INDEX (expires_at),
+    INDEX (severity)
+);
+
+Insert some default emergency contacts
+----------------------------------------
+INSERT INTO EmergencyContacts (type, name, phone, description, display_order) VALUES
+('security', 'Campus Security', '011-2345678', '24/7 Emergency Hotline', 1),
+('medical', 'Medical Center', '011-8765432', 'Emergency Medical Services', 2),
+('support', 'Student Support', '011-5678901', 'Counseling & Crisis Support', 3),
+('support', 'IT Support', '011-3456789', 'Technical Emergencies', 4);
+
+Insert a sample alert
+-----------------------
+
+INSERT INTO EmergencyAlerts (severity, title, message, expires_at) VALUES
+('critical', '⚠️ Fire Drill in Progress', 'A fire drill is scheduled for the Main Building at 2:00 PM. Please follow evacuation procedures.', DATE_ADD(NOW(), INTERVAL 2 HOUR)),
+('warning', 'Severe Weather Alert', 'Heavy rain expected. Please avoid low-lying areas and use covered walkways.', DATE_ADD(NOW(), INTERVAL 12 HOUR));
+
+
+USE collaborative_dev;
+This is safety tips table
+--------------------------
+
+CREATE TABLE IF NOT EXISTS SafetyTips (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    tags VARCHAR(255),
+    image_url VARCHAR(500),
+    video_url VARCHAR(500),
+    views INT DEFAULT 0,
+    likes INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (category),
+    INDEX (priority)
+);
+
+This is safety quiz questions table
+-----------------------------------
+
+CREATE TABLE IF NOT EXISTS SafetyQuiz (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question TEXT NOT NULL,
+    options JSON NOT NULL,
+    correct_answer INT NOT NULL,
+    explanation TEXT,
+    category VARCHAR(100),
+    difficulty ENUM('easy', 'medium', 'hard') DEFAULT 'medium',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+This is safety incidents table
+------------------------------
+
+CREATE TABLE IF NOT EXISTS SafetyIncidents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    location VARCHAR(255),
+    severity ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    report_date DATETIME NOT NULL,
+    status ENUM('active', 'resolved', 'investigating') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX (report_date),
+    INDEX (status)
+);
+
+Insert sample safety tips
+--------------------------
+
+INSERT INTO SafetyTips (title, content, category, priority, tags) VALUES
+('Fire Evacuation Procedures', 'In case of fire: 1. Stay calm 2. Alert others 3. Use nearest exit 4. Do not use elevators 5. Assemble at designated meeting point 6. Wait for further instructions. Remember: Your safety is more important than belongings. Never re-enter a burning building.', 'Fire Safety', 'high', 'fire,evacuation,emergency,safety'),
+('Campus Safe Walk Program', 'The Safe Walk program provides escort services between 6 PM and 6 AM. Call security at 011-2345678 to request an escort. Available for all students and staff. Wait in well-lit areas for the escort. Have your ID ready.', 'Personal Safety', 'medium', 'walk,night,safety,escort,security'),
+('Cyber Security Best Practices', 'Use strong passwords (mix of letters, numbers, symbols). Enable two-factor authentication on all accounts. Avoid public WiFi for banking. Don\'t click suspicious links. Keep software updated. Report phishing to IT.', 'Cyber Safety', 'high', 'cyber,security,password,phishing,hacking'),
+('Medical Emergency Response', 'For medical emergencies: Call 011-8765432 immediately. Provide: your location, what happened, number of people injured. Do not move the person unless danger. Stay on line. Apply pressure to bleeding. Know CPR.', 'Medical Emergency', 'high', 'medical,firstaid,emergency,cpr'),
+('Lab Safety Guidelines', 'Always wear PPE: goggles, gloves, lab coat. Know emergency exits and eyewash stations. Report spills immediately. Follow chemical handling procedures. No food or drinks. Never work alone after hours.', 'Lab Safety', 'high', 'lab,science,chemicals,ppe'),
+('Bus Safety Tips', 'Wait at designated stops. Board and exit carefully. Remain seated while moving. Keep aisles clear. Hold handrails. Report suspicious activity to driver. Know your stop. Be aware of surroundings.', 'Travel Safety', 'medium', 'bus,transport,safety,commute'),
+('Earthquake Preparedness', 'DROP to hands and knees. COVER head and neck under sturdy table. HOLD ON until shaking stops. Stay away from windows. If outdoors, move to open area. After shaking, evacuate carefully. Watch for falling debris.', 'Emergency Preparedness', 'high', 'earthquake,natural disaster,emergency'),
+('Personal Safety at Night', 'Travel in groups of 2+. Stay in well-lit areas. Keep phone charged. Share location with friends. Trust your instincts. Know emergency phone locations. Avoid shortcuts. Keep keys ready. Be aware.', 'Personal Safety', 'high', 'night,safety,walking,campus'),
+('Mental Health Resources', '24/7 Counseling: 011-5678901. Walk-in: Mon-Fri 9 AM-5 PM at Student Services. Free and confidential. Support groups available. Online resources. Don\'t struggle alone. Reach out for help.', 'Health & Wellness', 'medium', 'mental health,counseling,support,wellness'),
+('Lost and Found Procedures', 'Report lost items to Security Office (Building A, Room 101). Check online portal. Label belongings. For valuable items (laptops, phones, wallets), file police report. Check within 24 hours.', 'Campus Services', 'low', 'lost,found,property,security');
+
+Insert sample quiz questions
+-------------------------------
+
+INSERT INTO SafetyQuiz (question, options, correct_answer, explanation, category, difficulty) VALUES
+('What is the first thing you should do in case of a fire?', 
+ '["Grab your belongings", "Call your parents", "Alert others and evacuate", "Try to put out the fire yourself"]', 
+ 2, 
+ 'Alerting others and evacuating immediately is crucial. Your safety is more important than belongings. Fires spread quickly - every second counts.', 
+ 'Fire Safety', 
+ 'easy'),
+('What is the campus security emergency number?',
+ '["011-1234567", "011-2345678", "011-3456789", "011-4567890"]',
+ 1,
+ 'Campus Security can be reached 24/7 at 011-2345678. Save this number in your phone right now. It could save your life or someone else\'s.',
+ 'Emergency Contacts',
+ 'easy'),
+('Which of these is NOT a good password practice?',
+ '["Using different passwords for each account", "Enabling two-factor authentication", "Using your birthday as password", "Changing passwords every 3 months"]',
+ 2,
+ 'Never use personal information like birthdays, names, or common words as passwords. Hackers can easily guess these. Use a password manager instead.',
+ 'Cyber Safety',
+ 'medium'),
+('What should you do if someone is having a medical emergency?',
+ '["Take a video for evidence", "Call for help and stay with them", "Move them to a comfortable position", "Give them water or food"]',
+ 1,
+ 'Call for emergency help immediately and stay with the person. Do not move them unless they are in immediate danger. Keep them calm and comfortable until help arrives.',
+ 'Medical Emergency',
+ 'medium'),
+('Where should you assemble after evacuating a building?',
+ '["In the parking lot near your car", "At the designated assembly point", "At the nearest cafe or restaurant", "Go home immediately"]',
+ 1,
+ 'Always go to the designated assembly point so authorities can account for everyone. This helps ensure no one is trapped inside and rescue efforts can be focused.',
+ 'Fire Safety',
+ 'easy'),
+('What should you do if you receive a suspicious email?',
+ '["Click links to check if they work", "Reply and ask who sent it", "Delete it without opening", "Forward to all your friends as warning"]',
+ 2,
+ 'Delete suspicious emails immediately without opening any links or attachments. Report to IT if it appears to come from a campus source. Never engage with potential phishing attempts.',
+ 'Cyber Safety',
+ 'medium'),
+('How can you request a safe walk escort?',
+ '["Call campus security", "Use mobile safety app", "Ask campus police", "All of the above"]',
+ 3,
+ 'Campus security is the primary method (011-2345678), but you can also use safety apps or ask campus police. The service is free and available 24/7 for all students and staff.',
+ 'Personal Safety',
+ 'easy'),
+('What should be in your personal emergency kit?',
+ '["Water and snacks", "First aid supplies", "Flashlight and batteries", "All of the above"]',
+ 3,
+ 'A complete emergency kit should include: water (1 gallon per person/day), non-perishable food, first aid kit, flashlight, batteries, whistle, dust masks, wet wipes, and important documents.',
+ 'Emergency Preparedness',
+ 'medium'),
+('How often should you update your emergency contacts?',
+ '["Never, once set", "Every semester", "Every year or when they change", "Only during orientation"]',
+ 2,
+ 'Review and update your emergency contacts at least once a year, or whenever your contacts change (new phone numbers, etc.). Keep both digital and written copies.',
+ 'Personal Safety',
+ 'easy'),
+('What is the correct way to use a fire extinguisher?',
+ '["Spray and run", "PULL, AIM, SQUEEZE, SWEEP", "Throw it at the fire", "Call someone to use it"]',
+ 1,
+ 'Remember PASS: PULL the pin, AIM at the base of the fire, SQUEEZE the handle, SWEEP from side to side. Only use if fire is small and you have clear exit path.',
+ 'Fire Safety',
+ 'hard');
+
+Insert sample incidents
+-----------------------------
+INSERT INTO SafetyIncidents (title, description, location, severity, report_date, status) VALUES
+('Minor Fire in Science Lab', 'Small chemical fire contained quickly. No injuries. Lab evacuated safely.', 'Science Building, Lab 203', 'medium', DATE_SUB(NOW(), INTERVAL 2 DAY), 'resolved'),
+('Suspicious Person Reported', 'Unknown person attempting to access dormitories. Security responded.', 'Student Housing, Block C', 'high', DATE_SUB(NOW(), INTERVAL 5 DAY), 'investigating'),
+('Power Outage', 'Short power outage in Library. Emergency lighting worked properly.', 'Main Library', 'low', DATE_SUB(NOW(), INTERVAL 7 DAY), 'resolved'),
+('Medical Emergency', 'Student fainted in cafeteria. Treated by campus medical team.', 'Student Center', 'medium', DATE_SUB(NOW(), INTERVAL 10 DAY), 'resolved');

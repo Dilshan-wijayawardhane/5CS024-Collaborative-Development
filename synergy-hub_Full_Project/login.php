@@ -32,8 +32,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Log the login activity
             logActivity($conn, $user['UserID'], 'LOGIN');
             
-            // Redirect to dashboard
-            header("Location: index.php");
+            // Redirect based on user role
+            if ($user['Role'] === 'Admin') {
+                header("Location: admin/index.php");
+            } else {
+                header("Location: index.php");
+            }
             exit();
         } else {
             $error = "Invalid password!";
@@ -210,6 +214,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
         
         <p>First time? <a href="register.php">Register</a></p>
+        <p style="margin-top: 10px; font-size: 12px;">Admin users will be redirected to admin panel</p>
     </div>
 </div>
 

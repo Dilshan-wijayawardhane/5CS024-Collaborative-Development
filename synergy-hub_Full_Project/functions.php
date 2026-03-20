@@ -63,4 +63,17 @@ function generateCSRFToken() {
 function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
+
+// Add to functions.php
+function redirectBasedOnRole() {
+    if (isset($_SESSION['user_role'])) {
+        if ($_SESSION['user_role'] === 'Admin') {
+            header("Location: admin/index.php");
+        } else {
+            header("Location: index.php");
+        }
+        exit();
+    }
+}
+
 ?>
