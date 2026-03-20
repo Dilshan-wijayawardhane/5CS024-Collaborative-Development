@@ -1,14 +1,23 @@
 <?php
+/**
+ * API Endpoint: Process checkout for facility booking or food order.
+ * Called via AJAX checkout.php
+ * 
+ * Security / Design notes:
+ *  - Only allows processing for logged-in users
+ *  - Transaction ensures consistency when inserting orders and deducting points
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-// Turn on error reporting for debugging
+// Enable error reporting for debugging (disable in production)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Check if user is logged in
+// Authentication check
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
@@ -16,7 +25,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get POST data
+// Get JSON input
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!$data) {
@@ -24,7 +33,6 @@ if (!$data) {
     exit();
 }
 
-// Validate required fields
 if (!isset($data['items']) || empty($data['items']) || !isset($data['payment_method'])) {
     echo json_encode(['success' => false, 'message' => 'Missing required fields']);
     exit();
@@ -36,7 +44,7 @@ mysqli_begin_transaction($conn);
 try {
     $order_ids = [];
     
-    // Insert each item as a separate order
+    // Create one order per item instance
     foreach ($data['items'] as $item) {
         for ($i = 0; $i < $item['quantity']; $i++) {
             $order_sql = "INSERT INTO Orders (UserID, ItemName, Category, Price, Quantity, Status) 
@@ -60,9 +68,9 @@ try {
         }
     }
     
-    // If paying with points, deduct from user balance
+    // Handle points payment if selected
     if ($data['payment_method'] === 'points' && $data['points_used'] > 0) {
-        // Check current balance
+        // Re-check balance
         $check_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         mysqli_stmt_bind_param($check_stmt, "i", $user_id);
@@ -74,7 +82,6 @@ try {
             throw new Exception('Insufficient points');
         }
         
-        // Deduct points
         $points_sql = "UPDATE Users SET PointsBalance = PointsBalance - ? WHERE UserID = ?";
         $points_stmt = mysqli_prepare($conn, $points_sql);
         mysqli_stmt_bind_param($points_stmt, "ii", $data['points_used'], $user_id);
@@ -84,16 +91,13 @@ try {
         }
     }
     
-    // Log activity
     logActivity($conn, $user_id, 'ORDER_PLACED', 'Orders', $order_ids[0] ?? 0);
     
     // Commit transaction
     mysqli_commit($conn);
     
-    // Clear cart from session
     unset($_SESSION['cart']);
     
-    // Return success
     echo json_encode([
         'success' => true,
         'message' => 'Order placed successfully',
@@ -102,7 +106,7 @@ try {
     ]);
     
 } catch (Exception $e) {
-    // Rollback on error
+    // Rollback on any error
     mysqli_rollback($conn);
     
     echo json_encode([

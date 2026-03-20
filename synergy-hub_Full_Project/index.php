@@ -1,14 +1,23 @@
 <?php
+/**
+ * Main dashboard page for Synergy Hub project.
+ * 
+ * Security / Features:
+ *  - Requires login
+ *  - Fetches user data, open facilities count, upcoming events, gym status
+ *  - Uses prepared statement where appropriate
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
-// Check if user is logged in
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
-// Get user details
+// Load user profile data
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT * FROM Users WHERE UserID = ?";
 $stmt = mysqli_prepare($conn, $sql);
@@ -17,27 +26,26 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
 
-// Get facilities count
+// Quick stats & live data
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Get upcoming events
+// Upcoming campus events (limited to 3)
 $events_sql = "SELECT * FROM Events WHERE Status = 'Upcoming' AND StartTime > NOW() ORDER BY StartTime ASC LIMIT 3";
 $events_stmt = mysqli_prepare($conn, $events_sql);
 mysqli_stmt_execute($events_stmt);
 $events_result = mysqli_stmt_get_result($events_stmt);
 
-// Get SU Events (Students' Union)
+// Students' Union upcoming events (limited to 2)
 $su_events_sql = "SELECT * FROM su_events WHERE event_time > NOW() ORDER BY event_time ASC LIMIT 2";
 $su_events_result = mysqli_query($conn, $su_events_sql);
 
-// Get Gym Status
+// Latest gym status
 $gym_sql = "SELECT * FROM gym_status ORDER BY id DESC LIMIT 1";
 $gym_result = mysqli_query($conn, $gym_sql);
 $gym = mysqli_fetch_assoc($gym_result);
 
-// Get user points
 $points = $user['PointsBalance'];
 ?>
 
@@ -49,10 +57,6 @@ $points = $user['PointsBalance'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Synergy Hub - Dashboard</title>
     <style>
-        /* ========================================
-           COMPLETE STYLES
-           ======================================== */
-        
         * {
             margin: 0;
             padding: 0;
@@ -64,8 +68,7 @@ $points = $user['PointsBalance'];
             min-height: 100vh;
             position: relative;
         }
-        
-        /* Background image */
+    
         .bg {
             position: fixed;
             top: 0;
@@ -87,7 +90,6 @@ $points = $user['PointsBalance'];
             pointer-events: none;
         }
         
-        /* NAVBAR */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -155,11 +157,7 @@ $points = $user['PointsBalance'];
             font-size: 20px;
             text-decoration: none;
         }
-        
-        /* ========================================
-           NOTIFICATION SYSTEM
-           ======================================== */
-        
+                
         .notify {
             position: relative;
             font-size: 20px;
@@ -973,7 +971,6 @@ $points = $user['PointsBalance'];
             background: rgba(255, 255, 255, 0.3);
         }
         
-        /* MAIN LAYOUT */
         .layout {
             display: flex;
             gap: 24px;
@@ -982,7 +979,6 @@ $points = $user['PointsBalance'];
             margin: 0 auto;
         }
         
-        /* GRID */
         .grid {
             flex: 3;
             display: grid;
@@ -990,7 +986,6 @@ $points = $user['PointsBalance'];
             gap: 24px;
         }
         
-        /* CARD */
         .card {
             background: rgba(30, 144, 255, 0.18);
             backdrop-filter: blur(10px);
@@ -1029,7 +1024,6 @@ $points = $user['PointsBalance'];
             margin: 0;
         }
         
-        /* EVENTS PANEL */
         .events {
             flex: 1;
             background: rgba(30, 144, 255, 0.18);
@@ -1101,7 +1095,6 @@ $points = $user['PointsBalance'];
             color: #ef4444;
         }
         
-        /* Bus Schedule Styles */
         .route-mini {
             display: flex;
             justify-content: space-between;
@@ -1152,7 +1145,6 @@ $points = $user['PointsBalance'];
             margin-top: 5px;
         }
         
-        /* EDIT MODAL */
         .edit-modal {
             display: none;
             position: fixed;
@@ -1230,7 +1222,7 @@ $points = $user['PointsBalance'];
         
         .emergency-btn {
             position: fixed;
-            bottom: 110px;  /* Position above the chat button */
+            bottom: 110px;
             right: 30px;
             width: 65px;
             height: 65px;
@@ -1288,12 +1280,10 @@ $points = $user['PointsBalance'];
             }
         }
 
-        /* Adjust chat button position to make room for emergency button */
         .chat-btn {
-            bottom: 110px;  /* Changed from 30px to 110px */
+            bottom: 110px;
         }
 
-        /* Mobile responsive */
         @media (max-width: 768px) {
             .emergency-btn {
                 width: 55px;
@@ -1308,8 +1298,6 @@ $points = $user['PointsBalance'];
             }
         }
 
-
-        /* CHAT */
         .chat-container {
             position: fixed;
             bottom: 100px;
@@ -1343,7 +1331,6 @@ $points = $user['PointsBalance'];
             }
         }
 
-        /* Chat Header */
         .chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -1414,7 +1401,7 @@ $points = $user['PointsBalance'];
             transform: rotate(90deg);
         }
 
-        /* Chat Messages Area */
+        
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -1425,7 +1412,6 @@ $points = $user['PointsBalance'];
             gap: 16px;
         }
 
-        /* Message Groups */
         .message-group {
             display: flex;
             flex-direction: column;
@@ -1475,7 +1461,6 @@ $points = $user['PointsBalance'];
             text-align: right;
         }
 
-        /* Quick Replies */
         .quick-replies {
             display: flex;
             flex-wrap: wrap;
@@ -1503,7 +1488,6 @@ $points = $user['PointsBalance'];
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
-        /* Typing Indicator */
         .typing-indicator {
             display: flex;
             gap: 4px;
@@ -1532,7 +1516,6 @@ $points = $user['PointsBalance'];
             30% { transform: translateY(-8px); }
         }
 
-        /* Chat Input Area */
         .chat-input-area {
             padding: 20px;
             background: white;
@@ -1604,7 +1587,6 @@ $points = $user['PointsBalance'];
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        /* Chat Features */
         .chat-features {
             display: flex;
             justify-content: space-between;
@@ -1643,7 +1625,6 @@ $points = $user['PointsBalance'];
             color: #94a3b8;
         }
 
-        /* Emoji Picker */
         .emoji-picker {
             position: absolute;
             bottom: 100px;
@@ -1680,7 +1661,6 @@ $points = $user['PointsBalance'];
             transform: scale(1.1);
         }
 
-        /* Chat Bubble Animation */
         @keyframes messagePop {
             from {
                 opacity: 0;
@@ -1696,7 +1676,6 @@ $points = $user['PointsBalance'];
             animation: messagePop 0.3s ease;
         }
 
-        /* Chat Button */
         .chat-btn {
             position: fixed;
             bottom: 30px;
@@ -1746,7 +1725,6 @@ $points = $user['PointsBalance'];
             50% { transform: scale(1.1); }
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .chat-container {
                 width: 320px;
@@ -1778,15 +1756,12 @@ $points = $user['PointsBalance'];
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
-    <!-- Header -->
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
     
-    <!-- User Info -->
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
@@ -1796,8 +1771,7 @@ $points = $user['PointsBalance'];
             <p><i class="fa-solid fa-star"></i> <?php echo $points; ?> points</p>
         </div>
     </div>
-    
-    <!-- Navigation -->
+
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link active">
@@ -1847,7 +1821,6 @@ $points = $user['PointsBalance'];
     
     <div class="sidebar-divider"></div>
     
-    <!-- My Clubs Preview -->
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -1864,7 +1837,6 @@ $points = $user['PointsBalance'];
         </div>
     </div>
     
-    <!-- Quick Stats -->
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
@@ -1880,7 +1852,6 @@ $points = $user['PointsBalance'];
         </div>
     </div>
     
-    <!-- Footer -->
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -1893,10 +1864,8 @@ $points = $user['PointsBalance'];
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -1905,12 +1874,10 @@ $points = $user['PointsBalance'];
     <h1 class="logo">Synergy <span>Hub</span></h1>
     
     <div class="icons">
-        <!-- NOTIFICATION BELL -->
         <div class="notify" onclick="toggleNotifications()">
             <i class="fa-solid fa-bell"></i>
             <span class="badge" id="notificationBadge">0</span>
             
-            <!-- Notification Dropdown -->
             <div class="notification-dropdown" id="notificationDropdown">
                 <div class="notification-header">
                     <h3>Notifications</h3>
@@ -1947,24 +1914,19 @@ $points = $user['PointsBalance'];
     </div>
 </header>
 
-<!-- SEARCH WITH LIVE RESULTS -->
 <div class="search-wrapper">
     <input type="text" id="searchInput" placeholder="Search facilities, events, clubs, transport..." autocomplete="off">
     
-    <!-- Search Results Dropdown -->
     <div class="search-results" id="searchResults">
         <div class="search-results-header">
             <i class="fa-solid fa-magnifying-glass"></i> Search Results
         </div>
         <div class="search-results-list" id="searchResultsList">
-            <!-- Results will appear here -->
         </div>
     </div>
 </div>
 
-<!-- MAIN -->
 <main class="layout">
-    <!-- FEATURE GRID -->
     <section class="grid">
         <a href="qr.html" class="card">
             <i class="fa-solid fa-qrcode icon"></i>
@@ -2003,11 +1965,9 @@ $points = $user['PointsBalance'];
         </a>
     </section>
     
-    <!-- EVENTS & INFO PANEL -->
     <aside class="events">
         <h3>Live Campus Updates</h3>
         
-        <!-- WLV GYM STATUS -->
         <h4>🏋️  Gym</h4>
         <?php if($gym): ?>
         <div class="gym-status-item">
@@ -2032,7 +1992,6 @@ $points = $user['PointsBalance'];
         <p>Gym status unavailable</p>
         <?php endif; ?>
         
-        <!-- STUDENTS' UNION EVENTS -->
         <h4 style="margin-top: 20px;">🎓 Students' Union</h4>
         <?php if(mysqli_num_rows($su_events_result) > 0): ?>
             <?php while($su_event = mysqli_fetch_assoc($su_events_result)): ?>
@@ -2045,10 +2004,8 @@ $points = $user['PointsBalance'];
         <p>No SU events scheduled</p>
         <?php endif; ?>
         
-        <!-- ========== CINEC BUS SCHEDULE - UPDATED ========== -->
         <h4 style="margin-top: 20px;">🚌 CINEC Bus Schedule</h4>
         
-        <!-- Morning Pickup Times -->
         <div class="route-mini">
             <span class="route-name">Negombo → CINEC</span>
             <span class="route-time">6:15 AM</span>
@@ -2074,7 +2031,6 @@ $points = $user['PointsBalance'];
             <span class="route-time">6:20 AM</span>
         </div>
         
-        <!-- Evening Departure -->
         <div class="route-mini bus-schedule-header">
             <span class="route-name" style="font-weight: 700;">🚍 Departure from CINEC</span>
             <span class="route-time evening">5:05 PM</span>
@@ -2083,7 +2039,6 @@ $points = $user['PointsBalance'];
             <i class="fa-solid fa-clock"></i> All buses depart at 5:05 PM
         </div>
         
-        <!-- CAMPUS EVENTS -->
         <h4 style="margin-top: 20px;">📅 Campus Events</h4>
         <?php if(mysqli_num_rows($events_result) > 0): ?>
             <?php while($event = mysqli_fetch_assoc($events_result)): ?>
@@ -2096,7 +2051,6 @@ $points = $user['PointsBalance'];
         <p>No upcoming events</p>
         <?php endif; ?>
         
-        <!-- CAMPUS HOTLINE -->
         <h4 style="margin-top: 20px;">📞 Campus Hotline</h4>
 
         <div class="route-mini">
@@ -2137,7 +2091,6 @@ $points = $user['PointsBalance'];
     </aside>
 </main>
 
-<!-- EDIT PROFILE MODAL -->
 <div class="edit-modal" id="editModal">
     <div class="edit-box">
         <h3>Edit Profile</h3>
@@ -2154,15 +2107,12 @@ $points = $user['PointsBalance'];
     <span class="emergency-btn-badge">SOS</span>
 </a>
 
-<!-- IMPROVED CHAT BUTTON -->
 <div class="chat-btn" onclick="toggleChat()">
     <i class="fa-solid fa-comment"></i>
     <span class="chat-btn-badge" id="chatBadge" style="display: none;">1</span>
 </div>
 
-<!-- IMPROVED CHAT CONTAINER -->
 <div class="chat-container" id="chatContainer">
-    <!-- Chat Header -->
     <div class="chat-header" id="chatHeader">
         <div class="chat-header-left">
             <div class="chat-avatar">
@@ -2181,9 +2131,7 @@ $points = $user['PointsBalance'];
         </div>
     </div>
     
-    <!-- Chat Messages Area -->
     <div class="chat-messages" id="chatMessages">
-        <!-- Welcome Message -->
         <div class="message-group bot">
             <div class="message-bubble">
                 👋 Hi <?php echo htmlspecialchars($user['Name']); ?>! I'm your AI campus assistant. How can I help you today?
@@ -2193,7 +2141,6 @@ $points = $user['PointsBalance'];
             </div>
         </div>
         
-        <!-- Suggestions -->
         <div class="message-group bot">
             <div class="message-bubble">
                 Here's what I can help you with:
@@ -2212,7 +2159,6 @@ $points = $user['PointsBalance'];
         </div>
     </div>
     
-    <!-- Chat Input Area -->
     <div class="chat-input-area">
         <div class="chat-input-wrapper">
             <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
@@ -2226,7 +2172,6 @@ $points = $user['PointsBalance'];
             </div>
         </div>
         
-        <!-- Emoji Picker -->
         <div class="emoji-picker" id="emojiPicker">
             <div class="emoji-item" onclick="addEmoji('😊')">😊</div>
             <div class="emoji-item" onclick="addEmoji('😂')">😂</div>
@@ -2242,7 +2187,6 @@ $points = $user['PointsBalance'];
             <div class="emoji-item" onclick="addEmoji('❌')">❌</div>
         </div>
         
-        <!-- Chat Features -->
         <div class="chat-features">
             <div class="chat-feature-buttons">
                 <button class="feature-btn" onclick="clearChat()" title="Clear chat">
@@ -2265,7 +2209,6 @@ $points = $user['PointsBalance'];
 </footer>
 
 <script>
-// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -2297,7 +2240,6 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// ==================== PROFILE MENU ====================
 function toggleProfileMenu(e) {
     e.stopPropagation();
     document.getElementById("profileMenu").classList.toggle("show");
@@ -2311,7 +2253,6 @@ document.addEventListener("click", function() {
     document.getElementById("profileMenu").classList.remove("show");
 });
 
-// ==================== EDIT PROFILE ====================
 function openEditProfile() {
     document.getElementById("editModal").classList.add("show");
     document.getElementById("profileMenu").classList.remove("show");
@@ -2342,28 +2283,21 @@ function saveProfile() {
     alert("Profile updated!");
 }
 
-// ==================== NOTIFICATION SYSTEM ====================
-
-// Load notifications on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadNotifications();
     
-    // Refresh notifications every 30 seconds
     setInterval(loadNotifications, 30000);
 });
 
-// Toggle notification dropdown
 function toggleNotifications() {
     const dropdown = document.getElementById('notificationDropdown');
     dropdown.classList.toggle('show');
     
-    // Load notifications when opened
     if (dropdown.classList.contains('show')) {
         loadNotifications();
     }
 }
 
-// Close notifications when clicking outside
 document.addEventListener('click', function(e) {
     const notify = document.querySelector('.notify');
     const dropdown = document.getElementById('notificationDropdown');
@@ -2373,7 +2307,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Load notifications from server
 function loadNotifications() {
     fetch('get_notifications.php')
         .then(response => response.json())
@@ -2386,7 +2319,6 @@ function loadNotifications() {
         .catch(error => console.error('Error loading notifications:', error));
 }
 
-// Update notification badge
 function updateNotificationBadge(count) {
     const badge = document.getElementById('notificationBadge');
     if (count > 0) {
@@ -2397,7 +2329,6 @@ function updateNotificationBadge(count) {
     }
 }
 
-// Display notifications in dropdown
 function displayNotifications(notifications) {
     const list = document.getElementById('notificationList');
     
@@ -2430,7 +2361,6 @@ function displayNotifications(notifications) {
     list.innerHTML = html;
 }
 
-// Get icon based on notification type
 function getNotificationIcon(type) {
     switch(type) {
         case 'gym': return 'fa-dumbbell';
@@ -2440,7 +2370,6 @@ function getNotificationIcon(type) {
     }
 }
 
-// Mark single notification as read
 function markAsRead(notificationId) {
     fetch('mark_notification_read.php', {
         method: 'POST',
@@ -2457,7 +2386,6 @@ function markAsRead(notificationId) {
     });
 }
 
-// Mark all notifications as read
 function markAllAsRead() {
     fetch('mark_notification_read.php', {
         method: 'POST',
@@ -2473,39 +2401,33 @@ function markAllAsRead() {
     });
 }
 
-// ==================== LIVE SEARCH ====================
 
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const searchResultsList = document.getElementById('searchResultsList');
 let searchTimeout;
 
-// Search input event listener
+
 if (searchInput) {
     searchInput.addEventListener('input', function() {
         const query = this.value.trim();
         
-        // Clear previous timeout
         clearTimeout(searchTimeout);
         
-        // Hide results if query is too short
         if (query.length < 2) {
             searchResults.classList.remove('show');
             return;
         }
         
-        // Show loading
         searchResultsList.innerHTML = '<div class="search-loading"><i class="fa-solid fa-spinner"></i> Searching...</div>';
         searchResults.classList.add('show');
         
-        // Debounce search
         searchTimeout = setTimeout(() => {
             performSearch(query);
         }, 300);
     });
 }
 
-// Perform search
 function performSearch(query) {
     fetch('search.php?q=' + encodeURIComponent(query))
         .then(response => {
@@ -2523,7 +2445,6 @@ function performSearch(query) {
         });
 }
 
-// Display search results
 function displaySearchResults(results) {
     if (!results || results.length === 0) {
         searchResultsList.innerHTML = `
@@ -2557,7 +2478,6 @@ function displaySearchResults(results) {
     searchResultsList.innerHTML = html;
 }
 
-// Get icon based on result type
 function getSearchIcon(type) {
     switch(type) {
         case 'facility': return 'fa-building';
@@ -2569,7 +2489,6 @@ function getSearchIcon(type) {
     }
 }
 
-// Get link based on result type
 function getSearchLink(item) {
     switch(item.type) {
         case 'facility': return 'facility_details.php?id=' + item.id;
@@ -2581,7 +2500,6 @@ function getSearchLink(item) {
     }
 }
 
-// Escape HTML
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -2589,7 +2507,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Close search results when clicking outside
 document.addEventListener('click', function(e) {
     const wrapper = document.querySelector('.search-wrapper');
     if (wrapper && !wrapper.contains(e.target)) {
@@ -2599,7 +2516,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Clear search results when pressing Escape
 if (searchInput) {
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
@@ -2609,20 +2525,14 @@ if (searchInput) {
     });
 }
 
-// ==================== CHAT FUNCTIONS ====================
-// ==================== IMPROVED CHAT SYSTEM ====================
-
-// Chat state
 let chatHistory = [];
 let isTyping = false;
 let unreadCount = 1;
 
-// Initialize chat
 document.addEventListener('DOMContentLoaded', function() {
     loadChatHistory();
     updateChatBadge();
     
-    // Load chat history from localStorage
     function loadChatHistory() {
         const saved = localStorage.getItem('chatHistory');
         if (saved) {
@@ -2630,72 +2540,59 @@ document.addEventListener('DOMContentLoaded', function() {
             displayChatHistory();
         }
     }
-    
-    // Set up enter key
     document.getElementById('chatInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-    
-    // Make chat draggable
     makeChatDraggable();
 });
 
-// Toggle chat
+
 function toggleChat() {
     const container = document.getElementById('chatContainer');
     container.classList.toggle('show');
     
     if (container.classList.contains('show')) {
-        // Reset unread badge when opened
+        
         unreadCount = 0;
         updateChatBadge();
         
-        // Scroll to bottom
         scrollToBottom();
         
-        // Focus input
         setTimeout(() => {
             document.getElementById('chatInput').focus();
         }, 300);
     }
 }
 
-// Send message
 function sendMessage() {
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
     
     if (!message) return;
     
-    // Add user message
     addMessage(message, 'user');
     
-    // Clear input
     input.value = '';
     
-    // Show typing indicator
     showTypingIndicator();
     
-    // Simulate AI response after delay
     setTimeout(() => {
         removeTypingIndicator();
         const response = getAIResponse(message);
         addMessage(response, 'bot');
         
-        // Add quick replies if appropriate
         if (shouldShowQuickReplies(message)) {
             addQuickReplies(message);
         }
     }, 1500 + Math.random() * 1000);
     
-    // Save to history
     saveToHistory(message, 'user');
 }
 
-// Add message to chat
+
 function addMessage(text, sender) {
     const messagesDiv = document.getElementById('chatMessages');
     const messageGroup = document.createElement('div');
@@ -2713,23 +2610,20 @@ function addMessage(text, sender) {
     messageGroup.appendChild(time);
     messagesDiv.appendChild(messageGroup);
     
-    // Save to history
     saveToHistory(text, sender, getCurrentTime());
     
     scrollToBottom();
     
-    // Increment unread count if chat is closed
     if (!document.getElementById('chatContainer').classList.contains('show') && sender === 'bot') {
         unreadCount++;
         updateChatBadge();
     }
 }
 
-// Get AI response
+
 function getAIResponse(message) {
     const msg = message.toLowerCase();
     
-    // Gym related queries
     if (msg.includes('gym') || msg.includes('workout') || msg.includes('exercise')) {
         const gymStatus = <?php echo json_encode($gym); ?>;
         if (gymStatus) {
@@ -2743,7 +2637,6 @@ function getAIResponse(message) {
         return "🏋️ The gym is currently open from 6:00 AM to 10:00 PM. Pool is available!";
     }
     
-    // Events related
     else if (msg.includes('event') || msg.includes('calendar') || msg.includes('upcoming')) {
         return "📅 **Upcoming Events**\n\n" +
                "• Tech Workshop - Tomorrow 2:00 PM\n" +
@@ -2752,7 +2645,6 @@ function getAIResponse(message) {
                "Check the Events panel for more details!";
     }
     
-    // Transport related
     else if (msg.includes('bus') || msg.includes('transport') || msg.includes('shuttle')) {
         return "🚌 **CINEC Bus Schedule**\n\n" +
                "**Morning Pickups:**\n" +
@@ -2764,7 +2656,6 @@ function getAIResponse(message) {
                "• All buses depart CINEC at 5:05 PM";
     }
     
-    // Clubs related
     else if (msg.includes('club') || msg.includes('society') || msg.includes('join')) {
         return "👥 **Active Clubs**\n\n" +
                "• Coding Club - Meets Wednesdays\n" +
@@ -2775,7 +2666,6 @@ function getAIResponse(message) {
                "Want to join any club? I can help you with that!";
     }
     
-    // Games related
     else if (msg.includes('game') || msg.includes('play') || msg.includes('fun')) {
         return "🎮 **Available Games**\n\n" +
                "• Memory Game - Test your memory\n" +
@@ -2785,7 +2675,6 @@ function getAIResponse(message) {
                "You can earn 10-50 points by playing games!";
     }
     
-    // Points related
     else if (msg.includes('point') || msg.includes('score') || msg.includes('earn')) {
         return "⭐ **How to Earn Points**\n\n" +
                "• Check-in to facilities: +10 points\n" +
@@ -2796,7 +2685,6 @@ function getAIResponse(message) {
                `Your current balance: ${<?php echo $points; ?>} points`;
     }
     
-    // Help related
     else if (msg.includes('help') || msg.includes('support') || msg.includes('contact')) {
         return "🆘 **Need Help?**\n\n" +
                "• Campus Security: 011-2345678\n" +
@@ -2806,17 +2694,14 @@ function getAIResponse(message) {
                "You can also visit the admin office in person.";
     }
     
-    // Greetings
     else if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) {
         return `Hello ${<?php echo json_encode($user['Name']); ?>}! 👋 How can I assist you today?`;
     }
     
-    // Thanks
     else if (msg.includes('thank') || msg.includes('thanks')) {
         return "You're welcome! 😊 Let me know if you need anything else!";
     }
     
-    // Default response
     else {
         return "I understand you're asking about " + message + ". Could you please be more specific? You can ask me about:\n\n" +
                "• Gym status 🏋️\n" +
@@ -2829,7 +2714,6 @@ function getAIResponse(message) {
     }
 }
 
-// Add quick replies
 function addQuickReplies(originalMessage) {
     const messagesDiv = document.getElementById('chatMessages');
     const msg = originalMessage.toLowerCase();
@@ -2845,7 +2729,7 @@ function addQuickReplies(originalMessage) {
     } else if (msg.includes('club')) {
         replies = ['Join Club', 'Club Events', 'My Clubs', 'Create Club'];
     } else {
-        return; // Don't add quick replies
+        return;
     }
     
     const quickReplyGroup = document.createElement('div');
@@ -2867,11 +2751,10 @@ function addQuickReplies(originalMessage) {
     scrollToBottom();
 }
 
-// Quick reply handler
+
 function quickReply(action) {
     addMessage(action, 'user');
     
-    // Show typing
     showTypingIndicator();
     
     setTimeout(() => {
@@ -2881,7 +2764,6 @@ function quickReply(action) {
     }, 1000);
 }
 
-// Show typing indicator
 function showTypingIndicator() {
     if (isTyping) return;
     
@@ -2901,7 +2783,7 @@ function showTypingIndicator() {
     scrollToBottom();
 }
 
-// Remove typing indicator
+
 function removeTypingIndicator() {
     const indicator = document.getElementById('typingIndicator');
     if (indicator) {
@@ -2910,38 +2792,31 @@ function removeTypingIndicator() {
     isTyping = false;
 }
 
-// Toggle emoji picker
 function toggleEmojiPicker() {
     const picker = document.getElementById('emojiPicker');
     picker.classList.toggle('show');
 }
 
-// Add emoji to input
 function addEmoji(emoji) {
     const input = document.getElementById('chatInput');
     input.value += emoji;
     input.focus();
-    
-    // Hide picker
+     
     document.getElementById('emojiPicker').classList.remove('show');
 }
 
-// Clear chat
 function clearChat() {
     if (confirm('Clear all messages?')) {
         const messagesDiv = document.getElementById('chatMessages');
         messagesDiv.innerHTML = '';
         
-        // Add welcome message back
         addMessage(`👋 Hi ${<?php echo json_encode($user['Name']); ?>}! I'm your AI campus assistant. How can I help you today?`, 'bot');
         
-        // Clear history
         chatHistory = [];
         localStorage.removeItem('chatHistory');
     }
 }
 
-// Export chat
 function exportChat() {
     const messages = document.querySelectorAll('.message-group');
     let chatText = "Campus Assistant Chat - " + new Date().toLocaleString() + "\n\n";
@@ -2953,7 +2828,6 @@ function exportChat() {
         chatText += `${sender} (${time}): ${text}\n`;
     });
     
-    // Create download
     const blob = new Blob([chatText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2963,7 +2837,6 @@ function exportChat() {
     URL.revokeObjectURL(url);
 }
 
-// Save to history
 function saveToHistory(message, sender, time) {
     chatHistory.push({
         message: message,
@@ -2972,7 +2845,6 @@ function saveToHistory(message, sender, time) {
         date: new Date().toISOString()
     });
     
-    // Keep only last 100 messages
     if (chatHistory.length > 100) {
         chatHistory = chatHistory.slice(-100);
     }
@@ -2980,7 +2852,6 @@ function saveToHistory(message, sender, time) {
     localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
 }
 
-// Display chat history
 function displayChatHistory() {
     const messagesDiv = document.getElementById('chatMessages');
     messagesDiv.innerHTML = '';
@@ -3005,7 +2876,6 @@ function displayChatHistory() {
     scrollToBottom();
 }
 
-// Get current time
 function getCurrentTime() {
     const now = new Date();
     let hours = now.getHours();
@@ -3016,13 +2886,11 @@ function getCurrentTime() {
     return `${hours}:${minutes} ${ampm}`;
 }
 
-// Scroll to bottom
 function scrollToBottom() {
     const messagesDiv = document.getElementById('chatMessages');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Update chat badge
 function updateChatBadge() {
     const badge = document.getElementById('chatBadge');
     if (unreadCount > 0) {
@@ -3033,13 +2901,11 @@ function updateChatBadge() {
     }
 }
 
-// Check if should show quick replies
 function shouldShowQuickReplies(message) {
     const keywords = ['gym', 'event', 'bus', 'club', 'game', 'help'];
     return keywords.some(keyword => message.toLowerCase().includes(keyword));
 }
 
-// Make chat draggable
 function makeChatDraggable() {
     const chatContainer = document.getElementById('chatContainer');
     const chatHeader = document.getElementById('chatHeader');
@@ -3075,7 +2941,6 @@ function makeChatDraggable() {
         let newLeft = startLeft + dx;
         let newTop = startTop + dy;
         
-        // Keep within window bounds
         const maxLeft = window.innerWidth - chatContainer.offsetWidth;
         const maxTop = window.innerHeight - chatContainer.offsetHeight;
         
@@ -3095,7 +2960,6 @@ function makeChatDraggable() {
     }
 }
 
-// Close emoji picker when clicking outside
 document.addEventListener('click', function(e) {
     const picker = document.getElementById('emojiPicker');
     const emojiBtn = document.querySelector('.action-btn:first-child');
@@ -3105,32 +2969,26 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Update time every minute
 setInterval(() => {
     document.getElementById('chatTime').textContent = getCurrentTime();
 }, 60000);
 
-// ==================== EMERGENCY ALERT CHECKER ====================
 function checkEmergencyAlerts() {
     fetch('get_emergency_alerts.php')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.count > 0) {
-                // Update the emergency button badge with alert count
                 const badge = document.querySelector('.emergency-btn-badge');
                 if (badge) {
                     badge.textContent = data.count > 9 ? '9+' : data.count;
                 }
                 
-                // Optionally show a toast notification for critical alerts
                 const criticalAlerts = data.alerts.filter(a => a.severity === 'critical');
                 if (criticalAlerts.length > 0 && !sessionStorage.getItem('alertShown')) {
-                    // Show a notification (you can customize this)
                     const alert = criticalAlerts[0];
                     showEmergencyNotification(alert.title, alert.message);
                     sessionStorage.setItem('alertShown', 'true');
                     
-                    // Clear after 1 hour
                     setTimeout(() => {
                         sessionStorage.removeItem('alertShown');
                     }, 3600000);
@@ -3140,9 +2998,7 @@ function checkEmergencyAlerts() {
         .catch(error => console.error('Error checking alerts:', error));
 }
 
-// Show emergency notification
 function showEmergencyNotification(title, message) {
-    // Check if browser supports notifications
     if (Notification.permission === 'granted') {
         new Notification('🚨 EMERGENCY ALERT: ' + title, {
             body: message,
@@ -3159,7 +3015,6 @@ function showEmergencyNotification(title, message) {
         });
     }
     
-    // Also show an in-page toast
     const toast = document.createElement('div');
     toast.style.cssText = `
         position: fixed;
@@ -3189,20 +3044,16 @@ function showEmergencyNotification(title, message) {
     };
     document.body.appendChild(toast);
     
-    // Auto remove after 10 seconds
     setTimeout(() => {
         toast.remove();
     }, 10000);
 }
 
-// Check for alerts every 30 seconds
 setInterval(checkEmergencyAlerts, 30000);
 
-// Check on page load
 document.addEventListener('DOMContentLoaded', function() {
     checkEmergencyAlerts();
-    
-    // Request notification permission
+
     if (Notification && Notification.permission === 'default') {
         Notification.requestPermission();
     }

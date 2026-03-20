@@ -1,7 +1,12 @@
 <?php
+/**
+ * Main cafe ordering page for Synergy Hub
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -10,12 +15,13 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Initialize cart in session if not exists
+//Initialize cart if not exists
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// Handle AJAX add to cart
+// AJAX Handlers
+// 1. Add item to cart
 if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
     header('Content-Type: application/json');
     
@@ -26,7 +32,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
     $quantity = intval($_POST['quantity']);
     $category = $_POST['category'] ?? 'Food';
     
-    // Check if item already in cart
     $found = false;
     foreach ($_SESSION['cart'] as &$item) {
         if ($item['item_id'] == $item_id) {
@@ -47,7 +52,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
         ];
     }
     
-    // Calculate cart totals
+    // Calculate totals for response
     $cart_count = 0;
     $cart_total = 0;
     foreach ($_SESSION['cart'] as $item) {
@@ -64,7 +69,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
     exit();
 }
 
-// Handle get cart
+// 2. Get current cart contents
 if (isset($_GET['action']) && $_GET['action'] == 'get_cart') {
     header('Content-Type: application/json');
     
@@ -87,7 +92,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_cart') {
     exit();
 }
 
-// Handle remove from cart
+// 3. Remove item from cart
 if (isset($_POST['action']) && $_POST['action'] == 'remove_from_cart') {
     header('Content-Type: application/json');
     
@@ -100,14 +105,13 @@ if (isset($_POST['action']) && $_POST['action'] == 'remove_from_cart') {
         }
     }
     
-    // Re-index array
     $_SESSION['cart'] = array_values($_SESSION['cart']);
     
     echo json_encode(['success' => true]);
     exit();
 }
 
-// Handle update cart quantity
+// 4. Update item quantity in cart
 if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
     header('Content-Type: application/json');
     
@@ -117,7 +121,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
     foreach ($_SESSION['cart'] as &$item) {
         if ($item['item_id'] == $item_id) {
             if ($quantity <= 0) {
-                // Remove item if quantity is 0
                 $item = null;
             } else {
                 $item['quantity'] = $quantity;
@@ -126,7 +129,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
         }
     }
     
-    // Remove null items
     $_SESSION['cart'] = array_filter($_SESSION['cart']);
     $_SESSION['cart'] = array_values($_SESSION['cart']);
     
@@ -134,11 +136,10 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
     exit();
 }
 
-// Get menu from database
+// Page data loading (non-AJAX)
 $menu_sql = "SELECT * FROM cafe_menu WHERE available = TRUE ORDER BY category, name";
 $menu_result = mysqli_query($conn, $menu_sql);
 
-// Get user points and name
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -146,18 +147,16 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Organize menu by category
 $menu_by_category = [];
 while($item = mysqli_fetch_assoc($menu_result)) {
     $menu_by_category[$item['category']][] = $item;
 }
 
-// Food Images Array
+// Local image mapping
 $food_images = [
     'Chicken Rice' => 'chickenrice.jpg',
     'Chicken Sandwich' => 'Chicken Sandwich.jfif',
@@ -171,8 +170,7 @@ $food_images = [
     'Ice Cream' => 'Ice Cream.jpg',
     'Fruit Salad' => 'Fruit Salad.jpg',
 ];
-
-// Get current cart for display
+// Current cart for initial count
 $cart_items = $_SESSION['cart'];
 $cart_count = 0;
 foreach ($cart_items as $item) {
@@ -1183,13 +1181,11 @@ foreach ($cart_items as $item) {
     </div>
 </header>
 
-<!-- CART TOGGLE BUTTON -->
 <div class="cart-toggle" onclick="toggleCart()">
     <i class="fa-solid fa-cart-shopping"></i>
     <span class="cart-count" id="cartCount"><?php echo $cart_count; ?></span>
 </div>
 
-<!-- CART SIDEBAR -->
 <div class="cart-sidebar" id="cartSidebar">
     <div class="cart-header">
         <h3><i class="fa-solid fa-cart-shopping"></i> Your Cart</h3>
@@ -1197,7 +1193,6 @@ foreach ($cart_items as $item) {
     </div>
     
     <div class="cart-items" id="cartItems">
-        <!-- Cart items will be loaded via AJAX -->
         <div class="empty-cart">
             <i class="fa-solid fa-cart-plus"></i>
             <p>Your cart is empty</p>
@@ -1215,7 +1210,6 @@ foreach ($cart_items as $item) {
     </div>
 </div>
 
-<!-- MAIN CONTENT -->
 <div class="container">
     
     <div class="points-badge">
@@ -1224,7 +1218,6 @@ foreach ($cart_items as $item) {
     
     <h1 class="page-title">🛒 Order Food</h1>
     
-    <!-- MENU BY CATEGORY -->
     <?php foreach($menu_by_category as $category => $items): ?>
     <h2 class="menu-category"><?php echo $category; ?></h2>
     <div class="menu-grid">
@@ -1272,11 +1265,10 @@ foreach ($cart_items as $item) {
     </a>
 </div>
 
-<!-- Toast Notification -->
+
 <div class="toast" id="toast">Item added to cart!</div>
 
 <script>
-// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1308,16 +1300,13 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Item quantities
 let itemQuantities = {};
 
-// Initialize quantities
 document.querySelectorAll('[id^="qty-"]').forEach(el => {
     let id = el.id.replace('qty-', '');
     itemQuantities[id] = 1;
 });
 
-// Update quantity for an item
 function updateItemQty(itemId, action, stock) {
     let qtyEl = document.getElementById('qty-' + itemId);
     let currentQty = parseInt(qtyEl.innerText);
@@ -1334,16 +1323,13 @@ function updateItemQty(itemId, action, stock) {
     qtyEl.innerText = itemQuantities[itemId];
 }
 
-// Add to cart
 function addToCart(itemId, name, price, points, stock, category) {
     let qty = itemQuantities[itemId];
     
-    // Disable button temporarily
     let btn = event.currentTarget;
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
     
-    // Send AJAX request
     fetch('cafe_order.php', {
         method: 'POST',
         headers: {
@@ -1359,32 +1345,26 @@ function addToCart(itemId, name, price, points, stock, category) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reset quantity
             itemQuantities[itemId] = 1;
             document.getElementById('qty-' + itemId).innerText = '1';
             
-            // Update cart count
             document.getElementById('cartCount').innerText = data.cart_count;
             
-            // Show success message
             showToast('✅ ' + name + ' added to cart!');
             
-            // Refresh cart display
             loadCart();
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('❌ Error adding to cart');
+        showToast('Error adding to cart');
     })
     .finally(() => {
-        // Re-enable button
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
     });
 }
 
-// Load cart items
 function loadCart() {
     fetch('cafe_order.php?action=get_cart')
         .then(response => response.json())
@@ -1395,7 +1375,7 @@ function loadCart() {
         });
 }
 
-// Update cart display
+// Render cart items + total in sidebar
 function updateCartDisplay(data) {
     let cartItems = document.getElementById('cartItems');
     let cartFooter = document.getElementById('cartFooter');
@@ -1432,7 +1412,7 @@ function updateCartDisplay(data) {
     cartFooter.style.display = 'block';
 }
 
-// Update cart item quantity
+// Update quantity in cart (via AJAX)
 function updateCartItem(itemId, newQty) {
     if (newQty < 1) {
         removeFromCart(itemId);
@@ -1454,7 +1434,7 @@ function updateCartItem(itemId, newQty) {
     });
 }
 
-// Remove from cart
+// Remove item from cart
 function removeFromCart(itemId) {
     if (confirm('Remove this item from cart?')) {
         fetch('cafe_order.php', {
@@ -1474,18 +1454,18 @@ function removeFromCart(itemId) {
     }
 }
 
-// Toggle cart sidebar
+// Toggle cart sidebar visibility
 function toggleCart() {
     document.getElementById('cartSidebar').classList.toggle('open');
-    loadCart(); // Refresh cart when opened
+    loadCart();
 }
 
-// Go to checkout
+//Redirect to checkout page
 function goToCheckout() {
     window.location.href = 'checkout.php?id=<?php echo $facility_id; ?>';
 }
 
-// Show toast message
+// Show temp toast message
 function showToast(message) {
     let toast = document.getElementById('toast');
     toast.textContent = message;
@@ -1495,7 +1475,7 @@ function showToast(message) {
     }, 2000);
 }
 
-// Close cart when clicking outside
+// Close sidebar when clicking outside
 document.addEventListener("click", function(e) {
     const cart = document.getElementById('cartSidebar');
     const cartBtn = document.querySelector('.cart-toggle');
@@ -1504,7 +1484,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Load cart on page load
+// Load cart on page ready
 document.addEventListener('DOMContentLoaded', function() {
     loadCart();
 });
