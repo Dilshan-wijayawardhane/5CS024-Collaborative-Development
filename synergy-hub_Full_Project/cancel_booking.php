@@ -8,13 +8,13 @@ require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-// Authentication check
+
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
 }
 
-// Validate request
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['booking_id'])) {
     $user_id = $_SESSION['user_id'];
     $booking_id = intval($_POST['booking_id']);
@@ -31,20 +31,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['booking_id'])) {
         exit();
     }
     
-    // Delete the booking
+    
     $delete_sql = "DELETE FROM class_bookings WHERE booking_id = ? AND user_id = ?";
     $delete_stmt = mysqli_prepare($conn, $delete_sql);
     mysqli_stmt_bind_param($delete_stmt, "ii", $booking_id, $user_id);
     
     if (mysqli_stmt_execute($delete_stmt) && mysqli_stmt_affected_rows($delete_stmt) > 0) {
-        // Decrement booked count on the class
+        
         $update_sql = "UPDATE fitness_classes SET booked = booked - 1 WHERE class_id = ?";
         $update_stmt = mysqli_prepare($conn, $update_sql);
         mysqli_stmt_bind_param($update_stmt, "i", $booking['class_id']);
         mysqli_stmt_execute($update_stmt);
-        // Log activity
+        
         logActivity($conn, $user_id, 'CANCEL_CLASS', 'fitness_classes', $booking['class_id']);
-        // Success response
+        
         echo json_encode(['success' => true, 'message' => 'Booking cancelled']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Database error']);
