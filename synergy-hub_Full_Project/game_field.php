@@ -1,23 +1,36 @@
 <?php
+/**
+ * Game Field Booking Page for Synergy Hub
+ * 
+ * This page allows users to view available game fields, book them for specific time slots, and manage their existing bookings.
+ * 
+ * Security Notes:
+ *  - User authentication is required to access this page
+ *  - Uses prepared statements for all database interactions to prevent SQL injection
+ *  - Booking & cancellation handled via seperate API endpoints
+ *  - Client-side confirmation before actions
+ *  - Hardcoded field data for demo purposes, should be dynamic in production
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication check
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-$facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get user's bookings
+$facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $bookings_sql = "SELECT * FROM field_bookings WHERE user_id = ? ORDER BY booking_date DESC";
 $bookings_stmt = mysqli_prepare($conn, $bookings_sql);
 mysqli_stmt_bind_param($bookings_stmt, "i", $user_id);
 mysqli_stmt_execute($bookings_stmt);
 $bookings_result = mysqli_stmt_get_result($bookings_stmt);
 
-// Get user points
+// Load users' current points balance
 $user_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -25,7 +38,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Available fields
+// Hardcoded sports fields
 $fields = [
     ['name' => 'Football Field', 'icon' => 'fa-futbol', 'time' => '9:00 AM - 6:00 PM', 'price' => 50],
     ['name' => 'Basketball Court', 'icon' => 'fa-basketball', 'time' => '8:00 AM - 8:00 PM', 'price' => 40],
@@ -35,7 +48,7 @@ $fields = [
     ['name' => 'Badminton Court', 'icon' => 'fa-shuttlecock', 'time' => '7:00 AM - 9:00 PM', 'price' => 30],
 ];
 
-// Time slots
+// Standard time slots
 $time_slots = [
     '9:00 AM - 11:00 AM',
     '11:00 AM - 1:00 PM',
@@ -417,7 +430,6 @@ $time_slots = [
         <button class="tab-btn" onclick="switchTab('bookings')">My Bookings</button>
     </div>
     
-    <!-- AVAILABLE FIELDS TAB -->
     <div id="fieldsTab">
         <div class="fields-grid">
             <?php foreach($fields as $field): ?>
@@ -452,7 +464,6 @@ $time_slots = [
         </div>
     </div>
     
-    <!-- MY BOOKINGS TAB -->
     <div id="bookingsTab" style="display: none;">
         <div class="bookings-list">
             <?php if(mysqli_num_rows($bookings_result) > 0): ?>
@@ -499,6 +510,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
+// Tab switching logic
 function switchTab(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const fieldsTab = document.getElementById('fieldsTab');
@@ -517,6 +529,7 @@ function switchTab(tab) {
     }
 }
 
+// Book field (AJAX to book_field.php)
 function bookField(fieldName, price) {
     let fieldId = fieldName.replace(/\s/g, '');
     let selectedDate = document.getElementById('date-' + fieldId).value;
@@ -536,15 +549,16 @@ function bookField(fieldName, price) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('✅ Field booked successfully!');
+                alert('Field booked successfully!');
                 location.reload();
             } else {
-                alert('❌ Error: ' + data.message);
+                alert('Error: ' + data.message);
             }
         });
     }
 }
 
+// Cancel booking (AJAX to cancel_field_booking.php)
 function cancelBooking(bookingId) {
     if(confirm('Cancel this booking?')) {
         fetch('cancel_field_booking.php', {
@@ -557,7 +571,7 @@ function cancelBooking(bookingId) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('✅ Booking cancelled');
+                alert('Booking cancelled');
                 location.reload();
             }
         });
