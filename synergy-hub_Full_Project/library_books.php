@@ -1,7 +1,19 @@
 <?php
+/**
+ * Library section page - allows users to browse available books and manage borrowed books.
+ * 
+ * Security Notes:
+ *  - Requires user authentication
+ *  - Uses prepared statements
+ *  - Borrow/return handled via seperate API endpoints
+ *  - Client-side search (no server round trip)
+ *  - Overdue calculation done live
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -10,14 +22,14 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get the tab parameter from URL
+// Determine active tab
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'browse';
 
-// Get all available books
+// Load available books
 $books_sql = "SELECT * FROM books WHERE available > 0 ORDER BY category, title";
 $books_result = mysqli_query($conn, $books_sql);
 
-// Get user's borrowed books with days remaining calculation
+// Load users' borrowed books
 $borrowed_sql = "SELECT b.*, bk.title, bk.author, bk.category,
                         DATEDIFF(b.due_date, CURDATE()) as days_remaining,
                         DATEDIFF(CURDATE(), b.due_date) as days_overdue
@@ -30,7 +42,7 @@ mysqli_stmt_bind_param($borrowed_stmt, "i", $user_id);
 mysqli_stmt_execute($borrowed_stmt);
 $borrowed_result = mysqli_stmt_get_result($borrowed_stmt);
 
-// Get user points and name
+// Load user points and name (for sidebar)
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -38,7 +50,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+// Count open facilities
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -85,7 +97,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             pointer-events: none;
         }
         
-        /* NAVBAR */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -152,10 +163,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             color: #22d3ee;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
         .sidebar {
             position: fixed;
             left: -280px;
@@ -514,7 +521,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             background: rgba(255, 255, 255, 0.3);
         }
         
-        /* MAIN CONTENT */
         .container {
             padding: 30px;
             max-width: 1400px;
@@ -547,7 +553,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             margin-right: 8px;
         }
         
-        /* TABS */
         .tabs {
             display: flex;
             justify-content: center;
@@ -588,7 +593,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             margin-left: 8px;
         }
         
-        /* BOOKS GRID */
         .books-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -674,7 +678,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             transform: none;
         }
         
-        /* ========== BORROWED BOOKS - WHITE COLOR UPDATED ========== */
         .borrowed-list {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -889,7 +892,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
@@ -991,7 +993,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -1010,7 +1011,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <div class="container">
     
     <div class="points-badge">
@@ -1019,7 +1019,6 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     
     <h1 class="page-title">📚 Library Books</h1>
     
-    <!-- TABS -->
     <div class="tabs">
         <button class="tab-btn <?php echo $active_tab == 'browse' ? 'active' : ''; ?>" onclick="switchTab('browse')">
             <i class="fa-solid fa-magnifying-glass"></i> Browse Books
@@ -1035,15 +1034,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </button>
     </div>
     
-    <!-- SEARCH -->
     <div class="search-box" id="browseTab" style="display: <?php echo $active_tab == 'browse' ? 'block' : 'none'; ?>;">
         <input type="text" id="searchBooks" placeholder="Search by title, author, or category..." onkeyup="searchBooks()">
     </div>
     
-    <!-- BOOKS GRID (Browse Tab) -->
     <div id="booksGrid" class="books-grid" style="display: <?php echo $active_tab == 'browse' ? 'grid' : 'none'; ?>;">
         <?php 
-        // Reset pointer for books_result
         mysqli_data_seek($books_result, 0);
         while($book = mysqli_fetch_assoc($books_result)): 
         ?>
@@ -1066,12 +1062,10 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         <?php endwhile; ?>
     </div>
     
-    <!-- BORROWED BOOKS TAB - WHITE COLOR -->
     <div id="borrowedTab" style="display: <?php echo $active_tab == 'borrowed' ? 'block' : 'none'; ?>;">
         <h2 class="section-title">📖 Books You've Borrowed</h2>
         <div class="borrowed-list">
             <?php 
-            // Reset pointer for borrowed_result
             mysqli_data_seek($borrowed_result, 0);
             if(mysqli_num_rows($borrowed_result) > 0): 
             ?>
@@ -1129,7 +1123,8 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
+
+// Sidebar Toggle
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1161,7 +1156,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Tab switching
+// Tab switching + URL history
 function switchTab(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const browseTab = document.getElementById('browseTab');
@@ -1176,7 +1171,6 @@ function switchTab(tab) {
         booksGrid.style.display = 'grid';
         borrowedTab.style.display = 'none';
         
-        // URL update
         const url = new URL(window.location);
         url.searchParams.set('tab', 'browse');
         window.history.pushState({}, '', url);
@@ -1186,14 +1180,13 @@ function switchTab(tab) {
         booksGrid.style.display = 'none';
         borrowedTab.style.display = 'block';
         
-        // URL update
         const url = new URL(window.location);
         url.searchParams.set('tab', 'borrowed');
         window.history.pushState({}, '', url);
     }
 }
 
-// Search books
+// Client-side book search
 function searchBooks() {
     let searchTerm = document.getElementById('searchBooks').value.toLowerCase();
     let books = document.querySelectorAll('.book-card');
@@ -1211,7 +1204,7 @@ function searchBooks() {
     });
 }
 
-// Borrow book
+// Borrow Book (AJAX to borrow_book.php)
 function borrowBook(bookId) {
     if(confirm('Borrow this book? You will get 5 points! (Due in 14 days)')) {
         fetch('borrow_book.php', {
@@ -1224,15 +1217,13 @@ function borrowBook(bookId) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('✅ Book borrowed successfully! Due date: ' + data.due_date + '. You earned 5 points!');
+                alert('Book borrowed successfully! Due date: ' + data.due_date + '. You earned 5 points!');
                 
-                // Update points display
                 let pointsSpan = document.getElementById('pointsDisplay');
                 let currentPoints = parseInt(pointsSpan.textContent);
                 pointsSpan.textContent = currentPoints + 5;
                 document.getElementById('currentPoints').textContent = pointsSpan.textContent;
                 
-                // Animate points
                 document.querySelector('.points').classList.add('active');
                 setTimeout(() => {
                     document.querySelector('.points').classList.remove('active');
@@ -1240,16 +1231,16 @@ function borrowBook(bookId) {
                 
                 location.reload();
             } else {
-                alert('❌ Error: ' + data.message);
+                alert('Error: ' + data.message);
             }
         })
         .catch(error => {
-            alert('❌ Error processing request');
+            alert('Error processing request');
         });
     }
 }
 
-// Return book
+// Return book (AJAX to return_book.php)
 function returnBook(borrowId, bookId) {
     if(confirm('Return this book? You will get 2 points!')) {
         fetch('return_book.php', {
@@ -1262,15 +1253,13 @@ function returnBook(borrowId, bookId) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('✅ Book returned successfully! You earned 2 points!');
+                alert('Book returned successfully! You earned 2 points!');
                 
-                // Update points display
                 let pointsSpan = document.getElementById('pointsDisplay');
                 let currentPoints = parseInt(pointsSpan.textContent);
                 pointsSpan.textContent = currentPoints + 2;
                 document.getElementById('currentPoints').textContent = pointsSpan.textContent;
                 
-                // Animate points
                 document.querySelector('.points').classList.add('active');
                 setTimeout(() => {
                     document.querySelector('.points').classList.remove('active');
@@ -1278,11 +1267,11 @@ function returnBook(borrowId, bookId) {
                 
                 location.reload();
             } else {
-                alert('❌ Error: ' + data.message);
+                alert('Error: ' + data.message);
             }
         })
         .catch(error => {
-            alert('❌ Error processing request');
+            alert('Error processing request');
         });
     }
 }

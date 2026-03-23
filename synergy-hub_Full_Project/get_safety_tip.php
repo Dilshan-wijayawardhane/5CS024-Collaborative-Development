@@ -1,11 +1,20 @@
 <?php
-// get_safety_tip.php
+/**
+ * API Endpoint: Fetch details of a specific safety tip by ID for the safety tips page.
+ * 
+ * Security / Design Notes:
+ *  - Only authenticated users can access this endpoint
+ *  - Uses prepared statements to prevent SQL injection
+ *  - Increments view count for the tip each time it's accessed
+ *  - Checks table existence before querying to prevent errors if the feature is not set up
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-// Start session to check login
+// Authentication
 session_start();
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
@@ -19,14 +28,14 @@ if (!$tip_id) {
     exit();
 }
 
-// Check if table exists
+// Check if the SafetyTips table exists
 $table_check = mysqli_query($conn, "SHOW TABLES LIKE 'SafetyTips'");
 if (mysqli_num_rows($table_check) == 0) {
     echo json_encode(['success' => false, 'message' => 'Safety tips table not found']);
     exit();
 }
 
-// Fetch the tip
+// Fetch active tip by ID
 $sql = "SELECT * FROM SafetyTips WHERE id = ? AND is_active = 1";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "i", $tip_id);
@@ -34,12 +43,12 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
 if ($row = mysqli_fetch_assoc($result)) {
-    // Increment view count
     $update_sql = "UPDATE SafetyTips SET views = views + 1 WHERE id = ?";
     $update_stmt = mysqli_prepare($conn, $update_sql);
     mysqli_stmt_bind_param($update_stmt, "i", $tip_id);
     mysqli_stmt_execute($update_stmt);
     
+    // Format and return tip details
     echo json_encode([
         'success' => true,
         'tip' => [
@@ -49,7 +58,7 @@ if ($row = mysqli_fetch_assoc($result)) {
             'category' => $row['category'],
             'priority' => $row['priority'],
             'tags' => $row['tags'],
-            'views' => $row['views'] + 1
+            'views' => $row['views'] + 1    // reflect the incremented view count
         ]
     ]);
 } else {

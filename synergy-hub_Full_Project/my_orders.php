@@ -9,7 +9,6 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get all orders grouped by date
 $orders_sql = "SELECT * FROM Orders 
                WHERE UserID = ? 
                ORDER BY Timestamp DESC";
@@ -18,7 +17,6 @@ mysqli_stmt_bind_param($orders_stmt, "i", $user_id);
 mysqli_stmt_execute($orders_stmt);
 $orders_result = mysqli_stmt_get_result($orders_stmt);
 
-// Group orders by date
 $grouped_orders = [];
 while ($order = mysqli_fetch_assoc($orders_result)) {
     $date = date('Y-m-d', strtotime($order['Timestamp']));
@@ -238,7 +236,6 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
 
 <div class="bg"></div>
 
-<!-- NAVBAR -->
 <nav class="navbar">
     <div class="logo">Synergy <span>Hub</span></div>
     <div class="points">
