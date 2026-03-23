@@ -1190,3 +1190,30 @@ INSERT INTO SafetyIncidents (title, description, location, severity, report_date
 ('Suspicious Person Reported', 'Unknown person attempting to access dormitories. Security responded.', 'Student Housing, Block C', 'high', DATE_SUB(NOW(), INTERVAL 5 DAY), 'investigating'),
 ('Power Outage', 'Short power outage in Library. Emergency lighting worked properly.', 'Main Library', 'low', DATE_SUB(NOW(), INTERVAL 7 DAY), 'resolved'),
 ('Medical Emergency', 'Student fainted in cafeteria. Treated by campus medical team.', 'Student Center', 'medium', DATE_SUB(NOW(), INTERVAL 10 DAY), 'resolved');
+
+
+Configure access permissions
+---------------------------
+Grant permissions (example for role-based access)
+   ----------------------
+This is used for Admin privileges
+---------------------------------
+GRANT ALL PRIVILEGES ON collaborative_dev.* TO 'admin'@'localhost' IDENTIFIED BY 'admin_password';
+
+This is used for  User privileges (limited)
+-------------------------------------------
+GRANT SELECT, INSERT, UPDATE ON collaborative_dev.Users TO 'app_user'@'localhost' IDENTIFIED BY 'user_password';
+GRANT SELECT ON collaborative_dev.Facilities TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Events TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.CheckIns TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Rewards TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.Orders TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Clubs TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.ClubMemberships TO 'app_user'@'localhost';
+GRANT SELECT ON collaborative_dev.Notifications TO 'app_user'@'localhost';
+GRANT SELECT, INSERT ON collaborative_dev.GameField TO 'app_user'@'localhost';
+
+
+
+FLUSH PRIVILEGES;
+
