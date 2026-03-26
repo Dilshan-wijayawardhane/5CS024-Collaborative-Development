@@ -896,7 +896,7 @@ function updateCardHolder(input) {
     document.getElementById('displayCardHolder').textContent = value || 'CARD HOLDER';
 }
 
-// Error/Success Messages
+
 function showError(message) {
     const errorDiv = document.getElementById('errorMsg');
     errorDiv.textContent = message;
@@ -928,7 +928,7 @@ function placeOrder() {
     const fullName = document.getElementById('fullName').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
-    // Basic validation
+    
     if (!fullName || !email || !phone) {
         showError('Please fill in all required fields');
         return;
@@ -944,7 +944,7 @@ function placeOrder() {
         return;
     }
     
-    // Card validation (if selected)
+    
     if (paymentMethod === 'card') {
         if (!validateCardNumber() || !validateCardExpiry() || !validateCardCvv(document.getElementById('cardCvv'))) {
             showError('Please enter valid card details');
@@ -952,13 +952,13 @@ function placeOrder() {
         }
     }
     
-    //Points check (client-side reminder - server must re-validate)
+    
     if (paymentMethod === 'points' && userPoints < totalPoints) {
         showError('Insufficient points!');
         return;
     }
     
-    // Prepare order data
+    
     const orderData = {
         facility_id: facilityId,
         payment_method: paymentMethod,
@@ -988,7 +988,7 @@ function placeOrder() {
         if (data.success) {
             showSuccess('Order placed successfully!');
             
-            // Clear cart after success
+            
             setTimeout(() => {
                 window.location.href = 'order_confirmation.php?order_id=' + data.order_ids.join(',');
             }, 1500);
@@ -1006,7 +1006,7 @@ function placeOrder() {
     });
 }
 
-// Sidebar toggle
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     sidebar.style.left = sidebar.style.left === "0px" ? "-260px" : "0px";
