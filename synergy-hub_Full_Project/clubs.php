@@ -1,19 +1,11 @@
 <?php
-/**
- * Club Hub page - main interface for viewing and managing campus clubs.
- * 
- * Features:
- *  - Displays all active clubs with details
- *  - Join button awards 20 points
- *  - Leave button to exit club
- *  - Sidebar stats: my clubs count, total clubs count, points
- *  - Responsive grid layout for club cards
- */
+
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -21,7 +13,8 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Load all active clubs
+
+
 $clubs_sql = "SELECT c.*, u.Name as LeaderName 
               FROM Clubs c 
               LEFT JOIN Users u ON c.LeaderID = u.UserID 
@@ -29,7 +22,9 @@ $clubs_sql = "SELECT c.*, u.Name as LeaderName
               ORDER BY c.Name";
 $clubs_result = mysqli_query($conn, $clubs_sql);
 
-// Load users' active club memberships
+
+
+
 $my_clubs_sql = "SELECT c.*, cm.Role 
                  FROM ClubMemberships cm
                  JOIN Clubs c ON cm.ClubID = c.ClubID
@@ -39,7 +34,9 @@ mysqli_stmt_bind_param($my_clubs_stmt, "i", $user_id);
 mysqli_stmt_execute($my_clubs_stmt);
 $my_clubs_result = mysqli_stmt_get_result($my_clubs_stmt);
 
-// Load user points & name
+
+
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -47,7 +44,9 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Prepare arrays for easier frontend use
+
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -880,7 +879,10 @@ $total_clubs_count = count($all_clubs_array);
     <h2 class="section-title">All Clubs</h2>
     <div class="clubs-grid">
         <?php foreach($all_clubs_array as $club):
-            // Check if user is already a member
+            
+
+
+
             $is_member = false;
             foreach($my_clubs_array as $my_club) {
                 if($my_club['ClubID'] == $club['ClubID']) {
@@ -889,7 +891,10 @@ $total_clubs_count = count($all_clubs_array);
                 }
             }
             
-            // Dynamic icon based on club name (fun touch)
+            
+            
+            
+            
             $icon = 'fa-users';
             if(strpos($club['Name'], 'Coding') !== false) $icon = 'fa-code';
             else if(strpos($club['Name'], 'Cyber') !== false) $icon = 'fa-shield';
@@ -959,10 +964,10 @@ document.addEventListener("click", function(e) {
     }
 });
 
-/**
- * Join a club via AJAX (calls join_club.php)
- * Awards 20 points on success
- */
+
+
+
+
 function joinClub(clubId) {
     if(confirm('Join this club? You will get 20 points!')) {
         fetch('join_club.php', {
@@ -976,7 +981,7 @@ function joinClub(clubId) {
         .then(data => {
             if(data.success) {
                 alert('Successfully joined the club! +20 points');
-                location.reload();  // Refresh to update UI
+                location.reload();  
             } else {
                 alert('Error: ' + data.message);
             }
@@ -987,7 +992,10 @@ function joinClub(clubId) {
     }
 }
 
-// Leave a club via AJAX (calls leave_club.php)
+
+
+
+
 function leaveClub(clubId) {
     if(confirm('Are you sure you want to leave this club?')) {
         fetch('leave_club.php', {
