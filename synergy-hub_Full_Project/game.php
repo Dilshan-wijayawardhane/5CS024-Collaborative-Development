@@ -1,18 +1,13 @@
 <?php
-/**
- * Mini Game Hub page for Synergy Hub application.
- * 
- * This page provides a fun and interactive gaming experience for users, allowing them to play simple games like Memory Match, Math Quiz, and Tic-Tac-Toe.
- * 
- * Features:
- *  - Points are awarded client-side but shuold be validated server-side in save_game_score.php
- *  - Games are fully client-side (no cheating prevention yet)
- */
+
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
+
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -20,7 +15,8 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Load user points & name
+
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -28,7 +24,9 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Count open facilities
+
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -1068,7 +1066,9 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Switch between game panels
+
+
+
 function switchGame(game) {
     document.getElementById('memoryGame').classList.remove('active');
     document.getElementById('mathGame').classList.remove('active');
@@ -1092,7 +1092,9 @@ function switchGame(game) {
     }
 }
 
-// Memory game logic
+
+
+
 let memoryCards = [];
 let memoryFlipped = [];
 let memoryMatched = 0;
@@ -1186,7 +1188,9 @@ function updateMemoryDisplay() {
     document.getElementById('memoryMatches').textContent = memoryMatched;
 }
 
-// Math game logic
+
+
+
 let mathScore = 0;
 let mathQuestion = 1;
 let mathTimeLeft = 10;
@@ -1313,7 +1317,9 @@ function endMathGame() {
     saveGameScore('Math Game', points);
 }
 
-// Tic-Tac-Toe Logic
+
+
+
 let tttBoard = ['', '', '', '', '', '', '', '', ''];
 let tttPlayer = 'X';
 let tttActive = true;
@@ -1490,7 +1496,9 @@ function resetTTT() {
     initTTT();
 }
 
-//Utility functions
+
+
+
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1499,7 +1507,9 @@ function shuffleArray(array) {
     return array;
 }
 
-// Save game scores & update points UI
+
+
+
 function saveGameScore(gameType, points) {
     fetch('save_game_score.php', {
         method: 'POST',
@@ -1526,7 +1536,9 @@ function saveGameScore(gameType, points) {
     });
 }
 
-// Initialize first game on page load
+
+
+
 window.onload = function() {
     initMemoryGame();
 };

@@ -1,24 +1,11 @@
 <?php
-/**
- * Emergency Response System page for Synergy Hub project.
- * Quick access to emergency contacts, active alerts, and safety resources.
- * 
- * Features:
- *  - Displays active emergency alerts
- *  - Client-side geolocation sharing (Google Maps link)
- *  - Responsive, high-visibility design for urgent situations
- * 
- * Security / Notes:
- *  - Requires login
- *  - Uses prepared statement for user query
- *  - No user input processed (safe from injection)
- *  - Geolocation is client-side only
- */
+
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -26,7 +13,9 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Load user name
+
+
+
 $sql = "SELECT Name FROM Users WHERE UserID = ?";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "i", $user_id);
@@ -34,15 +23,21 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
 
-// Load active emergency alerts
+
+
+
 $alerts_sql = "SELECT * FROM EmergencyAlerts WHERE expires_at > NOW() OR expires_at IS NULL ORDER BY severity DESC, created_at DESC";
 $alerts_result = mysqli_query($conn, $alerts_sql);
 
-// Load active emergency contacts
+
+
+
 $contacts_sql = "SELECT * FROM EmergencyContacts WHERE is_active = 1 ORDER BY display_order ASC";
 $contacts_result = mysqli_query($conn, $contacts_sql);
 
-// Placeholder
+
+
+
 $user_location = "Main Building";
 
 ?>
@@ -399,7 +394,9 @@ $user_location = "Main Building";
                     <?php
                 }
             } else {
-                // Fallback hardcoded contacts (if no DB records)
+                
+
+
             ?>
                 <div class="emergency-card security">
                     <div class="emergency-icon security">
@@ -446,7 +443,9 @@ $user_location = "Main Building";
             </h2>
             <?php if (mysqli_num_rows($alerts_result) > 0): ?>
                 <?php while($alert = mysqli_fetch_assoc($alerts_result)):
-                    // Determine severity styling
+                    
+
+
                     $severity_class = 'info';
                     $severity_icon = 'fa-circle-info';
                     if ($alert['severity'] == 'critical') {
@@ -509,7 +508,9 @@ $user_location = "Main Building";
     </div>
 
     <script>
-        // Share current geolocation (Open Google Maps)
+        
+
+
         function shareLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
@@ -518,7 +519,7 @@ $user_location = "Main Building";
                     
                     alert(`Your current location:\nLatitude: ${lat}\nLongitude: ${lng}\n\nThis information would be sent to emergency services.`);
                     
-                    // Open in Google Maps
+                    
                     window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
                 }, function(error) {
                     alert('Unable to get your location. Please enable location services.');
@@ -528,7 +529,8 @@ $user_location = "Main Building";
             }
         }
 
-        // Simulate sending a silent alert (UI feedback only for now)
+        
+
         function sendSilentAlert() {
             if (confirm('Send a silent alert to campus security? They will be notified of your location and status.')) {
                 alert('✅ Silent alert sent. Security has been notified.');
@@ -545,7 +547,9 @@ $user_location = "Main Building";
             }
         }
 
-        // Confirm before initiating phone call
+        
+
+        
         function confirmCall(number, name) {
             if (confirm(`Call ${name} at ${number}?`)) {
                 window.location.href = `tel:${number}`;

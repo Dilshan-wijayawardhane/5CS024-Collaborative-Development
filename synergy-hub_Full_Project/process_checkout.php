@@ -1,23 +1,20 @@
 <?php
-/**
- * API Endpoint: Process checkout for facility booking or food order.
- * Called via AJAX checkout.php
- * 
- * Security / Design notes:
- *  - Only allows processing for logged-in users
- *  - Transaction ensures consistency when inserting orders and deducting points
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-// Enable error reporting for debugging (disable in production)
+
+
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Authentication check
+
+
+
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
@@ -25,7 +22,9 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get JSON input
+
+
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!$data) {
@@ -38,13 +37,16 @@ if (!isset($data['items']) || empty($data['items']) || !isset($data['payment_met
     exit();
 }
 
-// Start transaction
+
+
+
 mysqli_begin_transaction($conn);
 
 try {
     $order_ids = [];
     
-    // Create one order per item instance
+    
+
     foreach ($data['items'] as $item) {
         for ($i = 0; $i < $item['quantity']; $i++) {
             $order_sql = "INSERT INTO Orders (UserID, ItemName, Category, Price, Quantity, Status) 
@@ -68,9 +70,13 @@ try {
         }
     }
     
-    // Handle points payment if selected
+    
+
+
     if ($data['payment_method'] === 'points' && $data['points_used'] > 0) {
-        // Re-check balance
+        
+
+
         $check_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         mysqli_stmt_bind_param($check_stmt, "i", $user_id);
@@ -93,7 +99,7 @@ try {
     
     logActivity($conn, $user_id, 'ORDER_PLACED', 'Orders', $order_ids[0] ?? 0);
     
-    // Commit transaction
+    
     mysqli_commit($conn);
     
     unset($_SESSION['cart']);
@@ -106,7 +112,9 @@ try {
     ]);
     
 } catch (Exception $e) {
-    // Rollback on any error
+    
+
+
     mysqli_rollback($conn);
     
     echo json_encode([

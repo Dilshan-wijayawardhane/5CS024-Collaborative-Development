@@ -1,31 +1,21 @@
 <?php
-/**
- * Detailed view page for a single campus facility.
- * 
- * This page displays comprehensive information about a specific facility, including its status, features, and user check-in options. 
- * It also integrates with the user's points balance and provides interactive modals for additional services.
- * 
- * Security / Notes:
- *  - Requires login 
- *  - Uses prepared statements
- *  - Check-in calls external endpoint
- *  - Many features are placeholders ("coming soon")
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-// Get facility ID from URL
+
+
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Load facility details
+
 $facility_sql = "SELECT * FROM Facilities WHERE FacilityID = ?";
 $facility_stmt = mysqli_prepare($conn, $facility_sql);
 mysqli_stmt_bind_param($facility_stmt, "i", $facility_id);
@@ -33,7 +23,8 @@ mysqli_stmt_execute($facility_stmt);
 $facility_result = mysqli_stmt_get_result($facility_stmt);
 $facility = mysqli_fetch_assoc($facility_result);
 
-// Check if user already checked in today
+
+
 $check_sql = "SELECT * FROM CheckIns WHERE UserID = ? AND FacilityID = ? AND DATE(Timestamp) = CURDATE()";
 $check_stmt = mysqli_prepare($conn, $check_sql);
 mysqli_stmt_bind_param($check_stmt, "ii", $user_id, $facility_id);
@@ -41,7 +32,8 @@ mysqli_stmt_execute($check_stmt);
 $check_result = mysqli_stmt_get_result($check_stmt);
 $already_checked_in = mysqli_num_rows($check_result) > 0;
 
-// Load user points & name (for display)
+
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -49,7 +41,9 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Count open facilities (sidebar badge)
+
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -1432,7 +1426,9 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <script>
 
-// Sidebar Toggle
+
+
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1464,7 +1460,9 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Check-in Functionality (AJAX)
+
+
+
 function checkIn(facilityId) {
     fetch('checkin.php', {
         method: 'POST',
@@ -1476,23 +1474,31 @@ function checkIn(facilityId) {
     .then(response => response.json())
     .then(data => {
         if(data.success) {
-            // Update points display in navbar & header
+            
+
+
             let pointsSpan = document.getElementById('pointsDisplay');
             let currentPoints = parseInt(pointsSpan.textContent);
             pointsSpan.textContent = data.new_points;
             document.getElementById('currentPoints').textContent = data.new_points;
             
-            // Visual feedback
+            
+
+
             document.querySelector('.points').classList.add('active');
             setTimeout(() => {
                 document.querySelector('.points').classList.remove('active');
             }, 500);
             
-            // Disable check-in button
+            
+
+
             document.getElementById('checkinBtn').disabled = true;
             document.getElementById('checkinMessage').innerHTML = '✅ Check-in successful! +10 points added. You can now access all features.';
             
-            // Enable all feature cards
+            
+
+
             document.querySelectorAll('.feature-card').forEach(card => {
                 card.classList.add('active');
             });
@@ -1502,7 +1508,9 @@ function checkIn(facilityId) {
     });
 }
 
-// Modal Controls (Study rooms & Print Services)
+
+
+
 function openStudyRoomsModal() {
     document.getElementById('studyRoomsModal').style.display = 'block';
 }
@@ -1690,7 +1698,9 @@ window.onclick = function(event) {
     }
 }
 
-// Placeholder / Coming Soon Actions
+
+
+
 function featureAction(feature) {
     alert(`🔧 "${feature}" feature is coming soon! We're working on it.`);
 }

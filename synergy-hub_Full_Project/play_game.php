@@ -15,13 +15,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['game_type']) && isset(
     $points_earned = intval($_POST['points_earned']);
     $points_used = isset($_POST['points_used']) ? intval($_POST['points_used']) : 0;
     
-    // Record game
+    
+
+
     $game_sql = "INSERT INTO GameField (UserID, GameType, PointsUsed, PointsEarned) VALUES (?, ?, ?, ?)";
     $game_stmt = mysqli_prepare($conn, $game_sql);
     mysqli_stmt_bind_param($game_stmt, "isii", $user_id, $game_type, $points_used, $points_earned);
     
     if (mysqli_stmt_execute($game_stmt)) {
-        // Update user points
+        
+
+
         $net_points = $points_earned - $points_used;
         if ($net_points != 0) {
             $update_sql = "UPDATE Users SET PointsBalance = PointsBalance + ? WHERE UserID = ?";
@@ -29,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['game_type']) && isset(
             mysqli_stmt_bind_param($update_stmt, "ii", $net_points, $user_id);
             mysqli_stmt_execute($update_stmt);
         }
+        
         
         logActivity($conn, $user_id, 'PLAY_GAME', 'GameField', mysqli_insert_id($conn));
         

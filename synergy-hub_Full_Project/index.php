@@ -1,23 +1,19 @@
 <?php
-/**
- * Main dashboard page for Synergy Hub project.
- * 
- * Security / Features:
- *  - Requires login
- *  - Fetches user data, open facilities count, upcoming events, gym status
- *  - Uses prepared statement where appropriate
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
+
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
-// Load user profile data
+
+
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT * FROM Users WHERE UserID = ?";
 $stmt = mysqli_prepare($conn, $sql);
@@ -26,22 +22,28 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
 
-// Quick stats & live data
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Upcoming campus events (limited to 3)
+
+
 $events_sql = "SELECT * FROM Events WHERE Status = 'Upcoming' AND StartTime > NOW() ORDER BY StartTime ASC LIMIT 3";
 $events_stmt = mysqli_prepare($conn, $events_sql);
 mysqli_stmt_execute($events_stmt);
 $events_result = mysqli_stmt_get_result($events_stmt);
 
-// Students' Union upcoming events (limited to 2)
+
+
+
 $su_events_sql = "SELECT * FROM su_events WHERE event_time > NOW() ORDER BY event_time ASC LIMIT 2";
 $su_events_result = mysqli_query($conn, $su_events_sql);
 
-// Latest gym status
+
+
+
 $gym_sql = "SELECT * FROM gym_status ORDER BY id DESC LIMIT 1";
 $gym_result = mysqli_query($conn, $gym_sql);
 $gym = mysqli_fetch_assoc($gym_result);
@@ -352,9 +354,7 @@ $points = $user['PointsBalance'];
             font-size: 14px;
         }
         
-        /* ========================================
-           SEARCH BAR WITH LIVE SEARCH
-           ======================================== */
+        
 
         .search-wrapper {
             position: relative;
@@ -386,7 +386,8 @@ $points = $user['PointsBalance'];
             color: #94a3b8;
         }
 
-        /* Search Results Dropdown */
+        
+
         .search-results {
             position: absolute;
             top: 70px;
@@ -523,7 +524,8 @@ $points = $user['PointsBalance'];
             to { transform: rotate(360deg); }
         }
         
-        /* Profile Menu */
+        
+
         .profile {
             position: relative;
             z-index: 9998;
@@ -607,9 +609,8 @@ $points = $user['PointsBalance'];
             font-weight: 600;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
+        
+        
 
         .sidebar {
             position: fixed;

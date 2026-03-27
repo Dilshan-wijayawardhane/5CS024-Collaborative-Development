@@ -9,7 +9,8 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get user points and name for sidebar
+
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -17,26 +18,33 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Check if Notifications table exists and get column names
+
+
+
 $table_check = mysqli_query($conn, "SHOW TABLES LIKE 'Notifications'");
 $table_exists = mysqli_num_rows($table_check) > 0;
 
 $notifications = [];
 
 if ($table_exists) {
-    // Try to get column names
+    
+
     $columns = mysqli_query($conn, "SHOW COLUMNS FROM Notifications");
     $column_names = [];
     while($col = mysqli_fetch_assoc($columns)) {
         $column_names[] = $col['Field'];
     }
     
-    // Determine the correct column names
+    
+
+
     $user_id_col = in_array('UserID', $column_names) ? 'UserID' : (in_array('user_id', $column_names) ? 'user_id' : null);
     $type_col = in_array('Type', $column_names) ? 'Type' : (in_array('type', $column_names) ? 'type' : 'Notification');
     $message_col = in_array('Message', $column_names) ? 'Message' : (in_array('message', $column_names) ? 'message' : '');
@@ -44,7 +52,8 @@ if ($table_exists) {
     $status_col = in_array('Status', $column_names) ? 'Status' : (in_array('status', $column_names) ? 'status' : 'Unread');
     
     if ($user_id_col) {
-        // Get all notifications for this user
+        
+
         $sql = "SELECT * FROM Notifications WHERE $user_id_col = ? ORDER BY $timestamp_col DESC";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "i", $user_id);
@@ -55,7 +64,8 @@ if ($table_exists) {
             $notifications[] = $row;
         }
         
-        // Mark all as read when viewing page (if status column exists)
+        
+
         if (in_array($status_col, $column_names)) {
             $mark_sql = "UPDATE Notifications SET $status_col = 'Read' WHERE $user_id_col = ?";
             $mark_stmt = mysqli_prepare($conn, $mark_sql);
@@ -65,7 +75,9 @@ if ($table_exists) {
     }
 }
 
-// For demo purposes, if no notifications, create sample ones
+
+
+
 if (empty($notifications)) {
     $notifications = [
         [
@@ -191,11 +203,10 @@ if (empty($notifications)) {
             color: #22d3ee;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
+        
 
-        /* Sidebar Base */
+
+
         .sidebar {
             position: fixed;
             left: -280px;
@@ -215,7 +226,9 @@ if (empty($notifications)) {
             left: 0;
         }
 
-        /* Sidebar Header */
+        
+
+
         .sidebar-header {
             padding: 25px 20px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -261,7 +274,9 @@ if (empty($notifications)) {
             font-size: 10px;
         }
 
-        /* User Info in Sidebar */
+        
+
+
         .sidebar-user {
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.03);
@@ -307,7 +322,9 @@ if (empty($notifications)) {
             font-size: 10px;
         }
 
-        /* Sidebar Navigation */
+        
+
+
         .sidebar-nav {
             list-style: none;
             padding: 0;
@@ -361,7 +378,9 @@ if (empty($notifications)) {
             color: #a5b4fc;
         }
 
-        /* Sidebar Badge */
+        
+
+
         .sidebar-badge {
             background: #ef4444;
             color: white;
@@ -378,14 +397,18 @@ if (empty($notifications)) {
             50% { transform: scale(1.1); }
         }
 
-        /* Sidebar Divider */
+        
+
+
         .sidebar-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
-        /* Sidebar Section Title */
+        
+
+
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
@@ -396,7 +419,9 @@ if (empty($notifications)) {
             letter-spacing: 0.5px;
         }
 
-        /* Club Preview in Sidebar */
+        
+
+
         .sidebar-club-preview {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -464,7 +489,9 @@ if (empty($notifications)) {
             text-transform: uppercase;
         }
 
-        /* Quick Stats */
+        
+
+
         .sidebar-stats {
             display: flex;
             justify-content: space-around;
@@ -497,7 +524,9 @@ if (empty($notifications)) {
             letter-spacing: 0.3px;
         }
 
-        /* Footer Links */
+        
+
+
         .sidebar-footer {
             padding: 20px 20px 30px 20px;
         }
@@ -533,7 +562,9 @@ if (empty($notifications)) {
             text-align: center;
         }
 
-        /* Overlay for mobile */
+        
+
+
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -553,7 +584,8 @@ if (empty($notifications)) {
             opacity: 1;
         }
 
-        /* Scrollbar Styling */
+        
+
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -780,7 +812,8 @@ if (empty($notifications)) {
     
     <div class="sidebar-divider"></div>
     
-    <!-- My Clubs Preview -->
+    
+
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -797,7 +830,8 @@ if (empty($notifications)) {
         </div>
     </div>
     
-    <!-- Quick Stats -->
+    
+
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
@@ -813,7 +847,9 @@ if (empty($notifications)) {
         </div>
     </div>
     
-    <!-- Footer -->
+    
+
+
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -826,10 +862,14 @@ if (empty($notifications)) {
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
+
+
+
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
+
+
+
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -848,7 +888,9 @@ if (empty($notifications)) {
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
+
+
+
 <div class="container">
     <div class="page-title">
         <span>🔔 All Notifications</span>
@@ -861,7 +903,9 @@ if (empty($notifications)) {
         <?php if(!empty($notifications)): ?>
             <?php foreach($notifications as $notif): ?>
                 <?php
-                // Map the Type to icon and class
+                
+
+
                 $icon = 'fa-bell';
                 $type_class = 'general';
                 
@@ -916,7 +960,8 @@ if (empty($notifications)) {
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
+
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -948,7 +993,9 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// ==================== NOTIFICATION FUNCTIONS ====================
+
+
+
 function clearAll() {
     if(confirm('Clear all notifications?')) {
         fetch('mark_notification_read.php', {
@@ -963,12 +1010,16 @@ function clearAll() {
             if(data.success) {
                 location.reload();
             } else {
-                // For demo purposes, just reload
+                
+
+
                 location.reload();
             }
         })
         .catch(error => {
-            // For demo purposes, just reload
+            
+
+        
             location.reload();
         });
     }

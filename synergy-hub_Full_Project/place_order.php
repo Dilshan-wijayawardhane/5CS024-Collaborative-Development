@@ -21,7 +21,9 @@ $items = $data['items'];
 $payment = $data['payment'];
 $total_points = isset($data['total_points']) ? $data['total_points'] : 0;
 
-// If paying with points, check balance
+
+
+
 if ($payment === 'points') {
     $check_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
     $check_stmt = mysqli_prepare($conn, $check_sql);
@@ -35,14 +37,18 @@ if ($payment === 'points') {
         exit();
     }
     
-    // Deduct points
+    
+
+
     $deduct_sql = "UPDATE Users SET PointsBalance = PointsBalance - ? WHERE UserID = ?";
     $deduct_stmt = mysqli_prepare($conn, $deduct_sql);
     mysqli_stmt_bind_param($deduct_stmt, "ii", $total_points, $user_id);
     mysqli_stmt_execute($deduct_stmt);
 }
 
-// Insert orders
+
+
+
 $success = true;
 foreach ($items as $item) {
     for ($i = 0; $i < $item['qty']; $i++) {

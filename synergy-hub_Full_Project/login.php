@@ -1,25 +1,19 @@
 <?php
-/**
- * Main login page for Synergy Hub
- * 
- * Security Notes:
- *  - Uses prepared statements to prevent SQL injection
- *  - Passwords verified with password_verify() against hashed passwords in the database
- *  - Session management with session_regenerate_id() to prevent session fixation
- *  - CSRF not needed here
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Handle login from submission
+
+
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
     
-    // Fetch user by email
+    
+
     $sql = "SELECT * FROM Users WHERE Email = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "s", $email);
@@ -29,20 +23,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (mysqli_num_rows($result) == 1) {
         $user = mysqli_fetch_assoc($result);
         
-        // Verify password
+        
+
+
         if (password_verify($password, $user['PasswordHash'])) {
-            // Successful login
+            
+
             $_SESSION['user_id'] = $user['UserID'];
             $_SESSION['user_name'] = $user['Name'];
             $_SESSION['user_role'] = $user['Role'];
             $_SESSION['logged_in'] = true;
             
-            // Regenerate session ID to prevent session fixation
+            
+
             session_regenerate_id(true);
-            // Log successful login
+            
+
             logActivity($conn, $user['UserID'], 'LOGIN');
             
-            // Redirect based on role
+            
+            
             if ($user['Role'] === 'Admin') {
                 header("Location: admin/index.php");
             } else {

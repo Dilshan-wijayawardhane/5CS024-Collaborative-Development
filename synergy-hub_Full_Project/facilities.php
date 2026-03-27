@@ -1,24 +1,13 @@
 <?php
-/**
- * Main facilities overview page
- * 
- * Features:
- *  - Displays all facilities stored by Type and Name
- *  - Shows real-time stats
- *  - Visual crowd meter (hardcoded demo data for now)
- *  - Special section for Café
- *  - Check-in teaser (+10 points)
- * 
- * Notes:
- *  - Crowd data is currently hardcoded
- *  - Check-in link is static text
- *  - Responsive grid layout for card
- */
+
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
+
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -26,13 +15,17 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Load all facilities
+
+
+
 $sql = "SELECT * FROM Facilities ORDER BY Type, Name";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
-// Load user points & name (for sidebar)
+
+
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -40,12 +33,17 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-//Count open facilities (sidebar badge)
+
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Hardcoded crowd data (demo only)
+
+
+
+
 $crowd_data = [
     'Gym' => ['current' => 82, 'total' => 150, 'hours' => '06:00 - 22:00'],
     'Library' => ['current' => 234, 'total' => 300, 'hours' => '08:00 - 23:59'],
@@ -862,11 +860,13 @@ $crowd_data = [
     <?php while($facility = mysqli_fetch_assoc($result)): 
         $type = $facility['Type'];
 
-        // Get crowd data or fallback to random demo values
+        
+
         $crowd = isset($crowd_data[$type]) ? $crowd_data[$type] : ['current' => rand(10, 50), 'total' => 100, 'hours' => '09:00 - 17:00'];
         $crowd_percent = ($crowd['current'] / $crowd['total']) * 100;
         
-        // Dynamic icon based on facility type
+        
+        
         $icon = 'fa-building';
         if($type == 'Gym') $icon = 'fa-dumbbell';
         else if($type == 'Library') $icon = 'fa-book';

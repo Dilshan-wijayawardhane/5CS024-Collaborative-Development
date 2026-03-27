@@ -12,11 +12,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     
-    // Validate
+    
+
     if ($password != $confirm_password) {
         $error = "Passwords do not match!";
     } else {
-        // Check if email already exists (SECURE way)
+        
+
         $check_sql = "SELECT * FROM Users WHERE Email = ? OR StudentID = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         mysqli_stmt_bind_param($check_stmt, "ss", $email, $student_id);
@@ -26,10 +28,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (mysqli_num_rows($check_result) > 0) {
             $error = "Email or Student ID already exists!";
         } else {
-            // Hash the password
+            
+
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             
-            // Insert user (SECURE way)
+            
+
             $insert_sql = "INSERT INTO Users (StudentID, Name, Email, PasswordHash, Role, PointsBalance, MembershipStatus) 
                           VALUES (?, ?, ?, ?, 'User', 0, 'Active')";
             $insert_stmt = mysqli_prepare($conn, $insert_sql);
@@ -38,10 +42,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (mysqli_stmt_execute($insert_stmt)) {
                 $success = "Registration successful! Please login.";
                 
-                // Get the new user ID
+                
                 $new_user_id = mysqli_insert_id($conn);
                 
-                // Log the registration
+                
                 logActivity($conn, $new_user_id, 'REGISTER');
             } else {
                 $error = "Error: " . mysqli_error($conn);
@@ -71,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             position: relative;
         }
         
-        /* Background image only - no gradient */
+        
         .bg {
             position: fixed;
             top: 0;
@@ -111,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             width: 100%;
             max-width: 450px;
             backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.15); /* Glass effect */
+            background: rgba(255, 255, 255, 0.15); 
             border: 1px solid rgba(255, 255, 255, 0.25);
         }
         

@@ -1,19 +1,10 @@
 <?php
-/**
- * Library section page - allows users to browse available books and manage borrowed books.
- * 
- * Security Notes:
- *  - Requires user authentication
- *  - Uses prepared statements
- *  - Borrow/return handled via seperate API endpoints
- *  - Client-side search (no server round trip)
- *  - Overdue calculation done live
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -22,14 +13,17 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Determine active tab
+
+
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'browse';
 
-// Load available books
+
+
 $books_sql = "SELECT * FROM books WHERE available > 0 ORDER BY category, title";
 $books_result = mysqli_query($conn, $books_sql);
 
-// Load users' borrowed books
+
+
 $borrowed_sql = "SELECT b.*, bk.title, bk.author, bk.category,
                         DATEDIFF(b.due_date, CURDATE()) as days_remaining,
                         DATEDIFF(CURDATE(), b.due_date) as days_overdue
@@ -42,7 +36,8 @@ mysqli_stmt_bind_param($borrowed_stmt, "i", $user_id);
 mysqli_stmt_execute($borrowed_stmt);
 $borrowed_result = mysqli_stmt_get_result($borrowed_stmt);
 
-// Load user points and name (for sidebar)
+
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -50,7 +45,8 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Count open facilities
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -1124,7 +1120,9 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <script>
 
-// Sidebar Toggle
+
+
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1156,7 +1154,10 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Tab switching + URL history
+
+
+
+
 function switchTab(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const browseTab = document.getElementById('browseTab');
@@ -1186,7 +1187,9 @@ function switchTab(tab) {
     }
 }
 
-// Client-side book search
+
+
+
 function searchBooks() {
     let searchTerm = document.getElementById('searchBooks').value.toLowerCase();
     let books = document.querySelectorAll('.book-card');
@@ -1204,7 +1207,9 @@ function searchBooks() {
     });
 }
 
-// Borrow Book (AJAX to borrow_book.php)
+
+
+
 function borrowBook(bookId) {
     if(confirm('Borrow this book? You will get 5 points! (Due in 14 days)')) {
         fetch('borrow_book.php', {
@@ -1240,7 +1245,9 @@ function borrowBook(bookId) {
     }
 }
 
-// Return book (AJAX to return_book.php)
+
+
+
 function returnBook(borrowId, bookId) {
     if(confirm('Return this book? You will get 2 points!')) {
         fetch('return_book.php', {

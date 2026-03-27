@@ -1,17 +1,11 @@
 <?php
-/**
- * Gym Equipment Page: Displays available gym equipment, fitness classes, and allows users to book classes.
- * 
- * Security Notes:
- *  - Requires login
- *  - Join/cancel handled via seperate API endpoints
- *  - Spots left calculated live
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication check
+
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -20,15 +14,19 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Load gym equipment inventory
+
+
 $equip_sql = "SELECT * FROM gym_equipment ORDER BY category, name";
 $equip_result = mysqli_query($conn, $equip_sql);
 
-//Load fitness classes
+
+
 $classes_sql = "SELECT * FROM fitness_classes ORDER BY time";
 $classes_result = mysqli_query($conn, $classes_sql);
 
-// Load users' active class bookings
+
+
+
 $bookings_sql = "SELECT cb.*, fc.name as class_name, fc.time, fc.instructor 
                  FROM class_bookings cb
                  JOIN fitness_classes fc ON cb.class_id = fc.class_id
@@ -38,7 +36,9 @@ mysqli_stmt_bind_param($bookings_stmt, "i", $user_id);
 mysqli_stmt_execute($bookings_stmt);
 $bookings_result = mysqli_stmt_get_result($bookings_stmt);
 
-//Load user points and name
+
+
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -46,7 +46,9 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Count open facilities
+
+
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
