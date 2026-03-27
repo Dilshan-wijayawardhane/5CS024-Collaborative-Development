@@ -1,5 +1,5 @@
 <?php
-// save_location.php - Save bus location
+
 require_once 'config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['route']) && isset($_POST['place']) && isset($_POST['time'])) {
@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['route']) && isset($_PO
     $place = $_POST['place'];
     $time = $_POST['time'];
     
-    // Use prepared statement
+    
     $sql = "INSERT INTO bus_routes (route_id, location, updated_time)
             VALUES (?, ?, ?)
             ON DUPLICATE KEY UPDATE
