@@ -14,13 +14,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['game_type']) && isset(
     $game_type = $_POST['game_type'];
     $points_earned = intval($_POST['points_earned']);
     
-    // Record game
+    
     $game_sql = "INSERT INTO GameField (UserID, GameType, PointsEarned) VALUES (?, ?, ?)";
     $game_stmt = mysqli_prepare($conn, $game_sql);
     mysqli_stmt_bind_param($game_stmt, "isi", $user_id, $game_type, $points_earned);
     
     if (mysqli_stmt_execute($game_stmt)) {
-        // Update user points
+        
         $update_sql = "UPDATE Users SET PointsBalance = PointsBalance + ? WHERE UserID = ?";
         $update_stmt = mysqli_prepare($conn, $update_sql);
         mysqli_stmt_bind_param($update_stmt, "ii", $points_earned, $user_id);
