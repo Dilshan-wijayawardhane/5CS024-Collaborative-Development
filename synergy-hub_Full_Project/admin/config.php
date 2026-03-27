@@ -1,9 +1,9 @@
 <?php
 require_once 'middleware.php';
-// admin/config.php - Admin Panel Configuration
+
 require_once dirname(__DIR__) . '/config.php';
 
-// Admin session check function
+
 function checkAdminAuth() {
     if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
         header("Location: login.php");
@@ -16,7 +16,7 @@ function checkAdminAuth() {
     }
 }
 
-// Get admin info
+
 function getAdminInfo($conn) {
     $admin_id = $_SESSION['user_id'];
     $sql = "SELECT UserID, Name, Email, StudentID, PointsBalance, Role 
@@ -28,15 +28,15 @@ function getAdminInfo($conn) {
     return mysqli_fetch_assoc($result);
 }
 
-// Get counts for dashboard
+
 function getDashboardCounts($conn) {
     $counts = [];
     
-    // Total users
+    
     $result = mysqli_query($conn, "SELECT COUNT(*) as count FROM Users WHERE Role = 'User'");
     $counts['total_users'] = $result ? mysqli_fetch_assoc($result)['count'] : 0;
     
-    // Active users today - Check if ActivityLogs table exists
+    
     $check_activity = mysqli_query($conn, "SHOW TABLES LIKE 'ActivityLogs'");
     if (mysqli_num_rows($check_activity) > 0) {
         $result = mysqli_query($conn, "SELECT COUNT(DISTINCT UserID) as count FROM ActivityLogs WHERE DATE(Timestamp) = CURDATE()");
@@ -45,7 +45,7 @@ function getDashboardCounts($conn) {
         $counts['active_today'] = 0;
     }
     
-    // Total facilities
+    
     $check_facilities = mysqli_query($conn, "SHOW TABLES LIKE 'Facilities'");
     if (mysqli_num_rows($check_facilities) > 0) {
         $result = mysqli_query($conn, "SELECT COUNT(*) as count FROM Facilities");
@@ -58,7 +58,7 @@ function getDashboardCounts($conn) {
         $counts['open_facilities'] = 0;
     }
     
-    // Total events
+    
     $check_events = mysqli_query($conn, "SHOW TABLES LIKE 'Events'");
     if (mysqli_num_rows($check_events) > 0) {
         $result = mysqli_query($conn, "SELECT COUNT(*) as count FROM Events");
@@ -71,7 +71,7 @@ function getDashboardCounts($conn) {
         $counts['upcoming_events'] = 0;
     }
     
-    // Total orders
+    
     $check_orders = mysqli_query($conn, "SHOW TABLES LIKE 'Orders'");
     if (mysqli_num_rows($check_orders) > 0) {
         $result = mysqli_query($conn, "SELECT COUNT(*) as count FROM Orders WHERE DATE(Timestamp) = CURDATE()");
@@ -84,14 +84,14 @@ function getDashboardCounts($conn) {
         $counts['pending_orders'] = 0;
     }
     
-    // Total points
+    
     $result = mysqli_query($conn, "SELECT SUM(PointsBalance) as total FROM Users");
     $counts['total_points'] = $result ? (mysqli_fetch_assoc($result)['total'] ?? 0) : 0;
     
     return $counts;
 }
 
-// Log admin activity
+
 function logAdminActivity($conn, $action, $details = '') {
     if (isset($_SESSION['user_id'])) {
         $sql = "INSERT INTO ActivityLogs (UserID, Action, Details, Timestamp) VALUES (?, ?, ?, NOW())";
