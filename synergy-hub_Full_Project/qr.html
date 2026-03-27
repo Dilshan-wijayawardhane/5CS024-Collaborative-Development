@@ -942,7 +942,7 @@ function demoScan(code) {
     showResult(code);
 }
 
-// Stop scanner when leaving page
+
 window.addEventListener('beforeunload', function() {
     if (codeReader) {
         codeReader.reset();
