@@ -1,21 +1,12 @@
 <?php
-/**
- * Game Field Booking Page for Synergy Hub
- * 
- * This page allows users to view available game fields, book them for specific time slots, and manage their existing bookings.
- * 
- * Security Notes:
- *  - User authentication is required to access this page
- *  - Uses prepared statements for all database interactions to prevent SQL injection
- *  - Booking & cancellation handled via seperate API endpoints
- *  - Client-side confirmation before actions
- *  - Hardcoded field data for demo purposes, should be dynamic in production
- */
+
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
-// Authentication check
+
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -30,7 +21,8 @@ mysqli_stmt_bind_param($bookings_stmt, "i", $user_id);
 mysqli_stmt_execute($bookings_stmt);
 $bookings_result = mysqli_stmt_get_result($bookings_stmt);
 
-// Load users' current points balance
+
+
 $user_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -38,7 +30,9 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Hardcoded sports fields
+
+
+
 $fields = [
     ['name' => 'Football Field', 'icon' => 'fa-futbol', 'time' => '9:00 AM - 6:00 PM', 'price' => 50],
     ['name' => 'Basketball Court', 'icon' => 'fa-basketball', 'time' => '8:00 AM - 8:00 PM', 'price' => 40],
@@ -48,7 +42,9 @@ $fields = [
     ['name' => 'Badminton Court', 'icon' => 'fa-shuttlecock', 'time' => '7:00 AM - 9:00 PM', 'price' => 30],
 ];
 
-// Standard time slots
+
+
+
 $time_slots = [
     '9:00 AM - 11:00 AM',
     '11:00 AM - 1:00 PM',
@@ -510,7 +506,9 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Tab switching logic
+
+
+
 function switchTab(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const fieldsTab = document.getElementById('fieldsTab');
@@ -529,7 +527,9 @@ function switchTab(tab) {
     }
 }
 
-// Book field (AJAX to book_field.php)
+
+
+
 function bookField(fieldName, price) {
     let fieldId = fieldName.replace(/\s/g, '');
     let selectedDate = document.getElementById('date-' + fieldId).value;
@@ -558,7 +558,9 @@ function bookField(fieldName, price) {
     }
 }
 
-// Cancel booking (AJAX to cancel_field_booking.php)
+
+
+
 function cancelBooking(bookingId) {
     if(confirm('Cancel this booking?')) {
         fetch('cancel_field_booking.php', {
