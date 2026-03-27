@@ -102,11 +102,7 @@
             color: #22d3ee;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
-        /* Sidebar Base */
+        
         .sidebar {
             position: fixed;
             left: -280px;
@@ -126,7 +122,7 @@
             left: 0;
         }
 
-        /* Sidebar Header */
+        
         .sidebar-header {
             padding: 25px 20px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -172,7 +168,7 @@
             font-size: 10px;
         }
 
-        /* User Info in Sidebar */
+        
         .sidebar-user {
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.03);
@@ -218,7 +214,7 @@
             font-size: 10px;
         }
 
-        /* Sidebar Navigation */
+        
         .sidebar-nav {
             list-style: none;
             padding: 0;
@@ -272,7 +268,7 @@
             color: #a5b4fc;
         }
 
-        /* Sidebar Badge */
+        
         .sidebar-badge {
             background: #ef4444;
             color: white;
@@ -289,14 +285,14 @@
             50% { transform: scale(1.1); }
         }
 
-        /* Sidebar Divider */
+        
         .sidebar-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
-        /* Sidebar Section Title */
+        
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
@@ -307,7 +303,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* Club Preview in Sidebar */
+        
         .sidebar-club-preview {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -375,7 +371,7 @@
             text-transform: uppercase;
         }
 
-        /* Quick Stats */
+        
         .sidebar-stats {
             display: flex;
             justify-content: space-around;
@@ -408,7 +404,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* Footer Links */
+        
         .sidebar-footer {
             padding: 20px 20px 30px 20px;
         }
@@ -444,7 +440,7 @@
             text-align: center;
         }
 
-        /* Overlay for mobile */
+        
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -464,7 +460,7 @@
             opacity: 1;
         }
 
-        /* Scrollbar Styling */
+        
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -621,15 +617,15 @@
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
+
 <div id="sidebar" class="sidebar">
-    <!-- Header -->
+   
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
     
-    <!-- User Info -->
+    
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
@@ -640,7 +636,7 @@
         </div>
     </div>
     
-    <!-- Navigation -->
+    
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
@@ -690,7 +686,7 @@
     
     <div class="sidebar-divider"></div>
     
-    <!-- My Clubs Preview -->
+    
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -707,7 +703,7 @@
         </div>
     </div>
     
-    <!-- Quick Stats -->
+    
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
@@ -723,7 +719,7 @@
         </div>
     </div>
     
-    <!-- Footer -->
+    
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -736,10 +732,10 @@
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
+
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
+
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -783,7 +779,7 @@
             <button class="close-btn" onclick="closeResult()">Close</button>
         </div>
         
-        <!-- Sample QR codes for demo -->
+        
         <div style="margin-top: 40px;">
             <h3 style="color: white; margin-bottom: 20px;">Sample QR Codes</h3>
             <div class="sample-grid">
@@ -810,7 +806,7 @@
 
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 <script>
-// ==================== SIDEBAR ====================
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -842,7 +838,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// ==================== QR SCANNER ====================
+
 let codeReader = null;
 let videoElement = document.getElementById('video');
 
@@ -881,7 +877,7 @@ function startDecoding(deviceId) {
         codeReader.reset();
         codeReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
             if (result) {
-                // Successfully scanned
+                
                 document.getElementById('video-container').style.display = 'none';
                 document.querySelector('.camera-select').style.display = 'none';
                 document.querySelector('.start-btn').style.display = 'inline-block';
@@ -897,7 +893,7 @@ function startDecoding(deviceId) {
     }
 }
 
-// Camera selection change
+
 document.getElementById('cameraSelect').addEventListener('change', function(e) {
     if (this.value) {
         startDecoding(this.value);
@@ -912,13 +908,13 @@ function showResult(text) {
     `;
     document.getElementById('resultBox').classList.add('show');
     
-    // Simulate check-in
+    
     setTimeout(() => {
         let points = document.getElementById('pointsDisplay');
         let currentPoints = parseInt(points.innerText);
         points.innerText = currentPoints + 10;
         
-        // Animate points
+       
         document.querySelector('.points').classList.add('active');
         setTimeout(() => {
             document.querySelector('.points').classList.remove('active');
