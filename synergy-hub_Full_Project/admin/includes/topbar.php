@@ -1,6 +1,5 @@
 <?php
-// admin/includes/topbar.php
-// Get admin info if not already available
+
 if (!isset($admin)) {
     $admin_id = $_SESSION['user_id'];
     $admin_sql = "SELECT Name, Email, StudentID FROM Users WHERE UserID = ?";
@@ -17,7 +16,7 @@ if (!isset($admin)) {
     </button>
     
     <div class="top-bar-right">
-        <!-- Admin Profile -->
+        
         <div class="admin-profile">
             <div class="profile-img" onclick="toggleProfileMenu()">
                 <i class="fa-solid fa-user-circle" style="font-size: 40px; color: #667eea;"></i>
@@ -49,17 +48,17 @@ if (!isset($admin)) {
 </div>
 
 <script>
-// Toggle sidebar on mobile
+
 function toggleSidebar() {
     document.querySelector('.sidebar').classList.toggle('show');
 }
 
-// Toggle profile menu
+
 function toggleProfileMenu() {
     document.getElementById('profileMenu').classList.toggle('show');
 }
 
-// Close menus when clicking outside
+
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.admin-profile')) {
         document.getElementById('profileMenu')?.classList.remove('show');
