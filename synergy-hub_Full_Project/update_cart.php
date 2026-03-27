@@ -15,16 +15,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     
     if ($action == 'remove') {
-        // Remove item from cart
+        
         foreach ($_SESSION['cart'] as $key => $item) {
             if ($item['item_id'] == $item_id) {
                 unset($_SESSION['cart'][$key]);
-                $_SESSION['cart'] = array_values($_SESSION['cart']); // Re-index array
+                $_SESSION['cart'] = array_values($_SESSION['cart']);
                 break;
             }
         }
     } else if ($quantity > 0) {
-        // Update quantity
+        
         foreach ($_SESSION['cart'] as &$item) {
             if ($item['item_id'] == $item_id) {
                 $item['quantity'] = $quantity;
