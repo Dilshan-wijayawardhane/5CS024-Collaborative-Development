@@ -10,7 +10,7 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get special offers
+
 $offers_sql = "SELECT * FROM special_offers 
                WHERE facility_id = ? AND is_active = TRUE 
                AND (valid_until IS NULL OR valid_until >= CURDATE())
@@ -20,7 +20,7 @@ mysqli_stmt_bind_param($offers_stmt, "i", $facility_id);
 mysqli_stmt_execute($offers_stmt);
 $offers_result = mysqli_stmt_get_result($offers_stmt);
 
-// Get user points and name
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -28,12 +28,12 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Get facility name
+
 $facility_sql = "SELECT Name FROM Facilities WHERE FacilityID = ?";
 $facility_stmt = mysqli_prepare($conn, $facility_sql);
 mysqli_stmt_bind_param($facility_stmt, "i", $facility_id);
@@ -41,7 +41,7 @@ mysqli_stmt_execute($facility_stmt);
 $facility_result = mysqli_stmt_get_result($facility_stmt);
 $facility = mysqli_fetch_assoc($facility_result);
 
-// Food Images Array for Offers
+
 $offer_images = [
     'Happy Hour Special' => 'beverages.jpg',
     'Combo Meal Deal' => 'Chicken Rice + Soft Drink.jpg',
@@ -52,7 +52,7 @@ $offer_images = [
     'Dinner Combo' => 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=250&fit=crop',
 ];
 
-// Default image if specific not found
+
 $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=250&fit=crop';
 ?>
 
@@ -155,9 +155,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             color: #22d3ee;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
+        
 
         .sidebar {
             position: fixed;
@@ -748,7 +746,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
+
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
@@ -850,7 +848,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
+
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -869,7 +867,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
+
 <div class="container">
     
     <div class="points-badge">
@@ -883,7 +881,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         <?php if(mysqli_num_rows($offers_result) > 0): ?>
             <?php while($offer = mysqli_fetch_assoc($offers_result)): ?>
                 <?php
-                // Calculate days left
+                
                 $days_left = '';
                 if($offer['valid_until']) {
                     $valid_until = new DateTime($offer['valid_until']);
@@ -892,7 +890,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
                     $days_left = $interval->days . ' days left';
                 }
                 
-                // Set offer tag and image
+                
                 $offer_tag = '';
                 $image_url = isset($offer_images[$offer['title']]) ? $offer_images[$offer['title']] : $default_image;
                 
@@ -979,7 +977,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
