@@ -1,25 +1,23 @@
 <?php
-/**
- * API Endpoint: Fetch current/active emergency alerts for display in the header.
- * 
- * Security Notes:
- *  - Only authenticated users can access this endpoint
- *  - Uses direct query
- *  - No panigation (assumes a small number of active alerts at any time)
- */
+
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-// Authentication
+
+
+
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
     exit();
 }
 
-// Fetch active, non-expired alerts
+
+
+
 $sql = "SELECT * FROM EmergencyAlerts WHERE (expires_at IS NULL OR expires_at > NOW()) AND is_active = 1 ORDER BY 
         CASE severity 
             WHEN 'critical' THEN 1 
@@ -34,7 +32,9 @@ if (!$result) {
     exit();
 }
 
-// format alerts for frontend
+
+
+
 $alerts = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $alerts[] = [
