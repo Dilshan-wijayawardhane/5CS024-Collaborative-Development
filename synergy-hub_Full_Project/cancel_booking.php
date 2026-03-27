@@ -1,7 +1,5 @@
 <?php
-/**
- * API Endpoint: Cancel a class booking for the logged-in user.
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
