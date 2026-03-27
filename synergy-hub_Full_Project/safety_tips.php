@@ -1,9 +1,9 @@
 <?php
-// safety_tips.php
+
 require_once 'config.php';
 require_once 'functions.php';
 
-// Check if user is logged in
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -11,7 +11,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch user details
+
 $sql = "SELECT Name FROM Users WHERE UserID = ?";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "i", $user_id);
@@ -19,7 +19,7 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
 
-// Check if tables exist
+
 $tips_table_check = mysqli_query($conn, "SHOW TABLES LIKE 'SafetyTips'");
 $has_tips_table = mysqli_num_rows($tips_table_check) > 0;
 
@@ -29,7 +29,7 @@ $has_quiz_table = mysqli_num_rows($quiz_table_check) > 0;
 $incidents_table_check = mysqli_query($conn, "SHOW TABLES LIKE 'SafetyIncidents'");
 $has_incidents_table = mysqli_num_rows($incidents_table_check) > 0;
 
-// Get active emergency alerts for banner from EmergencyAlerts table
+
 $critical_alert = null;
 $alerts_table_check = mysqli_query($conn, "SHOW TABLES LIKE 'EmergencyAlerts'");
 if (mysqli_num_rows($alerts_table_check) > 0) {
@@ -40,7 +40,7 @@ if (mysqli_num_rows($alerts_table_check) > 0) {
     }
 }
 
-// Get safety tip of the day (random)
+
 $tip_of_day = null;
 if ($has_tips_table) {
     $tips_sql = "SELECT * FROM SafetyTips WHERE is_active = 1 ORDER BY RAND() LIMIT 1";
@@ -50,14 +50,14 @@ if ($has_tips_table) {
     }
 }
 
-// Get categories for filtering
+
 $categories_result = false;
 if ($has_tips_table) {
     $categories_sql = "SELECT DISTINCT category FROM SafetyTips WHERE is_active = 1 ORDER BY category";
     $categories_result = mysqli_query($conn, $categories_sql);
 }
 
-// Get all safety tips with optional category filter
+
 $category_filter = isset($_GET['category']) ? mysqli_real_escape_string($conn, $_GET['category']) : '';
 $search_query = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
 
@@ -84,14 +84,14 @@ if ($has_tips_table) {
     }
 }
 
-// Get recent safety incidents
+
 $incidents_result = false;
 if ($has_incidents_table) {
     $incidents_sql = "SELECT * FROM SafetyIncidents WHERE report_date > DATE_SUB(NOW(), INTERVAL 30 DAY) ORDER BY report_date DESC LIMIT 5";
     $incidents_result = mysqli_query($conn, $incidents_sql);
 }
 
-// Get quiz questions
+
 $quiz_result = false;
 if ($has_quiz_table) {
     $quiz_sql = "SELECT * FROM SafetyQuiz WHERE is_active = 1 ORDER BY RAND() LIMIT 5";
@@ -193,7 +193,7 @@ if ($has_quiz_table) {
             margin: 0 auto;
         }
 
-        /* Tip of the Day */
+       
         .tip-of-day {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
             border-radius: 20px;
@@ -239,7 +239,7 @@ if ($has_quiz_table) {
             max-width: 80%;
         }
 
-        /* Quick Stats */
+        
         .safety-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -281,7 +281,7 @@ if ($has_quiz_table) {
             font-size: 14px;
         }
 
-        /* Search and Filter */
+        
         .search-section {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
@@ -353,7 +353,7 @@ if ($has_quiz_table) {
             border-color: #667eea;
         }
 
-        /* Safety Tips Grid */
+        
         .tips-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -485,7 +485,7 @@ if ($has_quiz_table) {
             color: white;
         }
 
-        /* Quick Safety Quiz */
+        
         .quiz-section {
             background: white;
             border-radius: 20px;
@@ -593,7 +593,7 @@ if ($has_quiz_table) {
             margin-top: 20px;
         }
 
-        /* Downloadable Resources */
+        
         .resources-section {
             background: white;
             border-radius: 20px;
@@ -662,7 +662,7 @@ if ($has_quiz_table) {
             transform: scale(1.05);
         }
 
-        /* Recent Incidents */
+        
         .incidents-section {
             background: white;
             border-radius: 20px;
@@ -724,7 +724,7 @@ if ($has_quiz_table) {
             padding: 30px;
         }
 
-        /* Safety Checklist */
+        
         .checklist-section {
             background: white;
             border-radius: 20px;
@@ -784,7 +784,7 @@ if ($has_quiz_table) {
             background: #059669;
         }
 
-        /* Emergency Contacts Reminder */
+        
         .contacts-reminder {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             border-radius: 20px;
@@ -846,7 +846,7 @@ if ($has_quiz_table) {
             transform: scale(1.05);
         }
 
-        /* Back to Emergency */
+        
         .back-link {
             display: inline-block;
             margin-top: 20px;
@@ -885,7 +885,7 @@ if ($has_quiz_table) {
 </head>
 <body>
     <div class="container">
-        <!-- Emergency Banner - Only shows if there's a critical alert -->
+        
         <?php if ($critical_alert): ?>
         <div class="emergency-banner">
             <i class="fa-solid fa-triangle-exclamation"></i>
@@ -897,7 +897,7 @@ if ($has_quiz_table) {
         </div>
         <?php endif; ?>
 
-        <!-- Header -->
+        
         <div class="safety-header">
             <h1>
                 <i class="fa-solid fa-shield-halved"></i>
@@ -907,7 +907,7 @@ if ($has_quiz_table) {
             <p>Your safety is our priority. Learn essential safety practices and stay prepared.</p>
         </div>
 
-        <!-- Emergency Contacts Reminder -->
+        
         <div class="contacts-reminder">
             <div class="reminder-text">
                 <h3><i class="fa-solid fa-phone-alt"></i> Need Immediate Help?</h3>
@@ -923,7 +923,7 @@ if ($has_quiz_table) {
             </div>
         </div>
 
-        <!-- Tip of the Day -->
+        
         <?php if ($tip_of_day): ?>
         <div class="tip-of-day">
             <span class="tip-of-day-label"><i class="fa-regular fa-lightbulb"></i> TIP OF THE DAY</span>
@@ -932,7 +932,7 @@ if ($has_quiz_table) {
         </div>
         <?php endif; ?>
 
-        <!-- Quick Stats -->
+        
         <div class="safety-stats">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fa-solid fa-book-open"></i></div>
@@ -956,7 +956,7 @@ if ($has_quiz_table) {
             </div>
         </div>
 
-        <!-- Search and Filter -->
+       
         <div class="search-section">
             <form method="GET" action="" class="search-wrapper">
                 <input type="text" name="search" class="search-input" placeholder="Search safety tips..." value="<?php echo htmlspecialchars($search_query); ?>">
@@ -982,7 +982,7 @@ if ($has_quiz_table) {
             </div>
         </div>
 
-        <!-- Safety Tips Grid -->
+       
         <?php if ($all_tips_result && mysqli_num_rows($all_tips_result) > 0): ?>
         <div class="tips-grid">
             <?php while($tip = mysqli_fetch_assoc($all_tips_result)): 
@@ -999,7 +999,7 @@ if ($has_quiz_table) {
                     $priority_icon = 'fa-circle-info';
                 }
                 
-                // Determine icon based on category
+                
                 $category_icon = 'fa-shield-halved';
                 if (strpos($tip['category'], 'Fire') !== false) $category_icon = 'fa-fire';
                 else if (strpos($tip['category'], 'Cyber') !== false) $category_icon = 'fa-laptop';
@@ -1019,7 +1019,7 @@ if ($has_quiz_table) {
                 <div class="tip-body">
                     <div class="tip-content">
                         <?php 
-                        // Show shortened content
+                        
                         $content = htmlspecialchars($tip['content']);
                         echo strlen($content) > 150 ? substr($content, 0, 150) . '...' : $content;
                         ?>
@@ -1055,7 +1055,7 @@ if ($has_quiz_table) {
         </div>
         <?php endif; ?>
 
-        <!-- Quick Safety Quiz -->
+        
         <div class="quiz-section">
             <h2 class="quiz-title"><i class="fa-solid fa-question-circle"></i> Test Your Safety Knowledge</h2>
             
@@ -1096,7 +1096,7 @@ if ($has_quiz_table) {
             <?php endif; ?>
         </div>
 
-        <!-- Safety Checklist -->
+        
         <div class="checklist-section">
             <h2 class="quiz-title"><i class="fa-solid fa-check-double"></i> Emergency Preparedness Checklist</h2>
             <p style="color: #6b7280; margin-bottom: 20px;">Track your preparedness level</p>
@@ -1141,7 +1141,7 @@ if ($has_quiz_table) {
             </button>
         </div>
 
-        <!-- Downloadable Resources -->
+        
         <div class="resources-section">
             <h2 class="quiz-title"><i class="fa-solid fa-download"></i> Downloadable Safety Resources</h2>
             
@@ -1184,7 +1184,7 @@ if ($has_quiz_table) {
             </div>
         </div>
 
-        <!-- Recent Safety Incidents -->
+       
         <?php if ($incidents_result && mysqli_num_rows($incidents_result) > 0): ?>
         <div class="incidents-section">
             <h2 class="quiz-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Safety Updates</h2>
@@ -1214,7 +1214,7 @@ if ($has_quiz_table) {
         </div>
         <?php endif; ?>
 
-        <!-- Back to Emergency Dashboard -->
+        
         <div style="text-align: center;">
             <a href="emergency.php" class="back-link">
                 <i class="fa-solid fa-arrow-left"></i> Back to Emergency Dashboard
@@ -1226,7 +1226,7 @@ if ($has_quiz_table) {
         </div>
     </div>
 
-    <!-- Tip Detail Modal -->
+    
     <div id="tipModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
         <div style="background: white; border-radius: 20px; padding: 30px; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative;">
             <button onclick="closeModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
@@ -1235,16 +1235,16 @@ if ($has_quiz_table) {
     </div>
 
     <script>
-        // Show full tip in modal
+        
         function showFullTip(tipId) {
             const modal = document.getElementById('tipModal');
             const modalContent = document.getElementById('modalContent');
             
-            // Show loading
+           
             modalContent.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 30px; color: #667eea;"></i><p>Loading...</p></div>';
             modal.style.display = 'flex';
             
-            // Fetch tip details
+            
             fetch('get_safety_tip.php?id=' + tipId)
                 .then(response => response.json())
                 .then(data => {
@@ -1285,7 +1285,7 @@ if ($has_quiz_table) {
             document.getElementById('tipModal').style.display = 'none';
         }
         
-        // Quiz functionality
+        
         function checkQuizAnswers() {
             let score = 0;
             let total = 0;
@@ -1298,15 +1298,13 @@ if ($has_quiz_table) {
                 const feedback = document.getElementById(`feedback_${qId}`);
                 
                 if (selected) {
-                    // For demo, we'll use a simple pattern
-                    // In a real app, you'd compare with correct_answer from database
-                    // For now, we'll use a simple check based on question text
+                   
                     const questionText = question.querySelector('.quiz-question-text').textContent;
                     const selectedValue = selected.value;
                     
                     let isCorrect = false;
                     
-                    // Simple logic for demo - in production, fetch correct answers via AJAX
+                   
                     if (questionText.includes('fire') && selectedValue === '2') isCorrect = true;
                     else if (questionText.includes('security number') && selectedValue === '1') isCorrect = true;
                     else if (questionText.includes('password') && selectedValue === '2') isCorrect = true;
@@ -1333,7 +1331,7 @@ if ($has_quiz_table) {
             document.getElementById('quizScore').innerHTML = `You scored ${score} out of ${total}! ${score === total ? '🎉 Perfect! You\'re safety conscious!' : 'Keep learning and stay safe!'}`;
         }
         
-        // Save checklist progress
+        
         function saveChecklist() {
             const checkboxes = document.querySelectorAll('.checklist-checkbox');
             let completed = 0;
@@ -1347,7 +1345,7 @@ if ($has_quiz_table) {
                 }
             });
             
-            // Save to localStorage
+            
             localStorage.setItem('safetyChecklist', JSON.stringify({
                 date: new Date().toISOString(),
                 completed: completed,
@@ -1357,16 +1355,16 @@ if ($has_quiz_table) {
             alert(`✅ Checklist saved! You've completed ${completed} out of ${checkboxes.length} items. Keep up the good work!`);
         }
         
-        // Load checklist from localStorage
+       
         document.addEventListener('DOMContentLoaded', function() {
             const saved = localStorage.getItem('safetyChecklist');
             if (saved) {
                 const data = JSON.parse(saved);
                 console.log('Previous checklist progress:', data);
-                // You could show a reminder message
+                
             }
             
-            // Close modal when clicking outside
+            
             const modal = document.getElementById('tipModal');
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
@@ -1375,20 +1373,19 @@ if ($has_quiz_table) {
             });
         });
         
-        // Download resource (simulated)
+        
         function downloadResource(filename) {
             alert(`📥 Downloading ${filename}...\n\nIn a real application, this would download the actual PDF file with safety information.`);
-            // In production, you'd redirect to actual file:
-            // window.location.href = 'downloads/' + filename;
+           
         }
         
-        // Open training videos
+        
         function openTrainingVideos() {
             alert('Opening safety training videos playlist...');
             window.open('https://www.youtube.com/results?search_query=campus+safety+training', '_blank');
         }
         
-        // Close modal with Escape key
+        
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
