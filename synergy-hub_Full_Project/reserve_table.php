@@ -10,7 +10,7 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get facility name
+
 $facility_sql = "SELECT Name FROM Facilities WHERE FacilityID = ?";
 $facility_stmt = mysqli_prepare($conn, $facility_sql);
 mysqli_stmt_bind_param($facility_stmt, "i", $facility_id);
@@ -18,7 +18,7 @@ mysqli_stmt_execute($facility_stmt);
 $facility_result = mysqli_stmt_get_result($facility_stmt);
 $facility = mysqli_fetch_assoc($facility_result);
 
-// Get user's upcoming reservations
+
 $reservations_sql = "SELECT * FROM table_reservations 
                      WHERE user_id = ? AND facility_id = ? 
                      AND reservation_date >= CURDATE() 
@@ -30,7 +30,7 @@ mysqli_stmt_bind_param($reservations_stmt, "ii", $user_id, $facility_id);
 mysqli_stmt_execute($reservations_stmt);
 $reservations_result = mysqli_stmt_get_result($reservations_stmt);
 
-// Get user points
+
 $user_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -38,7 +38,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Handle reservation form submission
+
 $message = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $reservation_date = $_POST['date'];
@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $guest_count = intval($_POST['guests']);
     $special_requests = $_POST['requests'] ?? '';
     
-    // Check if table is available (simple check - not double booking)
+    
     $check_sql = "SELECT COUNT(*) as count FROM table_reservations 
                   WHERE facility_id = ? AND reservation_date = ? AND reservation_time = ? 
                   AND status IN ('pending', 'confirmed')";
@@ -56,10 +56,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $check_result = mysqli_stmt_get_result($check_stmt);
     $check = mysqli_fetch_assoc($check_result);
     
-    if ($check['count'] >= 5) { // Assume 5 tables max
+    if ($check['count'] >= 5) { 
         $message = '<div class="error-msg">❌ Sorry, no tables available at this time</div>';
     } else {
-        // Create reservation
+       
         $insert_sql = "INSERT INTO table_reservations (user_id, facility_id, reservation_date, reservation_time, guest_count, special_requests) 
                        VALUES (?, ?, ?, ?, ?, ?)";
         $insert_stmt = mysqli_prepare($conn, $insert_sql);
@@ -309,7 +309,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             gap: 15px;
         }
         
-        /* Time Slots */
+        
         .time-slots {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -339,7 +339,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-color: transparent;
         }
         
-        /* Submit Button */
+        
         .submit-btn {
             width: 100%;
             padding: 15px;
@@ -359,7 +359,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
         
-        /* Messages */
+        
         .success-msg {
             background: rgba(16, 185, 129, 0.2);
             border: 1px solid #10b981;
@@ -380,7 +380,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             text-align: center;
         }
         
-        /* My Reservations */
+        
         .my-reservations {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -507,7 +507,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
+
 <div id="sidebar" class="sidebar">
     <a href="index.php">Home</a>
     <a href="facilities.php">Facilities</a>
@@ -517,7 +517,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <a href="qr.html">QR Scanner</a>
 </div>
 
-<!-- NAVBAR -->
+
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -536,7 +536,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
+
 <div class="container">
     
     <h1 class="page-title">🍽️ Reserve a Table</h1>
@@ -545,7 +545,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php echo $message; ?>
     
     <div class="reservation-container">
-        <!-- Reservation Form -->
+        
         <div class="reservation-form">
             <h3 class="form-title">
                 <i class="fa-solid fa-calendar-check"></i> Make a Reservation
@@ -601,7 +601,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </form>
         </div>
         
-        <!-- My Reservations -->
+        
         <div class="my-reservations">
             <h3 class="form-title">
                 <i class="fa-solid fa-list"></i> My Reservations
@@ -661,7 +661,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Time slot selection
+
 document.querySelectorAll('.time-slot').forEach(slot => {
     slot.addEventListener('click', function() {
         document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
@@ -670,7 +670,7 @@ document.querySelectorAll('.time-slot').forEach(slot => {
     });
 });
 
-// Cancel reservation
+
 function cancelReservation(reservationId) {
     if(confirm('Cancel this reservation?')) {
         fetch('cancel_reservation.php', {
@@ -692,7 +692,7 @@ function cancelReservation(reservationId) {
     }
 }
 
-// Set min date to today
+
 document.addEventListener('DOMContentLoaded', function() {
     let today = new Date().toISOString().split('T')[0];
     document.getElementById('reservationDate').setAttribute('min', today);
