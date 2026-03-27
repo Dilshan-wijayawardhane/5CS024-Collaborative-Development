@@ -1,5 +1,5 @@
 <?php
-// admin/includes/sidebar.php
+
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <div class="sidebar">
@@ -9,13 +9,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </div>
     
     <nav class="sidebar-nav">
-        <!-- Dashboard -->
+        
         <a href="index.php" class="<?php echo $current_page == 'index.php' ? 'active' : ''; ?>">
             <i class="fa-solid fa-gauge-high"></i>
             <span>Dashboard</span>
         </a>
         
-        <!-- User Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">User Management</div>
             <a href="users.php" class="<?php echo $current_page == 'users.php' ? 'active' : ''; ?>">
@@ -38,7 +38,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         </div>
         
-        <!-- Facility Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Facility Management</div>
             <a href="facility_management.php" class="<?php echo $current_page == 'facility_management.php' ? 'active' : ''; ?>">
@@ -55,7 +55,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Café Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Café Management</div>
             <a href="cafe_menu_admin.php" class="<?php echo $current_page == 'cafe_menu_admin.php' ? 'active' : ''; ?>">
@@ -72,7 +72,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Library Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Library Management</div>
             <a href="library_management.php" class="<?php echo $current_page == 'library_management.php' ? 'active' : ''; ?>">
@@ -89,7 +89,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Pool Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Pool Management</div>
             <a href="pool_management.php" class="<?php echo $current_page == 'pool_management.php' ? 'active' : ''; ?>">
@@ -110,7 +110,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Gym Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Gym Management</div>
             <a href="gym_equipment_admin.php" class="<?php echo $current_page == 'gym_equipment_admin.php' ? 'active' : ''; ?>">
@@ -123,7 +123,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Transport Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Transport</div>
             <a href="transport_admin.php" class="<?php echo $current_page == 'transport_admin.php' ? 'active' : ''; ?>">
@@ -132,7 +132,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Game Field Management -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Game Field</div>
             <a href="game_field_admin.php" class="<?php echo $current_page == 'game_field_admin.php' ? 'active' : ''; ?>">
@@ -141,7 +141,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Orders -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Orders</div>
             <a href="orders_admin.php" class="<?php echo $current_page == 'orders_admin.php' ? 'active' : ''; ?>">
@@ -150,7 +150,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- Notifications -->
+        
         <div class="nav-section">
             <div class="nav-section-title">Communications</div>
             <a href="notifications.php" class="<?php echo $current_page == 'notifications.php' ? 'active' : ''; ?>">
@@ -159,7 +159,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        <!-- System -->
+        
         <div class="nav-section">
             <div class="nav-section-title">System</div>
             <a href="settings.php" class="<?php echo $current_page == 'settings.php' ? 'active' : ''; ?>">
