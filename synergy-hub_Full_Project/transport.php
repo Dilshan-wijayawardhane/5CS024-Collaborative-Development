@@ -9,18 +9,18 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get user's transport passes
+
 $passes_sql = "SELECT * FROM TransportPasses WHERE UserID = ? ORDER BY ValidUntil DESC";
 $passes_stmt = mysqli_prepare($conn, $passes_sql);
 mysqli_stmt_bind_param($passes_stmt, "i", $user_id);
 mysqli_stmt_execute($passes_stmt);
 $passes_result = mysqli_stmt_get_result($passes_stmt);
 
-// Get bus routes for tracking from bus_routes table
+
 $bus_routes_sql = "SELECT * FROM bus_routes ORDER BY route_id";
 $bus_routes_result = mysqli_query($conn, $bus_routes_sql);
 
-// Get CINEC bus schedule from database
+
 $campus_transport_sql = "SELECT * FROM campus_transport ORDER BY 
                           CASE 
                               WHEN from_campus = 'CINEC' THEN 1 
@@ -28,7 +28,7 @@ $campus_transport_sql = "SELECT * FROM campus_transport ORDER BY
                           END, from_campus";
 $campus_transport_result = mysqli_query($conn, $campus_transport_sql);
 
-// Get user points and name
+
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -36,12 +36,12 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Get facilities count for badge
+
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Define route display names and prices
+
 $route_details = [
     'cinec' => ['name' => 'Malabe', 'price' => 100, 'frequency' => 'Every 30 mins'],
     'gampaha1' => ['name' => 'Gampaha - 1', 'price' => 120, 'frequency' => 'Every 45 mins'],
@@ -151,11 +151,7 @@ $route_details = [
             color: #22d3ee;
         }
         
-        /* ========================================
-           SYNERGY HUB SIDEBAR - LAS SANATA
-           ======================================== */
-
-        /* Sidebar Base */
+        
         .sidebar {
             position: fixed;
             left: -280px;
@@ -175,7 +171,7 @@ $route_details = [
             left: 0;
         }
 
-        /* Sidebar Header */
+        
         .sidebar-header {
             padding: 25px 20px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -221,7 +217,7 @@ $route_details = [
             font-size: 10px;
         }
 
-        /* User Info in Sidebar */
+       
         .sidebar-user {
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.03);
@@ -267,7 +263,7 @@ $route_details = [
             font-size: 10px;
         }
 
-        /* Sidebar Navigation */
+        
         .sidebar-nav {
             list-style: none;
             padding: 0;
@@ -321,7 +317,7 @@ $route_details = [
             color: #a5b4fc;
         }
 
-        /* Sidebar Badge */
+        
         .sidebar-badge {
             background: #ef4444;
             color: white;
@@ -338,14 +334,14 @@ $route_details = [
             50% { transform: scale(1.1); }
         }
 
-        /* Sidebar Divider */
+       
         .sidebar-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
-        /* Sidebar Section Title */
+        
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
@@ -356,7 +352,7 @@ $route_details = [
             letter-spacing: 0.5px;
         }
 
-        /* Club Preview in Sidebar */
+        
         .sidebar-club-preview {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -424,7 +420,7 @@ $route_details = [
             text-transform: uppercase;
         }
 
-        /* Quick Stats */
+        
         .sidebar-stats {
             display: flex;
             justify-content: space-around;
@@ -457,7 +453,7 @@ $route_details = [
             letter-spacing: 0.3px;
         }
 
-        /* Footer Links */
+        
         .sidebar-footer {
             padding: 20px 20px 30px 20px;
         }
@@ -493,7 +489,7 @@ $route_details = [
             text-align: center;
         }
 
-        /* Overlay for mobile */
+        
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -513,7 +509,7 @@ $route_details = [
             opacity: 1;
         }
 
-        /* Scrollbar Styling */
+        
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -563,7 +559,7 @@ $route_details = [
             padding-left: 15px;
         }
         
-        /* My Passes Grid */
+        
         .passes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -641,7 +637,7 @@ $route_details = [
             text-align: center;
         }
         
-        /* Bus Tracking Cards */
+        
         .tracking-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -717,7 +713,7 @@ $route_details = [
             margin: 0;
         }
         
-        /* CINEC Bus Schedule Cards */
+        
         .campus-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -779,13 +775,13 @@ $route_details = [
             font-weight: 600;
         }
         
-        /* CINEC Bus Schedule Specific Styles */
+        
         .next-departure.morning {
-            color: #fbbf24; /* Gold color for morning pickups */
+            color: #fbbf24; 
         }
         
         .next-departure.evening {
-            color: #22d3ee; /* Blue color for evening departure */
+            color: #22d3ee; 
             font-size: 24px;
             font-weight: 700;
         }
@@ -823,7 +819,7 @@ $route_details = [
             margin-top: 5px;
         }
         
-        /* Available Routes List */
+        
         .routes-list {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -944,15 +940,15 @@ $route_details = [
 
 <div class="bg"></div>
 
-<!-- SIDEBAR -->
+
 <div id="sidebar" class="sidebar">
-    <!-- Header -->
+   
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
     
-    <!-- User Info -->
+    
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
@@ -963,7 +959,7 @@ $route_details = [
         </div>
     </div>
     
-    <!-- Navigation -->
+    
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
@@ -1013,7 +1009,7 @@ $route_details = [
     
     <div class="sidebar-divider"></div>
     
-    <!-- My Clubs Preview -->
+    
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -1030,7 +1026,7 @@ $route_details = [
         </div>
     </div>
     
-    <!-- Quick Stats -->
+   
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
@@ -1046,7 +1042,7 @@ $route_details = [
         </div>
     </div>
     
-    <!-- Footer -->
+    
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -1059,10 +1055,10 @@ $route_details = [
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
+
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- NAVBAR -->
+
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -1081,15 +1077,15 @@ $route_details = [
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
+
 <div class="transport-container">
     
-    <!-- POINTS BADGE -->
+    
     <div class="points-badge">
         <i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span>
     </div>
     
-    <!-- CINEC BUS SCHEDULE SECTION (UPDATED) -->
+    
     <h2 class="section-title">🚌 CINEC Bus Schedule</h2>
     <div class="campus-grid">
         <?php 
@@ -1131,13 +1127,13 @@ $route_details = [
     </div>
     
     <?php if(mysqli_num_rows($campus_transport_result) > 0): ?>
-    <!-- Bus Schedule Note -->
+    
     <div style="color: rgba(255,255,255,0.6); font-size: 13px; text-align: center; margin-top: -20px; margin-bottom: 30px;">
         <i class="fa-solid fa-clock"></i> All buses depart from CINEC at 5:05 PM
     </div>
     <?php endif; ?>
     
-    <!-- BUS TRACKING SECTION -->
+    
     <h2 class="section-title">🚍 Live Bus Tracking</h2>
     <div class="tracking-grid">
         <?php 
@@ -1177,7 +1173,7 @@ $route_details = [
         ?>
     </div>
     
-    <!-- MY TRANSPORT PASSES SECTION -->
+    
     <h2 class="section-title">🎫 My Transport Passes</h2>
     <div class="passes-grid">
         <?php if(mysqli_num_rows($passes_result) > 0): ?>
@@ -1202,7 +1198,7 @@ $route_details = [
         <?php endif; ?>
     </div>
     
-    <!-- AVAILABLE ROUTES SECTION - WITH BUY PASS BUTTONS -->
+    
     <h2 class="section-title">🛒 Available Routes - Buy Pass</h2>
     <div class="routes-list">
         <?php foreach($route_details as $route_id => $route): ?>
@@ -1228,7 +1224,7 @@ $route_details = [
 </div>
 
 <script>
-// ==================== SIDEBAR ====================
+
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1260,7 +1256,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-// Buy pass function
+
 function buyPass(routeName, price) {
     if(confirm(`Buy transport pass for ${routeName} using ${price} points?`)) {
         fetch('buy_pass.php', {
@@ -1285,7 +1281,7 @@ function buyPass(routeName, price) {
     }
 }
 
-// Update bus location
+
 function updateLocation(routeId) {
     let newPlace = prompt("Where is the bus now? (e.g., Malabe, Colombo, etc.)");
     
@@ -1313,7 +1309,7 @@ function updateLocation(routeId) {
     });
 }
 
-// View bus location
+
 function viewLocation(routeId) {
     fetch('get_location.php?route=' + routeId)
     .then(res => res.json())
