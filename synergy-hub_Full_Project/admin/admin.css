@@ -1,4 +1,4 @@
-/* admin/admin.css */
+
 * {
     margin: 0;
     padding: 0;
@@ -15,7 +15,7 @@ body {
     min-height: 100vh;
 }
 
-/* ========== SIDEBAR ========== */
+
 .sidebar {
     width: 260px;
     background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
@@ -116,14 +116,14 @@ body {
     color: white;
 }
 
-/* ========== MAIN CONTENT ========== */
+
 .main-content {
     flex: 1;
     margin-left: 260px;
     min-width: 0;
 }
 
-/* Top Bar */
+
 .top-bar {
     background: white;
     padding: 15px 25px;
@@ -151,7 +151,7 @@ body {
     gap: 20px;
 }
 
-/* Notifications */
+
 .notification-dropdown {
     position: relative;
 }
@@ -255,7 +255,7 @@ body {
     font-size: 10px;
 }
 
-/* Admin Profile */
+
 .admin-profile {
     position: relative;
 }
@@ -339,7 +339,7 @@ body {
     border-top: 1px solid #e2e8f0;
 }
 
-/* Content Area */
+
 .content {
     padding: 25px;
 }
@@ -353,7 +353,7 @@ body {
     gap: 10px;
 }
 
-/* Stats Grid */
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -445,7 +445,7 @@ body {
     color: #16a34a;
 }
 
-/* Quick Actions */
+
 .quick-actions {
     margin-bottom: 30px;
 }
@@ -494,7 +494,7 @@ body {
     font-weight: 500;
 }
 
-/* Dashboard Grid */
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -641,7 +641,7 @@ body {
     color: #ef4444;
 }
 
-/* Table Styles */
+
 .table-responsive {
     overflow-x: auto;
     background: white;
@@ -675,7 +675,7 @@ body {
     background: #f8fafc;
 }
 
-/* Form Styles */
+
 .form-container {
     background: white;
     border-radius: 12px;
@@ -720,7 +720,7 @@ body {
     gap: 20px;
 }
 
-/* Buttons */
+
 .btn {
     padding: 12px 24px;
     border: none;
@@ -767,7 +767,7 @@ body {
     font-size: 12px;
 }
 
-/* Badges */
+
 .badge {
     padding: 4px 10px;
     border-radius: 20px;
@@ -795,7 +795,7 @@ body {
     color: #0284c7;
 }
 
-/* Search Bar */
+
 .search-bar {
     display: flex;
     gap: 10px;
@@ -819,7 +819,7 @@ body {
     cursor: pointer;
 }
 
-/* Pagination */
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -847,7 +847,7 @@ body {
     border-color: #667eea;
 }
 
-/* Alert Messages */
+
 .alert {
     padding: 15px;
     border-radius: 8px;
@@ -878,7 +878,7 @@ body {
     border: 1px solid #bae6fd;
 }
 
-/* Modal */
+
 .modal {
     display: none;
     position: fixed;
@@ -937,7 +937,7 @@ body {
     gap: 10px;
 }
 
-/* Loading Spinner */
+
 .spinner {
     border: 3px solid #f3f3f3;
     border-top: 3px solid #667eea;
@@ -952,7 +952,7 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* Responsive */
+
 @media (max-width: 1024px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
