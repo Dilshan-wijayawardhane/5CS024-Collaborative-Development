@@ -18,7 +18,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['item_name']) && isset(
     $points = intval($_POST['points']);
     $payment = $_POST['payment'];
     
-    // If paying with points, check balance
+    
+
+
     if($payment == 'points' && $points > 0) {
         $check_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
@@ -32,14 +34,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['item_name']) && isset(
             exit();
         }
         
-        // Deduct points
+        
+
+
         $deduct_sql = "UPDATE Users SET PointsBalance = PointsBalance - ? WHERE UserID = ?";
         $deduct_stmt = mysqli_prepare($conn, $deduct_sql);
         mysqli_stmt_bind_param($deduct_stmt, "ii", $points, $user_id);
         mysqli_stmt_execute($deduct_stmt);
     }
     
-    // Insert order
+    
+
+    
     $status = 'Pending';
     $order_sql = "INSERT INTO Orders (UserID, ItemName, Category, Price, Status) VALUES (?, ?, ?, ?, ?)";
     $order_stmt = mysqli_prepare($conn, $order_sql);
