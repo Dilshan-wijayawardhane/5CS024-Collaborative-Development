@@ -1,30 +1,27 @@
 <?php
-/**
- * API Endpoint: Join a club + award 20 points for joining
- * 
- * Security/Design Notes:
- *  - Only authenticated users can access this endpoint
- *  - Points are awarded immediately upon successful club joining
- *  - No transaction needed as points are only added, not deducted
- *  - Cloud return updated points balance in success response
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-// Authentication
+
+
+
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
 }
- // Validate input and process club joining
+ 
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['club_id'])) {
     $user_id = $_SESSION['user_id'];
     $club_id = intval($_POST['club_id']);
     
-    // Check if user is already a member of the club
+    
+
     $check_sql = "SELECT * FROM ClubMemberships WHERE ClubID = ? AND UserID = ? AND Status = 'Active'";
     $check_stmt = mysqli_prepare($conn, $check_sql);
     mysqli_stmt_bind_param($check_stmt, "ii", $club_id, $user_id);
@@ -36,12 +33,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['club_id'])) {
         exit();
     }
     
-    // Insert membership record
+    
+
     $join_sql = "INSERT INTO ClubMemberships (ClubID, UserID, Role, Status) VALUES (?, ?, 'Member', 'Active')";
     $join_stmt = mysqli_prepare($conn, $join_sql);
     mysqli_stmt_bind_param($join_stmt, "ii", $club_id, $user_id);
     
-    // Award 20 points for joining
+    
+
     if (mysqli_stmt_execute($join_stmt)) {
         $points = 20;
         $update_sql = "UPDATE Users SET PointsBalance = PointsBalance + ? WHERE UserID = ?";
@@ -49,9 +48,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['club_id'])) {
         mysqli_stmt_bind_param($update_stmt, "ii", $points, $user_id);
         mysqli_stmt_execute($update_stmt);
         
-        // Log activity
+        
         logActivity($conn, $user_id, 'JOIN_CLUB', 'Clubs', $club_id);
-        // Success response with updated points balance
+        
+
+        
         echo json_encode(['success' => true, 'message' => 'Joined club successfully']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Database error']);
