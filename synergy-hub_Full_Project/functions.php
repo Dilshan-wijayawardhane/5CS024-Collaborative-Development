@@ -1,21 +1,13 @@
 <?php
-/**
- * Central collection of reusable helper functions for the Synergy Hub application.
- * 
- * All functions are designed to be safe and reusable across pages and APIs.
- * 
- * Security Notes:
- *  - CSRF tokens are generated and verified using secure random values
- *  - Prepared statements are used where database interaction occurs
- *  - Sensitive operations (e.g. points) shuld always be validated server-side
- */
 
-// Escapes HTML-special characters to prevent XSS
+
+
 function escape($data) {
     return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
 }
 
-// Checks if the current user has admin privileges
+
+
 function isAdmin() {
     return isset($_SESSION['user_role']) && $_SESSION['user_role'] == 'Admin';
 }
@@ -24,7 +16,9 @@ function isLoggedIn() {
     return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 }
 
-// Retrieves the current user's points balance from the database
+
+
+
 function getUserPoints($conn, $user_id) {
     $sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
     $stmt = mysqli_prepare($conn, $sql);
@@ -51,7 +45,9 @@ function logActivity($conn, $user_id, $action, $table_name = null, $record_id = 
     mysqli_stmt_execute($stmt);
 }
 
-// Generates or returns the current CSRF token for the session
+
+
+
 function generateCSRFToken() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -59,12 +55,16 @@ function generateCSRFToken() {
     return $_SESSION['csrf_token'];
 }
 
-// Verifies that the provided CSRF token matches the one stored in the session
+
+
+
 function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-// Add to functions.php
+
+
+
 function redirectBasedOnRole() {
     if (isset($_SESSION['user_role'])) {
         if ($_SESSION['user_role'] === 'Admin') {
