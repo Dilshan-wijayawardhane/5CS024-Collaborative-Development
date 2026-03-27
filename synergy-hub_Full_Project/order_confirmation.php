@@ -15,7 +15,9 @@ if (empty($order_ids)) {
     exit();
 }
 
-// Get order details
+
+
+
 $placeholders = implode(',', array_fill(0, count($order_ids), '?'));
 $types = str_repeat('i', count($order_ids));
 
@@ -264,6 +266,8 @@ $item_count = count($orders);
 
 <div class="bg"></div>
 
+
+
 <div class="confirmation-card">
     <div class="success-icon">
         <i class="fa-solid fa-check"></i>
@@ -275,6 +279,10 @@ $item_count = count($orders);
         <?php echo date('M d, Y - h:i A', strtotime($first_order['Timestamp'] ?? 'now')); ?>
     </div>
     
+
+
+
+
     <div class="order-details">
         <div class="detail-row">
             <span class="detail-label">Order ID</span>
@@ -294,6 +302,8 @@ $item_count = count($orders);
             <?php endforeach; ?>
         </div>
     </div>
+    
+
     
     <div class="total-amount">
         Total: <span>Rs. <?php echo number_format($total_amount, 2); ?></span>
