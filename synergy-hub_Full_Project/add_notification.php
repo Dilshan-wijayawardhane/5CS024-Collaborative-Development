@@ -8,7 +8,7 @@ if (!isLoggedIn()) {
     exit();
 }
 
-//Only admin can create notifications
+
 if ($_SESSION['user_role'] != 'Admin') {
     header("Location: index.php");
     exit();
