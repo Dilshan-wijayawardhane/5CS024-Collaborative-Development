@@ -1,7 +1,5 @@
 <?php
-/**
- * Main cafe ordering page for Synergy Hub
- */
+
 
 require_once 'config.php';
 require_once 'functions.php';
