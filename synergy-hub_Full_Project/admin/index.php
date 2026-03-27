@@ -6,7 +6,7 @@ checkAdminAuth();
 $admin = getAdminInfo($conn);
 $counts = getDashboardCounts($conn);
 
-// Get recent activity from ActivityLogs
+
 $activity_result = false;
 $check_activity = mysqli_query($conn, "SHOW TABLES LIKE 'ActivityLogs'");
 if (mysqli_num_rows($check_activity) > 0) {
@@ -18,7 +18,7 @@ if (mysqli_num_rows($check_activity) > 0) {
     $activity_result = mysqli_query($conn, $activity_sql);
 }
 
-// Get recent orders
+
 $orders_result = false;
 $check_orders = mysqli_query($conn, "SHOW TABLES LIKE 'Orders'");
 if (mysqli_num_rows($check_orders) > 0) {
@@ -41,21 +41,21 @@ if (mysqli_num_rows($check_orders) > 0) {
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar -->
+        
         <?php include 'includes/sidebar.php'; ?>
         
-        <!-- Main Content -->
+        
         <div class="main-content">
-            <!-- Top Bar -->
+            
             <?php include 'includes/topbar.php'; ?>
             
-            <!-- Dashboard Content -->
+            
             <div class="content">
                 <h1 class="page-title">
                     <i class="fa-solid fa-gauge-high"></i> Dashboard
                 </h1>
                 
-                <!-- Stats Cards -->
+                
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon blue">
@@ -123,7 +123,7 @@ if (mysqli_num_rows($check_orders) > 0) {
                     </div>
                 </div>
                 
-                <!-- Quick Actions -->
+               
                 <div class="quick-actions">
                     <h2 class="section-title">
                         <i class="fa-solid fa-bolt"></i> Quick Actions
@@ -153,7 +153,7 @@ if (mysqli_num_rows($check_orders) > 0) {
                             <i class="fa-solid fa-bus"></i>
                             <span>Transport</span>
                         </a>
-                        <!-- Add these after existing action cards -->
+                       
                         <a href="facility_management.php" class="action-card">
                             <i class="fa-solid fa-building"></i>
                             <span>Manage Facilities</span>
@@ -176,9 +176,9 @@ if (mysqli_num_rows($check_orders) > 0) {
                     </div>
                 </div>
                 
-                <!-- Recent Activity & Orders -->
+                
                 <div class="dashboard-grid">
-                    <!-- Recent Activity -->
+                    
                     <div class="dashboard-card">
                         <div class="card-header">
                             <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h3>
@@ -216,7 +216,7 @@ if (mysqli_num_rows($check_orders) > 0) {
                         </div>
                     </div>
                     
-                    <!-- Recent Orders -->
+                   
                     <div class="dashboard-card">
                         <div class="card-header">
                             <h3><i class="fa-solid fa-cart-shopping"></i> Recent Orders</h3>
@@ -249,7 +249,7 @@ if (mysqli_num_rows($check_orders) > 0) {
     </div>
     
     <script>
-    // Simple toggle for mobile sidebar
+   
     function toggleSidebar() {
         document.querySelector('.sidebar').classList.toggle('show');
     }
