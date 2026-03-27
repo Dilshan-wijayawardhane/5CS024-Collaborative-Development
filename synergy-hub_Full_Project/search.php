@@ -19,7 +19,7 @@ if (strlen($term) < 2) {
 $search_term = "%" . $term . "%";
 $results = [];
 
-// Search Facilities
+
 $facility_sql = "SELECT FacilityID as id, Name as title, Type as category, 'facility' as type, 
                         CONCAT(Type, ' - ', Status) as description 
                  FROM Facilities 
@@ -35,7 +35,7 @@ if ($facility_stmt) {
     }
 }
 
-// Search Events
+
 $event_sql = "SELECT EventID as id, Title as title, Category as category, 'event' as type,
                      CONCAT(Location, ' - ', DATE_FORMAT(StartTime, '%b %d, %h:%i %p')) as description
               FROM Events 
@@ -51,7 +51,7 @@ if ($event_stmt) {
     }
 }
 
-// Search Clubs
+
 $club_sql = "SELECT ClubID as id, Name as title, Category as category, 'club' as type,
                     Description as description
              FROM Clubs 
@@ -67,7 +67,7 @@ if ($club_stmt) {
     }
 }
 
-// Search Transport Routes
+
 $transport_sql = "SELECT route_id as id, CONCAT(from_campus, ' → ', to_campus) as title, 
                          'transport' as type, CONCAT('Next: ', next_departure, ' - ', status) as description
                   FROM campus_transport 
@@ -83,7 +83,7 @@ if ($transport_stmt) {
     }
 }
 
-// Search Gym Status
+
 $gym_sql = "SELECT 'gym' as type, 'WLV Gym' as title, 'Facility' as category,
                    CONCAT('Status: ', status, ' - Closes: ', closing_time) as description
             FROM gym_status 
