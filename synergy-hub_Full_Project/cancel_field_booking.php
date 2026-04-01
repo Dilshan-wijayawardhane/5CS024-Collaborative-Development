@@ -6,10 +6,12 @@ require_once 'functions.php';
 header('Content-Type: application/json');
 
 
+
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
 }
+
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['booking_id'])) {
