@@ -13,6 +13,7 @@ if (!isLoggedIn()) {
 }
 
 
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['booking_id'])) {
     $user_id = $_SESSION['user_id'];
     $booking_id = intval($_POST['booking_id']);
@@ -29,6 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['booking_id'])) {
         exit();
     }
     
+
     
     $delete_sql = "DELETE FROM class_bookings WHERE booking_id = ? AND user_id = ?";
     $delete_stmt = mysqli_prepare($conn, $delete_sql);
