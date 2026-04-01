@@ -92,6 +92,8 @@ function getDashboardCounts($conn) {
 }
 
 
+
+
 function logAdminActivity($conn, $action, $details = '') {
     if (isset($_SESSION['user_id'])) {
         $sql = "INSERT INTO ActivityLogs (UserID, Action, Details, Timestamp) VALUES (?, ?, ?, NOW())";
