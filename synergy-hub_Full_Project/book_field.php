@@ -38,6 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['field_name']) && isset
     $book_stmt = mysqli_prepare($conn, $book_sql);
     mysqli_stmt_bind_param($book_stmt, "isss", $user_id, $field_name, $booking_date, $time_slot);
     
+
     if (mysqli_stmt_execute($book_stmt)) {
         $deduct_sql = "UPDATE Users SET PointsBalance = PointsBalance - ? WHERE UserID = ?";
         $deduct_stmt = mysqli_prepare($conn, $deduct_sql);
@@ -51,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['field_name']) && isset
     } else {
         echo json_encode(['success' => false, 'message' => 'Database error']);
     }
+    
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid request']);
 }
