@@ -78,6 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['book_id'])) {
     } else {
         echo json_encode(['success' => false, 'message' => 'Database error']);
     }
+    
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid request']);
 }
