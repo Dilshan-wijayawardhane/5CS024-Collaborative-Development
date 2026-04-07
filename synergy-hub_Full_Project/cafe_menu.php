@@ -775,53 +775,64 @@ $food_images = [
     </div>
     
     <div class="sidebar-user">
+
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
         </div>
+
         <div class="sidebar-user-info">
             <h4><?php echo htmlspecialchars($user['Name'] ?? 'User'); ?></h4>
             <p><i class="fa-solid fa-star"></i> <?php echo $user['PointsBalance'] ?? 0; ?> points</p>
         </div>
+
     </div>
     
     <ul class="sidebar-nav">
+
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-home"></i> Home
             </a>
         </li>
+
         <li class="sidebar-nav-item">
             <a href="facilities.php" class="sidebar-nav-link active">
                 <i class="fa-solid fa-building"></i> Facilities
                 <span class="sidebar-badge"><?php echo $facilities_count; ?></span>
             </a>
         </li>
+
         <li class="sidebar-nav-item">
             <a href="transport.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-bus"></i> Transport
             </a>
         </li>
+
         <li class="sidebar-nav-item">
             <a href="game.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-futbol"></i> Game Field
             </a>
         </li>
+
         <li class="sidebar-nav-item">
             <a href="clubs.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-users"></i> Club Hub
             </a>
         </li>
+
         <li class="sidebar-nav-item">
             <a href="qr.html" class="sidebar-nav-link">
                 <i class="fa-solid fa-qrcode"></i> QR Scanner
             </a>
         </li>
+
         <li class="sidebar-nav-item">
             <a href="notifications.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-bell"></i> Notifications
                 <span class="sidebar-badge">3</span>
             </a>
         </li>
+
     </ul>
     
     <div class="sidebar-divider"></div>
@@ -830,39 +841,48 @@ $food_images = [
     
     <div class="sidebar-club-preview">
         <h4><i class="fa-regular fa-star"></i> Active Clubs</h4>
+
         <div class="sidebar-club-item">
             <h5>Coding Club</h5>
             <p>Programming and software development...</p>
             <span class="sidebar-club-tag">Academic</span>
         </div>
+
         <div class="sidebar-club-item">
             <h5>IEEE Student Branch</h5>
             <p>IEEE student chapter...</p>
             <span class="sidebar-club-tag">Academic</span>
         </div>
+
     </div>
     
     <div class="sidebar-stats">
+
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
             <div class="sidebar-stat-label">Clubs</div>
         </div>
+
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">12</div>
             <div class="sidebar-stat-label">Events</div>
         </div>
+
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value"><?php echo $user['PointsBalance'] ?? 0; ?></div>
             <div class="sidebar-stat-label">Points</div>
         </div>
+
     </div>
     
     <div class="sidebar-footer">
+
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
             <a href="#"><i class="fa-regular fa-gear"></i> Settings</a>
             <a href="#"><i class="fa-regular fa-message"></i> Feedback</a>
         </div>
+
         <div class="sidebar-copyright">© 2025 Synergy Hub</div>
     </div>
 </div>
@@ -870,17 +890,21 @@ $food_images = [
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <header class="navbar">
+
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
     </div>
+
     
     <h1 class="logo">Synergy <span>Hub</span> - Café Menu</h1>
     
     <div class="icons">
+
         <div class="points">
             <i class="fa-solid fa-star"></i>
             <span><?php echo $user['PointsBalance']; ?></span>
         </div>
+
         <a href="facility_details.php?id=<?php echo $facility_id; ?>" class="home-link">
             <i class="fa-solid fa-arrow-left"></i> Back
         </a>
@@ -897,6 +921,7 @@ $food_images = [
     
     <?php foreach($menu_by_category as $category => $items): ?>
     <h2 class="menu-category"><?php echo $category; ?></h2>
+
     <div class="menu-grid">
         <?php foreach($items as $item):
             
@@ -907,6 +932,7 @@ $food_images = [
             $stock_percent = ($stock / 20) * 100;
         ?>
         <div class="menu-item">
+
             <div class="food-image">
                 <img src="<?php echo $image_url; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                 <?php if($stock <= 3): ?>
@@ -915,29 +941,36 @@ $food_images = [
                 <div class="stock-badge"><?php echo $stock; ?> left</div>
                 <?php endif; ?>
             </div>
+
             
             <div class="item-name"><?php echo htmlspecialchars($item['name']); ?></div>
             
             <div class="availability-section">
+
                 <div class="availability-header">
                     <span>Availability</span>
                     <span><?php echo $stock; ?>/20 left</span>
                 </div>
+
                 <div class="availability-bar">
                     <div class="availability-fill <?php echo $stock <= 3 ? 'low' : ''; ?>" 
                          style="width: <?php echo $stock_percent; ?>%;"></div>
                 </div>
+
             </div>
             
             <div class="item-prices">
+
                 <div class="price-tag">
                     <small>Cash</small>
                     <div>Rs. <?php echo number_format($item['price'], 2); ?></div>
                 </div>
+
                 <div class="price-tag">
                     <small>Points</small>
                     <div><?php echo $item['points_price']; ?> ⭐</div>
                 </div>
+                
             </div>
         </div>
         <?php endforeach; ?>
