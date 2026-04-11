@@ -1,7 +1,22 @@
 <?php
+
+/**
+ * Features:
+ *  - Fetches offers filtered by facility_id and validity
+ *  - Shows image, discount type, prices, vlaidity
+ *  - Claim button calls claim_offer.php
+ * 
+ * Security Notes:
+ *  - Requires login
+ *  - Uses prepared statements
+ *  - Hardcoded fallback images
+ *  - Points chaeck done is frontend + backend
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+//authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -10,7 +25,7 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-
+// Fetch active special offers
 $offers_sql = "SELECT * FROM special_offers 
                WHERE facility_id = ? AND is_active = TRUE 
                AND (valid_until IS NULL OR valid_until >= CURDATE())
@@ -20,7 +35,7 @@ mysqli_stmt_bind_param($offers_stmt, "i", $facility_id);
 mysqli_stmt_execute($offers_stmt);
 $offers_result = mysqli_stmt_get_result($offers_stmt);
 
-
+// User info and facility name
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);

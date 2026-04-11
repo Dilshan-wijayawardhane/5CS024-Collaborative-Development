@@ -1,16 +1,30 @@
 <?php
+/**
+ * Features:
+ *  - Allows users to reserve a table with date, time, number of guests, and special request
+ *  - Shows user's upcoming reservations for the same facility
+ *  - Basic availability check
+ *  - Cancel reservation functionality via AJAX
+ *  - Dynamic form with today's date as minimum
+ * 
+ * Security Notes:
+ *  - Prevents overbooking with a simple count check (max 5 per slot)
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
+// Get facility ID from URL
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-
+// Fetch facility name
 $facility_sql = "SELECT Name FROM Facilities WHERE FacilityID = ?";
 $facility_stmt = mysqli_prepare($conn, $facility_sql);
 mysqli_stmt_bind_param($facility_stmt, "i", $facility_id);
@@ -18,7 +32,7 @@ mysqli_stmt_execute($facility_stmt);
 $facility_result = mysqli_stmt_get_result($facility_stmt);
 $facility = mysqli_fetch_assoc($facility_result);
 
-
+// Fetch user's upcoming reservations for this facility
 $reservations_sql = "SELECT * FROM table_reservations 
                      WHERE user_id = ? AND facility_id = ? 
                      AND reservation_date >= CURDATE() 
@@ -38,7 +52,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
+// Handle reservation from submission
 $message = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $reservation_date = $_POST['date'];
@@ -46,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $guest_count = intval($_POST['guests']);
     $special_requests = $_POST['requests'] ?? '';
     
-    
+    // Check availability (max 5 tables per time slot)
     $check_sql = "SELECT COUNT(*) as count FROM table_reservations 
                   WHERE facility_id = ? AND reservation_date = ? AND reservation_time = ? 
                   AND status IN ('pending', 'confirmed')";
@@ -59,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($check['count'] >= 5) { 
         $message = '<div class="error-msg">❌ Sorry, no tables available at this time</div>';
     } else {
-       
+       // Insert new reservation
         $insert_sql = "INSERT INTO table_reservations (user_id, facility_id, reservation_date, reservation_time, guest_count, special_requests) 
                        VALUES (?, ?, ?, ?, ?, ?)";
         $insert_stmt = mysqli_prepare($conn, $insert_sql);
@@ -670,7 +684,7 @@ document.querySelectorAll('.time-slot').forEach(slot => {
     });
 });
 
-
+// Cancel reservation via AJAX
 function cancelReservation(reservationId) {
     if(confirm('Cancel this reservation?')) {
         fetch('cancel_reservation.php', {

@@ -1,13 +1,30 @@
 <?php
+
+/**
+ * Features:
+ *  - Displays confirmation with success icon
+ *  - Shows order details
+ *  - Groups multiple orders if multiple were placed in one checkout
+ *  - Provide action buttons
+ * 
+ * Security Notes:
+ *  - Requires login
+ *  - Uses prepared statements
+ *  - Safe output with htmlspecialchars()
+ *  - Handles empty or invalid order_id gracefully
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
+// Get order IDs from URL
 $order_ids = isset($_GET['order_id']) ? explode(',', $_GET['order_id']) : [];
 
 if (empty($order_ids)) {
@@ -15,9 +32,7 @@ if (empty($order_ids)) {
     exit();
 }
 
-
-
-
+// Fetch orders with dynamic IN clause
 $placeholders = implode(',', array_fill(0, count($order_ids), '?'));
 $types = str_repeat('i', count($order_ids));
 

@@ -1,15 +1,30 @@
 <?php
+
+/**
+ * Features:
+ *  - Accepts cart items via JSON POST
+ *  - Supports two payment method: points and cash
+ *  - Validates points balance before placing order
+ *  - Logs order activity
+ * 
+ * Security Notes:
+ *  - Points validation is done server-side
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
+// Authentication check
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
+
+// Read and validate JSON input
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!$data || !isset($data['items']) || !isset($data['payment'])) {
@@ -21,9 +36,7 @@ $items = $data['items'];
 $payment = $data['payment'];
 $total_points = isset($data['total_points']) ? $data['total_points'] : 0;
 
-
-
-
+// Handle points payment
 if ($payment === 'points') {
     $check_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
     $check_stmt = mysqli_prepare($conn, $check_sql);
@@ -46,9 +59,7 @@ if ($payment === 'points') {
     mysqli_stmt_execute($deduct_stmt);
 }
 
-
-
-
+// Create order records for each item
 $success = true;
 foreach ($items as $item) {
     for ($i = 0; $i < $item['qty']; $i++) {
@@ -63,6 +74,7 @@ foreach ($items as $item) {
     }
 }
 
+// Log activity and respond
 if ($success) {
     logActivity($conn, $user_id, 'ORDER', 'Orders', 0);
     echo json_encode(['success' => true, 'message' => 'Order placed']);

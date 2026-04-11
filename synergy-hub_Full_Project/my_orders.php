@@ -1,7 +1,20 @@
 <?php
+
+/**
+ * Displays user's cafe order history.
+ * 
+ * This page shows all past orders grouped by date, with details like item name, quantity, price, and order status.
+ * 
+ * Security Notes:
+ *  - Requires login
+ *  - Uses prepared statements for user-specific sections
+ *  - Status badges are styled based on order status for better UX
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication check
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -9,6 +22,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
+// Fetch user's orders, newest first
 $orders_sql = "SELECT * FROM Orders 
                WHERE UserID = ? 
                ORDER BY Timestamp DESC";
@@ -17,6 +31,7 @@ mysqli_stmt_bind_param($orders_stmt, "i", $user_id);
 mysqli_stmt_execute($orders_stmt);
 $orders_result = mysqli_stmt_get_result($orders_stmt);
 
+// Group orders by date for better UX
 $grouped_orders = [];
 while ($order = mysqli_fetch_assoc($orders_result)) {
     $date = date('Y-m-d', strtotime($order['Timestamp']));
@@ -241,6 +256,8 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
     <div class="points">
         <i class="fa-solid fa-star"></i>
         <?php
+
+        // Get current points for navbar
         $points_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
         $points_stmt = mysqli_prepare($conn, $points_sql);
         mysqli_stmt_bind_param($points_stmt, "i", $user_id);

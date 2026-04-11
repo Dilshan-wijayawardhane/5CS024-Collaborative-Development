@@ -1,7 +1,22 @@
 <?php
+/**
+ * Features:
+ *  - New user registration with Student ID, Name, Email, and Password
+ *  - Password confirmation and validation
+ *  - Duplicate chack for both Email and Student ID
+ *  - Secure password hashing using password_hash() with PASSWORD_DEFAULT
+ *  - Logs registration activity
+ * 
+ * Security Notes:
+ *  - Passwords are hashed with a strong algorithm and unique salt
+ *  - Duplicate prevention on both Email and Student ID
+ *  - New users start with 0 points and Active membership status
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Handle registration from submission
 $error = '';
 $success = '';
 
@@ -12,13 +27,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     
-    
-
+    // Basic validation
     if ($password != $confirm_password) {
         $error = "Passwords do not match!";
     } else {
         
-
+        // Chack for existing email or student ID
         $check_sql = "SELECT * FROM Users WHERE Email = ? OR StudentID = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         mysqli_stmt_bind_param($check_stmt, "ss", $email, $student_id);
@@ -29,11 +43,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "Email or Student ID already exists!";
         } else {
             
-
+            // Hash password and insert new user
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             
-            
-
             $insert_sql = "INSERT INTO Users (StudentID, Name, Email, PasswordHash, Role, PointsBalance, MembershipStatus) 
                           VALUES (?, ?, ?, ?, 'User', 0, 'Active')";
             $insert_stmt = mysqli_prepare($conn, $insert_sql);
@@ -45,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 
                 $new_user_id = mysqli_insert_id($conn);
                 
-                
+                // Log the registration
                 logActivity($conn, $new_user_id, 'REGISTER');
             } else {
                 $error = "Error: " . mysqli_error($conn);

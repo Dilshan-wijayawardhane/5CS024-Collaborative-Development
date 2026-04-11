@@ -80,6 +80,7 @@ background:#0ea5e9;
 
 <script>
 
+// Opens Google Maps with the selected location as the destination
 function navigate(){
 
 let place = document.getElementById("building").value;
@@ -89,8 +90,10 @@ alert("Please select a building");
 return;
 }
 
+// Build Google Maps search URL
 let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(place);
 
+// Open in new tab
 window.open(url,"_blank");
 
 }

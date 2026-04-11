@@ -1,4 +1,22 @@
 <?php
+/**
+ * Comprehensive Safety Tips & Resources Page
+ * 
+ * It provides:
+ *  - Critical emergency alerts (if any)
+ *  - Tips of the day
+ *  - Searchable and filterable list of all safty tips
+ *  - Safety knowledge quiz
+ *  - Emergency preparedness checklist with progress saving
+ *  - Downloadable resources section
+ *  - Recent safety incidents display
+ * 
+ * Security Notes:
+ *  - Requires login
+ *  - Dynamic column detection for Notifications
+ *  - All user-facing content is escaped with htmlspecialchars()
+ *  - Fallback demo data when tables don't exist or are empty
+ */
 
 require_once 'config.php';
 require_once 'functions.php';

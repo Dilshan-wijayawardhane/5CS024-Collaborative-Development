@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * User-facing page showing:
+ *  - My active transport passes
+ *  - Live bus tracking cards
+ *  - Campus bus schedules
+ *  - Available routes to buy passes
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -9,14 +18,14 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-
+// Fetch user transport passes
 $passes_sql = "SELECT * FROM TransportPasses WHERE UserID = ? ORDER BY ValidUntil DESC";
 $passes_stmt = mysqli_prepare($conn, $passes_sql);
 mysqli_stmt_bind_param($passes_stmt, "i", $user_id);
 mysqli_stmt_execute($passes_stmt);
 $passes_result = mysqli_stmt_get_result($passes_stmt);
 
-
+// Fetch bus routes and campus transport
 $bus_routes_sql = "SELECT * FROM bus_routes ORDER BY route_id";
 $bus_routes_result = mysqli_query($conn, $bus_routes_sql);
 
@@ -28,7 +37,7 @@ $campus_transport_sql = "SELECT * FROM campus_transport ORDER BY
                           END, from_campus";
 $campus_transport_result = mysqli_query($conn, $campus_transport_sql);
 
-
+// User info and facilities count
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -41,7 +50,7 @@ $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status =
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-
+// Hardcoded route details
 $route_details = [
     'cinec' => ['name' => 'Malabe', 'price' => 100, 'frequency' => 'Every 30 mins'],
     'gampaha1' => ['name' => 'Gampaha - 1', 'price' => 120, 'frequency' => 'Every 45 mins'],

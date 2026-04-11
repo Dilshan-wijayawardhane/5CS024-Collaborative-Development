@@ -1,20 +1,24 @@
 <?php
-
+/**
+ * This is the final step after the user confirms their cart.
+ * 
+ * Features:
+ *  - Accepts cart items and payment method via JSON POST
+ *  - Validates points balance if points payment is selected
+ *  - Creates order records for each item
+ *  - Uses database transaction for atomicity
+ * - Logs order activity
+ */
 
 require_once 'config.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-
-
-
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-
-
-
+// Authentication check
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
@@ -22,9 +26,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-
-
-
+// Read and validate JSON input
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!$data) {
@@ -37,16 +39,13 @@ if (!isset($data['items']) || empty($data['items']) || !isset($data['payment_met
     exit();
 }
 
-
-
-
+// Start database transaction
 mysqli_begin_transaction($conn);
 
 try {
     $order_ids = [];
     
-    
-
+    // Create one order per item quantity
     foreach ($data['items'] as $item) {
         for ($i = 0; $i < $item['quantity']; $i++) {
             $order_sql = "INSERT INTO Orders (UserID, ItemName, Category, Price, Quantity, Status) 
@@ -70,9 +69,7 @@ try {
         }
     }
     
-    
-
-
+    // Handle points payment
     if ($data['payment_method'] === 'points' && $data['points_used'] > 0) {
         
 
@@ -96,12 +93,12 @@ try {
             throw new Exception('Failed to deduct points');
         }
     }
-    
+    // Log activity and commit transaction
     logActivity($conn, $user_id, 'ORDER_PLACED', 'Orders', $order_ids[0] ?? 0);
     
     
     mysqli_commit($conn);
-    
+    // Clear cart session
     unset($_SESSION['cart']);
     
     echo json_encode([
@@ -113,8 +110,7 @@ try {
     
 } catch (Exception $e) {
     
-
-
+    //Rollback transaction on error
     mysqli_rollback($conn);
     
     echo json_encode([

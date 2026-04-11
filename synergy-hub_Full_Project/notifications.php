@@ -1,7 +1,22 @@
 <?php
+
+/**
+ * Features:
+ *  - Displays all notifications for the logged-in user
+ *  - Dynamic fallback data if the notification table dosen't exist or is empty
+ *  - Icon and colour coding based on notification type (event, transport, general, etc.)
+ * 
+ * Security Notes:
+ *  - Requires login
+ *  - Uses prepared statements where possible
+ *  - Graceful handling if table/columns don't exist
+ *  - Outputs escaped with htmlspecialchars()
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
+// Authentication
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
@@ -10,7 +25,7 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 
 
-
+// Load user points & name
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -18,24 +33,19 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
-
-
+// Count open facilities
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-
-
-
+// Load notifications with graceful fallback
 $table_check = mysqli_query($conn, "SHOW TABLES LIKE 'Notifications'");
 $table_exists = mysqli_num_rows($table_check) > 0;
 
 $notifications = [];
 
 if ($table_exists) {
-    
-
+    // Get column names to handle different naming conventions
     $columns = mysqli_query($conn, "SHOW COLUMNS FROM Notifications");
     $column_names = [];
     while($col = mysqli_fetch_assoc($columns)) {
@@ -75,9 +85,7 @@ if ($table_exists) {
     }
 }
 
-
-
-
+// Fallback demo notifications if table dose't exist or its empty
 if (empty($notifications)) {
     $notifications = [
         [
@@ -961,7 +969,7 @@ if (empty($notifications)) {
 
 <script>
 
-
+// Sidebar toggle
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -993,9 +1001,7 @@ document.addEventListener("click", function(e) {
     }
 });
 
-
-
-
+// Clear all notifications
 function clearAll() {
     if(confirm('Clear all notifications?')) {
         fetch('mark_notification_read.php', {
@@ -1020,7 +1026,7 @@ function clearAll() {
             
 
         
-            location.reload();
+            location.reload();  // Fallback
         });
     }
 }
