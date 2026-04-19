@@ -907,7 +907,11 @@ $total_clubs_count = count($all_clubs_array);
                     <i class="fa-solid <?php echo $icon; ?>"></i>
                 </div>
                 <div>
-                    <div class="club-name"><?php echo htmlspecialchars($club['Name']); ?></div>
+                    <div class="club-name">
+                        <a href="club_details.php?id=<?php echo $club['ClubID']; ?>" style="color:white; text-decoration:none;">
+                            <?php echo htmlspecialchars($club['Name']); ?>
+                        </a>
+                    </div>
                     <div class="club-category"><?php echo htmlspecialchars($club['Category']); ?></div>
                 </div>
             </div>
