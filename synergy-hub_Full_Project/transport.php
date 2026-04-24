@@ -1,13 +1,4 @@
 <?php
-
-/**
- * User-facing page showing:
- *  - My active transport passes
- *  - Live bus tracking cards
- *  - Campus bus schedules
- *  - Available routes to buy passes
- */
-
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -18,18 +9,23 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch user transport passes
-$passes_sql = "SELECT * FROM TransportPasses WHERE UserID = ? ORDER BY ValidUntil DESC";
+// Get user's transport passes (including Pending status)
+$passes_sql = "SELECT * FROM TransportPasses WHERE UserID = ? ORDER BY 
+               CASE 
+                   WHEN Status = 'Pending' THEN 1
+                   WHEN Status = 'Active' THEN 2
+                   ELSE 3
+               END, ValidUntil DESC";
 $passes_stmt = mysqli_prepare($conn, $passes_sql);
 mysqli_stmt_bind_param($passes_stmt, "i", $user_id);
 mysqli_stmt_execute($passes_stmt);
 $passes_result = mysqli_stmt_get_result($passes_stmt);
 
-// Fetch bus routes and campus transport
+// Get bus routes for tracking from bus_routes table
 $bus_routes_sql = "SELECT * FROM bus_routes ORDER BY route_id";
 $bus_routes_result = mysqli_query($conn, $bus_routes_sql);
 
-
+// Get CINEC bus schedule from database
 $campus_transport_sql = "SELECT * FROM campus_transport ORDER BY 
                           CASE 
                               WHEN from_campus = 'CINEC' THEN 1 
@@ -37,7 +33,7 @@ $campus_transport_sql = "SELECT * FROM campus_transport ORDER BY
                           END, from_campus";
 $campus_transport_result = mysqli_query($conn, $campus_transport_sql);
 
-// User info and facilities count
+// Get user points and name
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -45,12 +41,12 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
+// Get facilities count for badge
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
-// Hardcoded route details
+// Define route display names and prices
 $route_details = [
     'cinec' => ['name' => 'Malabe', 'price' => 100, 'frequency' => 'Every 30 mins'],
     'gampaha1' => ['name' => 'Gampaha - 1', 'price' => 120, 'frequency' => 'Every 45 mins'],
@@ -59,8 +55,18 @@ $route_details = [
     'moratuwa' => ['name' => 'Moratuwa', 'price' => 150, 'frequency' => 'Every 60 mins'],
     'negombo' => ['name' => 'Negombo', 'price' => 200, 'frequency' => 'Every 90 mins'],
 ];
-?>
 
+// Check if user has pending request for a route
+function hasPendingRequest($conn, $user_id, $route_name) {
+    $sql = "SELECT COUNT(*) as count FROM TransportPasses WHERE UserID = ? AND RouteName = ? AND Status = 'Pending'";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "is", $user_id, $route_name);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $data = mysqli_fetch_assoc($result);
+    return $data['count'] > 0;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -160,7 +166,7 @@ $route_details = [
             color: #22d3ee;
         }
         
-        
+        /* Sidebar Styles (same as before - keeping it compact) */
         .sidebar {
             position: fixed;
             left: -280px;
@@ -175,366 +181,32 @@ $route_details = [
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             overflow-y: auto;
         }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        
-        .sidebar-header {
-            padding: 25px 20px 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .sidebar-header h2 {
-            color: white;
-            font-size: 24px;
-            font-weight: 700;
-            margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .sidebar-header p {
-            color: #94a3b8;
-            font-size: 13px;
-            margin: 0;
-            font-weight: 400;
-        }
-
-        .sidebar-header p i {
-            color: #22d3ee;
-            margin-right: 5px;
-            font-size: 10px;
-        }
-
-       
-        .sidebar-user {
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.03);
-            margin: 0 15px 20px 15px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-user-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .sidebar-user-info h4 {
-            color: white;
-            font-size: 15px;
-            margin: 0 0 3px 0;
-            font-weight: 600;
-        }
-
-        .sidebar-user-info p {
-            color: #94a3b8;
-            font-size: 12px;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .sidebar-user-info p i {
-            color: #fbbf24;
-            font-size: 10px;
-        }
-
-        
-        .sidebar-nav {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar-nav-item {
-            margin: 4px 12px;
-        }
-
-        .sidebar-nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 18px;
-            color: #b8c7de;
-            text-decoration: none;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            gap: 12px;
-            font-weight: 500;
-            font-size: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-nav-link i {
-            width: 22px;
-            font-size: 1.1rem;
-            color: #5f7d9e;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .sidebar-nav-link:hover {
-            background: rgba(168, 192, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
-        }
-
-        .sidebar-nav-link:hover i {
-            color: #a5b4fc;
-        }
-
-        .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
-            color: white;
-            border-left: 3px solid #a5b4fc;
-        }
-
-        .sidebar-nav-link.active i {
-            color: #a5b4fc;
-        }
-
-        
-        .sidebar-badge {
-            background: #ef4444;
-            color: white;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 30px;
-            margin-left: auto;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-       
-        .sidebar-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            margin: 20px 20px;
-        }
-
-        
-        .sidebar-section-title {
-            padding: 0 20px;
-            margin: 25px 0 10px 0;
-            color: #94a3b8;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        
-        .sidebar-club-preview {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            padding: 15px;
-            margin: 0 15px 20px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .sidebar-club-preview h4 {
-            color: white;
-            font-size: 13px;
-            margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            opacity: 0.8;
-        }
-
-        .sidebar-club-preview h4 i {
-            color: #fbbf24;
-        }
-
-        .sidebar-club-item {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: transform 0.2s;
-        }
-
-        .sidebar-club-item:hover {
-            transform: translateX(5px);
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .sidebar-club-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .sidebar-club-item h5 {
-            color: white;
-            font-size: 14px;
-            margin: 0 0 4px 0;
-            font-weight: 600;
-        }
-
-        .sidebar-club-item p {
-            color: #94a3b8;
-            font-size: 11px;
-            margin: 0 0 6px 0;
-            line-height: 1.4;
-        }
-
-        .sidebar-club-tag {
-            background: #2d4c6e;
-            color: white;
-            font-size: 9px;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 30px;
-            display: inline-block;
-            text-transform: uppercase;
-        }
-
-        
-        .sidebar-stats {
-            display: flex;
-            justify-content: space-around;
-            padding: 15px 10px;
-            margin: 0 15px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .sidebar-stat-item {
-            text-align: center;
-        }
-
-        .sidebar-stat-value {
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 3px;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .sidebar-stat-label {
-            color: #94a3b8;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        
-        .sidebar-footer {
-            padding: 20px 20px 30px 20px;
-        }
-
-        .sidebar-footer-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .sidebar-footer-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 11px;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .sidebar-footer-links a:hover {
-            color: white;
-        }
-
-        .sidebar-footer-links a i {
-            font-size: 10px;
-        }
-
-        .sidebar-copyright {
-            color: #64748b;
-            font-size: 10px;
-            text-align: center;
-        }
-
-        
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(3px);
-            z-index: 9998;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
-            opacity: 1;
-        }
-
-        
-        .sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
+        .sidebar.active { left: 0; }
+        .sidebar-header { padding: 25px 20px 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px; }
+        .sidebar-header h2 { color: white; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-header p { color: #94a3b8; font-size: 13px; }
+        .sidebar-user { padding: 15px 20px; background: rgba(255, 255, 255, 0.03); margin: 0 15px 20px 15px; border-radius: 16px; display: flex; align-items: center; gap: 12px; }
+        .sidebar-user-avatar { width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
+        .sidebar-user-info h4 { color: white; font-size: 15px; margin: 0 0 3px 0; }
+        .sidebar-user-info p { color: #94a3b8; font-size: 12px; }
+        .sidebar-user-info p i { color: #fbbf24; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav-item { margin: 4px 12px; }
+        .sidebar-nav-link { display: flex; align-items: center; padding: 12px 18px; color: #b8c7de; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; gap: 12px; }
+        .sidebar-nav-link:hover { background: rgba(168, 192, 255, 0.1); color: white; transform: translateX(5px); }
+        .sidebar-nav-link.active { background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%); color: white; border-left: 3px solid #a5b4fc; }
+        .sidebar-badge { background: #ef4444; color: white; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 30px; margin-left: auto; }
+        .sidebar-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent); margin: 20px 20px; }
+        .sidebar-section-title { padding: 0 20px; margin: 25px 0 10px 0; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .sidebar-stats { display: flex; justify-content: space-around; padding: 15px 10px; margin: 0 15px; background: rgba(255, 255, 255, 0.02); border-radius: 16px; }
+        .sidebar-stat-value { color: white; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-stat-label { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+        .sidebar-footer { padding: 20px 20px 30px 20px; }
+        .sidebar-footer-links { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
+        .sidebar-footer-links a { color: #94a3b8; text-decoration: none; font-size: 11px; }
+        .sidebar-copyright { color: #64748b; font-size: 10px; text-align: center; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); z-index: 9998; display: none; }
+        .sidebar-overlay.active { display: block; }
         
         .transport-container {
             padding: 30px;
@@ -568,7 +240,7 @@ $route_details = [
             padding-left: 15px;
         }
         
-        
+        /* Passes Grid */
         .passes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -625,6 +297,20 @@ $route_details = [
             color: white;
         }
         
+        .status-Pending {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .pending-animation {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
         .pass-details {
             color: rgba(255,255,255,0.9);
             margin: 10px 0;
@@ -646,7 +332,7 @@ $route_details = [
             text-align: center;
         }
         
-        
+        /* Tracking Grid */
         .tracking-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -659,7 +345,6 @@ $route_details = [
             backdrop-filter: blur(14px);
             border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
             transition: 0.3s;
             display: flex;
             flex-direction: column;
@@ -722,7 +407,7 @@ $route_details = [
             margin: 0;
         }
         
-        
+        /* Campus Schedule */
         .campus-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -784,13 +469,12 @@ $route_details = [
             font-weight: 600;
         }
         
-        
         .next-departure.morning {
-            color: #fbbf24; 
+            color: #fbbf24;
         }
         
         .next-departure.evening {
-            color: #22d3ee; 
+            color: #22d3ee;
             font-size: 24px;
             font-weight: 700;
         }
@@ -802,25 +486,10 @@ $route_details = [
             font-weight: 600;
         }
         
-        .status-On-Time {
-            background: #10b981;
-            color: white;
-        }
-        
-        .status-Sharp {
-            background: #22d3ee;
-            color: white;
-        }
-        
-        .status-Delayed {
-            background: #f59e0b;
-            color: white;
-        }
-        
-        .status-Cancelled {
-            background: #ef4444;
-            color: white;
-        }
+        .status-On-Time { background: #10b981; color: white; }
+        .status-Sharp { background: #22d3ee; color: white; }
+        .status-Delayed { background: #f59e0b; color: white; }
+        .status-Cancelled { background: #ef4444; color: white; }
         
         .frequency {
             color: rgba(255,255,255,0.7);
@@ -828,7 +497,7 @@ $route_details = [
             margin-top: 5px;
         }
         
-        
+        /* Available Routes List */
         .routes-list {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -879,7 +548,7 @@ $route_details = [
             margin-right: 20px;
         }
         
-        .buy-btn {
+        .request-btn {
             padding: 12px 25px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -892,18 +561,22 @@ $route_details = [
             min-width: 120px;
         }
         
-        .buy-btn:hover {
+        .request-btn:hover:not(:disabled) {
             transform: scale(1.05);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
         
-        .buy-btn:disabled {
+        .request-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
         
-        .buy-btn i {
+        .request-btn.pending {
+            background: #f59e0b;
+        }
+        
+        .request-btn i {
             margin-right: 5px;
         }
         
@@ -921,6 +594,22 @@ $route_details = [
         .back-btn:hover {
             background: rgba(255,255,255,0.2);
             color: #22d3ee;
+        }
+        
+        /* Info Banner */
+        .info-banner {
+            background: rgba(34, 211, 238, 0.1);
+            border-left: 4px solid #22d3ee;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+        
+        .info-banner i {
+            color: #22d3ee;
+            margin-right: 10px;
         }
         
         @media (max-width: 768px) {
@@ -949,14 +638,12 @@ $route_details = [
 
 <div class="bg"></div>
 
-
+<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
-   
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
-    
     
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
@@ -968,89 +655,23 @@ $route_details = [
         </div>
     </div>
     
-    
     <ul class="sidebar-nav">
-        <li class="sidebar-nav-item">
-            <a href="index.php" class="sidebar-nav-link">
-                <i class="fa-solid fa-home"></i>
-                <span>Home</span>
-            </a>
-        </li>
-        <li class="sidebar-nav-item">
-            <a href="facilities.php" class="sidebar-nav-link">
-                <i class="fa-solid fa-building"></i>
-                <span>Facilities</span>
-                <span class="sidebar-badge"><?php echo $facilities_count; ?></span>
-            </a>
-        </li>
-        <li class="sidebar-nav-item">
-            <a href="transport.php" class="sidebar-nav-link active">
-                <i class="fa-solid fa-bus"></i>
-                <span>Transport</span>
-            </a>
-        </li>
-        <li class="sidebar-nav-item">
-            <a href="game.php" class="sidebar-nav-link">
-                <i class="fa-solid fa-futbol"></i>
-                <span>Game Field</span>
-            </a>
-        </li>
-        <li class="sidebar-nav-item">
-            <a href="clubs.php" class="sidebar-nav-link">
-                <i class="fa-solid fa-users"></i>
-                <span>Club Hub</span>
-            </a>
-        </li>
-        <li class="sidebar-nav-item">
-            <a href="qr.html" class="sidebar-nav-link">
-                <i class="fa-solid fa-qrcode"></i>
-                <span>QR Scanner</span>
-            </a>
-        </li>
-        <li class="sidebar-nav-item">
-            <a href="notifications.php" class="sidebar-nav-link">
-                <i class="fa-solid fa-bell"></i>
-                <span>Notifications</span>
-                <span class="sidebar-badge" id="sidebarNotificationBadge">3</span>
-            </a>
-        </li>
+        <li class="sidebar-nav-item"><a href="index.php" class="sidebar-nav-link"><i class="fa-solid fa-home"></i><span>Home</span></a></li>
+        <li class="sidebar-nav-item"><a href="facilities.php" class="sidebar-nav-link"><i class="fa-solid fa-building"></i><span>Facilities</span><span class="sidebar-badge"><?php echo $facilities_count; ?></span></a></li>
+        <li class="sidebar-nav-item"><a href="transport.php" class="sidebar-nav-link active"><i class="fa-solid fa-bus"></i><span>Transport</span></a></li>
+        <li class="sidebar-nav-item"><a href="game.php" class="sidebar-nav-link"><i class="fa-solid fa-futbol"></i><span>Game Field</span></a></li>
+        <li class="sidebar-nav-item"><a href="clubs.php" class="sidebar-nav-link"><i class="fa-solid fa-users"></i><span>Club Hub</span></a></li>
+        <li class="sidebar-nav-item"><a href="qr.html" class="sidebar-nav-link"><i class="fa-solid fa-qrcode"></i><span>QR Scanner</span></a></li>
+        <li class="sidebar-nav-item"><a href="notifications.php" class="sidebar-nav-link"><i class="fa-solid fa-bell"></i><span>Notifications</span><span class="sidebar-badge" id="sidebarNotificationBadge">3</span></a></li>
     </ul>
     
     <div class="sidebar-divider"></div>
     
-    
-    <div class="sidebar-section-title">MY CLUBS</div>
-    
-    <div class="sidebar-club-preview">
-        <h4><i class="fa-regular fa-star"></i> Active Clubs</h4>
-        <div class="sidebar-club-item">
-            <h5>Coding Club</h5>
-            <p>Programming and software development...</p>
-            <span class="sidebar-club-tag">Academic</span>
-        </div>
-        <div class="sidebar-club-item">
-            <h5>IEEE Student Branch</h5>
-            <p>IEEE student chapter...</p>
-            <span class="sidebar-club-tag">Academic</span>
-        </div>
-    </div>
-    
-   
     <div class="sidebar-stats">
-        <div class="sidebar-stat-item">
-            <div class="sidebar-stat-value">4</div>
-            <div class="sidebar-stat-label">Clubs</div>
-        </div>
-        <div class="sidebar-stat-item">
-            <div class="sidebar-stat-value">12</div>
-            <div class="sidebar-stat-label">Events</div>
-        </div>
-        <div class="sidebar-stat-item">
-            <div class="sidebar-stat-value"><?php echo $user['PointsBalance']; ?></div>
-            <div class="sidebar-stat-label">Points</div>
-        </div>
+        <div class="sidebar-stat-item"><div class="sidebar-stat-value">4</div><div class="sidebar-stat-label">Clubs</div></div>
+        <div class="sidebar-stat-item"><div class="sidebar-stat-value">12</div><div class="sidebar-stat-label">Events</div></div>
+        <div class="sidebar-stat-item"><div class="sidebar-stat-value"><?php echo $user['PointsBalance']; ?></div><div class="sidebar-stat-label">Points</div></div>
     </div>
-    
     
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
@@ -1058,16 +679,13 @@ $route_details = [
             <a href="#"><i class="fa-regular fa-gear"></i> Settings</a>
             <a href="#"><i class="fa-regular fa-message"></i> Feedback</a>
         </div>
-        <div class="sidebar-copyright">
-            © 2025 Synergy Hub
-        </div>
+        <div class="sidebar-copyright">© 2025 Synergy Hub</div>
     </div>
 </div>
 
-
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-
+<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -1086,15 +704,21 @@ $route_details = [
     </div>
 </header>
 
-
+<!-- MAIN CONTENT -->
 <div class="transport-container">
     
-    
+    <!-- POINTS BADGE -->
     <div class="points-badge">
         <i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span>
     </div>
     
+    <!-- INFO BANNER - Explain the request system -->
+    <div class="info-banner">
+        <i class="fa-solid fa-info-circle"></i> 
+        Transport passes now require admin approval. Request a pass and it will be reviewed by our team. You'll be notified once approved!
+    </div>
     
+    <!-- CINEC BUS SCHEDULE SECTION -->
     <h2 class="section-title">🚌 CINEC Bus Schedule</h2>
     <div class="campus-grid">
         <?php 
@@ -1108,11 +732,7 @@ $route_details = [
                     <i class="fa-solid fa-bus"></i>
                 </div>
                 <div class="campus-route">
-                    <?php if($is_evening): ?>
-                        <?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?>
-                    <?php else: ?>
-                        <?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?>
-                    <?php endif; ?>
+                    <?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?>
                 </div>
             </div>
             <div class="campus-details">
@@ -1122,7 +742,7 @@ $route_details = [
                     </div>
                     <div class="frequency"><?php echo $route['frequency']; ?></div>
                 </div>
-                <span class="status-badge status-On-Time <?php echo $is_evening ? 'status-Sharp' : ''; ?>">
+                <span class="status-badge status-<?php echo str_replace('-', '', $route['status']); ?>">
                     <?php echo $route['status']; ?>
                 </span>
             </div>
@@ -1135,14 +755,7 @@ $route_details = [
         <?php endif; ?>
     </div>
     
-    <?php if(mysqli_num_rows($campus_transport_result) > 0): ?>
-    
-    <div style="color: rgba(255,255,255,0.6); font-size: 13px; text-align: center; margin-top: -20px; margin-bottom: 30px;">
-        <i class="fa-solid fa-clock"></i> All buses depart from CINEC at 5:05 PM
-    </div>
-    <?php endif; ?>
-    
-    
+    <!-- BUS TRACKING SECTION -->
     <h2 class="section-title">🚍 Live Bus Tracking</h2>
     <div class="tracking-grid">
         <?php 
@@ -1182,7 +795,7 @@ $route_details = [
         ?>
     </div>
     
-    
+    <!-- MY TRANSPORT PASSES SECTION -->
     <h2 class="section-title">🎫 My Transport Passes</h2>
     <div class="passes-grid">
         <?php if(mysqli_num_rows($passes_result) > 0): ?>
@@ -1190,27 +803,38 @@ $route_details = [
             <div class="pass-card">
                 <div class="pass-header">
                     <span class="pass-route"><?php echo htmlspecialchars($pass['RouteName']); ?></span>
-                    <span class="pass-status status-<?php echo $pass['Status']; ?>">
+                    <span class="pass-status status-<?php echo $pass['Status']; ?> <?php echo $pass['Status'] == 'Pending' ? 'pending-animation' : ''; ?>">
                         <?php echo $pass['Status']; ?>
+                        <?php if($pass['Status'] == 'Pending'): ?>
+                            <i class="fa-regular fa-clock"></i>
+                        <?php endif; ?>
                     </span>
                 </div>
                 <div class="pass-details">
-                    <i class="fa-regular fa-calendar"></i> Valid Until: <?php echo date('M d, Y', strtotime($pass['ValidUntil'])); ?><br>
-                    <i class="fa-regular fa-clock"></i> Issued: <?php echo date('M d, Y', strtotime($pass['IssuedAt'])); ?>
+                    <?php if($pass['Status'] == 'Pending'): ?>
+                        <i class="fa-regular fa-hourglass-half"></i> Awaiting Admin Approval<br>
+                        <i class="fa-regular fa-calendar"></i> Requested: <?php echo date('M d, Y', strtotime($pass['IssuedAt'])); ?>
+                    <?php else: ?>
+                        <i class="fa-regular fa-calendar"></i> Valid Until: <?php echo date('M d, Y', strtotime($pass['ValidUntil'])); ?><br>
+                        <i class="fa-regular fa-clock"></i> Issued: <?php echo date('M d, Y', strtotime($pass['IssuedAt'])); ?>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endwhile; ?>
         <?php else: ?>
             <div class="no-passes">
-                <i class="fa-solid fa-ticket"></i> No transport passes yet. Buy one below!
+                <i class="fa-solid fa-ticket"></i> No transport passes yet. Request one below!
             </div>
         <?php endif; ?>
     </div>
     
-    
-    <h2 class="section-title">🛒 Available Routes - Buy Pass</h2>
+    <!-- AVAILABLE ROUTES SECTION - REQUEST PASS BUTTONS -->
+    <h2 class="section-title">🛒 Available Routes - Request Pass</h2>
     <div class="routes-list">
-        <?php foreach($route_details as $route_id => $route): ?>
+        <?php foreach($route_details as $route_id => $route): 
+            $has_pending = hasPendingRequest($conn, $user_id, $route['name']);
+            $can_request = ($user['PointsBalance'] >= $route['price']) && !$has_pending;
+        ?>
         <div class="route-item">
             <div class="route-info">
                 <div class="route-name"><?php echo $route['name']; ?></div>
@@ -1219,9 +843,16 @@ $route_details = [
                 </div>
             </div>
             <div class="route-price"><?php echo $route['price']; ?> points</div>
-            <button class="buy-btn" onclick="buyPass('<?php echo $route['name']; ?>', <?php echo $route['price']; ?>)"
-                <?php echo ($user['PointsBalance'] < $route['price']) ? 'disabled' : ''; ?>>
-                <i class="fa-solid fa-cart-shopping"></i> Buy Pass
+            <button class="request-btn <?php echo $has_pending ? 'pending' : ''; ?>" 
+                    onclick="requestPass('<?php echo $route['name']; ?>', <?php echo $route['price']; ?>)"
+                    <?php echo (!$can_request && !$has_pending) ? 'disabled' : ''; ?>>
+                <?php if($has_pending): ?>
+                    <i class="fa-regular fa-clock"></i> Pending Approval
+                <?php elseif($user['PointsBalance'] < $route['price']): ?>
+                    <i class="fa-solid fa-star"></i> Insufficient Points
+                <?php else: ?>
+                    <i class="fa-solid fa-paper-plane"></i> Request Pass
+                <?php endif; ?>
             </button>
         </div>
         <?php endforeach; ?>
@@ -1233,7 +864,7 @@ $route_details = [
 </div>
 
 <script>
-
+// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1265,10 +896,10 @@ document.addEventListener("click", function(e) {
     }
 });
 
-
-function buyPass(routeName, price) {
-    if(confirm(`Buy transport pass for ${routeName} using ${price} points?`)) {
-        fetch('buy_pass.php', {
+// Request Pass function (instead of direct buy)
+function requestPass(routeName, price) {
+    if(confirm(`Request transport pass for ${routeName} (${price} points)?\n\nYour request will be sent to admin for approval. Points will be deducted only after approval.`)) {
+        fetch('request_pass.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -1278,7 +909,7 @@ function buyPass(routeName, price) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('✅ Pass purchased successfully!');
+                alert('✅ Pass request submitted! You will be notified once approved.');
                 location.reload();
             } else {
                 alert('❌ Error: ' + data.message);
@@ -1290,7 +921,7 @@ function buyPass(routeName, price) {
     }
 }
 
-
+// Update bus location
 function updateLocation(routeId) {
     let newPlace = prompt("Where is the bus now? (e.g., Malabe, Colombo, etc.)");
     
@@ -1318,7 +949,7 @@ function updateLocation(routeId) {
     });
 }
 
-
+// View bus location
 function viewLocation(routeId) {
     fetch('get_location.php?route=' + routeId)
     .then(res => res.json())
