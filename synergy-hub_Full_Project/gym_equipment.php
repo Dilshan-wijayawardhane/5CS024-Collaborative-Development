@@ -1,10 +1,6 @@
 <?php
-
-
 require_once 'config.php';
 require_once 'functions.php';
-
-
 
 if (!isLoggedIn()) {
     header("Location: login.php");
@@ -14,19 +10,15 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-
-
+// Get equipment from database
 $equip_sql = "SELECT * FROM gym_equipment ORDER BY category, name";
 $equip_result = mysqli_query($conn, $equip_sql);
 
-
-
+// Get classes from database
 $classes_sql = "SELECT * FROM fitness_classes ORDER BY time";
 $classes_result = mysqli_query($conn, $classes_sql);
 
-
-
-
+// Get user's class bookings
 $bookings_sql = "SELECT cb.*, fc.name as class_name, fc.time, fc.instructor 
                  FROM class_bookings cb
                  JOIN fitness_classes fc ON cb.class_id = fc.class_id
@@ -36,9 +28,7 @@ mysqli_stmt_bind_param($bookings_stmt, "i", $user_id);
 mysqli_stmt_execute($bookings_stmt);
 $bookings_result = mysqli_stmt_get_result($bookings_stmt);
 
-
-
-
+// Get user points and name
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -46,9 +36,7 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
-
-
+// Get facilities count for badge
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
@@ -94,6 +82,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             pointer-events: none;
         }
         
+        /* NAVBAR */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -158,6 +147,11 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             color: #22d3ee;
         }
         
+        /* ========================================
+           SYNERGY HUB SIDEBAR - LAS SANATA
+           ======================================== */
+
+        /* Sidebar Base */
         .sidebar {
             position: fixed;
             left: -280px;
@@ -177,6 +171,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             left: 0;
         }
 
+        /* Sidebar Header */
         .sidebar-header {
             padding: 25px 20px 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -222,6 +217,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 10px;
         }
 
+        /* User Info in Sidebar */
         .sidebar-user {
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.03);
@@ -267,6 +263,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 10px;
         }
 
+        /* Sidebar Navigation */
         .sidebar-nav {
             list-style: none;
             padding: 0;
@@ -320,6 +317,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             color: #a5b4fc;
         }
 
+        /* Sidebar Badge */
         .sidebar-badge {
             background: #ef4444;
             color: white;
@@ -336,12 +334,14 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             50% { transform: scale(1.1); }
         }
 
+        /* Sidebar Divider */
         .sidebar-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             margin: 20px 20px;
         }
 
+        /* Sidebar Section Title */
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
@@ -352,6 +352,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             letter-spacing: 0.5px;
         }
 
+        /* Club Preview in Sidebar */
         .sidebar-club-preview {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
@@ -419,6 +420,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             text-transform: uppercase;
         }
 
+        /* Quick Stats */
         .sidebar-stats {
             display: flex;
             justify-content: space-around;
@@ -451,6 +453,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             letter-spacing: 0.3px;
         }
 
+        /* Footer Links */
         .sidebar-footer {
             padding: 20px 20px 30px 20px;
         }
@@ -486,6 +489,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             text-align: center;
         }
 
+        /* Overlay for mobile */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -505,6 +509,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             opacity: 1;
         }
 
+        /* Scrollbar Styling */
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -522,6 +527,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             background: rgba(255, 255, 255, 0.3);
         }
         
+        /* MAIN CONTENT */
         .container {
             padding: 30px;
             max-width: 1200px;
@@ -561,6 +567,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             padding-left: 15px;
         }
         
+        /* TABS */
         .tabs {
             display: flex;
             justify-content: center;
@@ -589,6 +596,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             border-color: transparent;
         }
         
+        /* EQUIPMENT GRID */
         .equipment-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -639,6 +647,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             color: rgba(255,255,255,0.8);
         }
         
+        /* CLASSES LIST */
         .classes-list {
             margin-top: 20px;
         }
@@ -706,6 +715,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             background: #10b981;
         }
         
+        /* MY BOOKINGS */
         .bookings-list {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -807,12 +817,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
 <div class="bg"></div>
 
+<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
+    <!-- Header -->
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
     </div>
     
+    <!-- User Info -->
     <div class="sidebar-user">
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
@@ -823,6 +836,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
+    <!-- Navigation -->
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
@@ -872,6 +886,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     
     <div class="sidebar-divider"></div>
     
+    <!-- My Clubs Preview -->
     <div class="sidebar-section-title">MY CLUBS</div>
     
     <div class="sidebar-club-preview">
@@ -888,6 +903,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
+    <!-- Quick Stats -->
     <div class="sidebar-stats">
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
@@ -903,6 +919,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
+    <!-- Footer -->
     <div class="sidebar-footer">
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
@@ -915,8 +932,10 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
 </div>
 
+<!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
+<!-- NAVBAR -->
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -935,6 +954,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
 </header>
 
+<!-- MAIN CONTENT -->
 <div class="container">
     
     <div class="points-badge">
@@ -943,12 +963,14 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     
     <h1 class="page-title">💪 Gym Equipment & Classes</h1>
     
+    <!-- TABS -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('equipment')">Equipment</button>
         <button class="tab-btn" onclick="switchTab('classes')">Fitness Classes</button>
         <button class="tab-btn" onclick="switchTab('bookings')">My Bookings</button>
     </div>
     
+    <!-- EQUIPMENT TAB -->
     <div id="equipmentTab">
         <h2 class="section-title">Available Equipment</h2>
         <div class="equipment-grid">
@@ -972,6 +994,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
+    <!-- CLASSES TAB -->
     <div id="classesTab" style="display: none;">
         <h2 class="section-title">Fitness Classes</h2>
         <div class="classes-list">
@@ -979,6 +1002,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 <?php while($class = mysqli_fetch_assoc($classes_result)): 
                     $spots = $class['capacity'] - $class['booked'];
                     
+                    // Check if user already joined this class
                     $check_joined_sql = "SELECT * FROM class_bookings WHERE user_id = ? AND class_id = ? AND status = 'booked'";
                     $check_joined_stmt = mysqli_prepare($conn, $check_joined_sql);
                     mysqli_stmt_bind_param($check_joined_stmt, "ii", $user_id, $class['class_id']);
@@ -1011,6 +1035,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         </div>
     </div>
     
+    <!-- MY BOOKINGS TAB -->
     <div id="bookingsTab" style="display: none;">
         <h2 class="section-title">My Class Bookings</h2>
         <div class="bookings-list">
@@ -1039,6 +1064,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 </div>
 
 <script>
+// ==================== SIDEBAR ====================
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -1107,10 +1133,10 @@ function joinClass(classId) {
     .then(response => response.json())
     .then(data => {
         if(data.success) {
-            alert('Successfully joined the class!');
+            alert('✅ Successfully joined the class!');
             location.reload();
         } else {
-            alert('Error: ' + data.message);
+            alert('❌ Error: ' + data.message);
         }
     });
 }
@@ -1127,7 +1153,7 @@ function cancelBooking(bookingId) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('Booking cancelled');
+                alert('✅ Booking cancelled');
                 location.reload();
             }
         });
