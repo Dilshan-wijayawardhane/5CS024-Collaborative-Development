@@ -1,1 +1,79 @@
 user query
+----------
+CREATE TABLE Users (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    StudentID VARCHAR(20) UNIQUE,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Role ENUM('Admin', 'User', 'Visitor') DEFAULT 'User',
+    PointsBalance INT DEFAULT 0,
+    MembershipStatus ENUM('Active', 'Inactive', 'Expired') DEFAULT 'Active',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (Email),
+    INDEX idx_role (Role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+----------------------------------------------------------------------
+sample data for users
+---------------------
+INSERT INTO `users` (`UserID`, `StudentID`, `Name`, `Email`, `PasswordHash`, `Role`, `PointsBalance`, `MembershipStatus`, `CreatedAt`) VALUES
+(2, 'STU002', 'John Doe', 'john.doe@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 100, 'Active', '2026-03-23 08:23:44'),
+(3, 'STU003', 'Jane Smith', 'jane.smith@university.lk', '$2y$10$YourHashedPasswordHere', 'User', 150, 'Active', '2026-03-23 08:23:44'),
+(4, 'STU004', 'Visitor User', 'visitor@university.lk', '$2y$10$YourHashedPasswordHere', 'Visitor', 0, 'Active', '2026-03-23 08:23:44'),
+(5, 'STU005', 'Prasadi Malsha Abeysekara', 'prasadimalshapma@gmail.com', '$2y$10$j2I16rHQ8Cb7yeTTd4Snt.Hm8LUxBwOSD60/TEzie75qI.ucXJm5e', 'User', 141, 'Active', '2026-03-24 06:01:30'),
+(6, 'STU006', 'Kasun Gayantha', 'kasungayantha@gmail.com', '$2y$10$TfqcXKaG3u6TOW7j9bD8tOxXBPcO6BN.JuosBzk5hWIT5YqCkYczq', 'User', 170, 'Active', '2026-03-24 09:12:12'),
+(7, 'ADMIN001', 'Admin User', 'admin@synergyhub.com', '$2y$10$Pn750zZFEyjj0QMQZKLy8eFaxalqKoFv5kM8glhkn2Wlp3/dSykke', 'Admin', 20, 'Active', '2026-04-26 18:38:09'),
+(8, 'STU007', 'Manthusi Karunanayaka', 'manthusi@gmail.com', '$2y$10$5Rb9UC5ej5MhzfvMOdFCQORatl.ucvTHu37h8jPKLoFO8f1Qrufo6', 'User', 25, 'Active', '2026-04-27 07:59:25');
+-------------------------------------------------------------------
+
+Core User & System Tables
+----------------------
+CREATE TABLE `userachievements` (
+  `UserAchievementID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `AchievementID` int(11) NOT NULL,
+  `Progress` int(11) DEFAULT 0 COMMENT 'Progress towards achievement (0-100)',
+  `IsUnlocked` tinyint(1) DEFAULT 0,
+  `UnlockedAt` timestamp NULL DEFAULT NULL,
+  `Metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`Metadata`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-------------------------------------------------------------------
+Table structure for table `usertierhistory`
+------------------------------------------
+
+CREATE TABLE `usertierhistory` (
+  `HistoryID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `TierID` int(11) NOT NULL,
+  `ChangedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `PointsAtChange` int(11) NOT NULL,
+  `Reason` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-----------------------------------------------------------------------------
+Table structure for table `user_fitness_goals`
+--------------------------------------------
+
+CREATE TABLE `user_fitness_goals` (
+  `goal_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `goal_type` enum('weight_loss','muscle_gain','endurance','flexibility','general') DEFAULT 'general',
+  `target_value` decimal(10,2) DEFAULT NULL,
+  `current_value` decimal(10,2) DEFAULT NULL,
+  `start_date` date DEFAULT curdate(),
+  `target_date` date DEFAULT NULL,
+  `status` enum('active','achieved','abandoned') DEFAULT 'active',
+  `notes` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--------------------------------------------------------------------
+ Table structure for table `user_streaks`
+----------------------------------------
+
+CREATE TABLE `user_streaks` (
+  `streak_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `streak_type` enum('attendance','class','workout') DEFAULT 'attendance',
+  `current_streak` int(11) DEFAULT 0,
+  `longest_streak` int(11) DEFAULT 0,
+  `last_activity_date` date DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
