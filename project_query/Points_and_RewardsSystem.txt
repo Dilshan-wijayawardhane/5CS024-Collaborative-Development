@@ -1,0 +1,138 @@
+Table structure for table `pointsconfig`
+-------------------------------------
+
+CREATE TABLE `pointsconfig` (
+  `ConfigID` int(11) NOT NULL,
+  `ActionType` varchar(50) NOT NULL,
+  `Points` int(11) NOT NULL DEFAULT 0,
+  `Description` text DEFAULT NULL,
+  `MaxPerDay` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `UpdatedAt` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+---------------------------------------------------------------------
+-- Dumping data for table `pointsconfig`
+-----------------------------------------------------------------
+
+INSERT INTO `pointsconfig` (`ConfigID`, `ActionType`, `Points`, `Description`, `MaxPerDay`, `CreatedAt`, `UpdatedAt`) VALUES
+(1, 'LOGIN', 10, 'Daily login bonus', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(2, 'FACILITY_VISIT', 20, 'Check in to a facility', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(3, 'EVENT_ATTENDANCE', 50, 'Attend a campus event', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(4, 'BOOK_BORROW', 5, 'Borrow a book from library', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(5, 'GAME_PLAY', 15, 'Play a game', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(6, 'CLUB_JOIN', 20, 'Join a club', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(7, 'REFERRAL', 100, 'Refer a friend', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(8, 'ADMIN_ADJUSTMENT', 0, 'Manual adjustment by admin', NULL, '2026-03-23 08:23:45', '2026-03-23 08:23:45');
+-------------------------------------------------------------------------------------------------------------
+Table structure for table `pointshistory`
+----------------------------------------
+
+CREATE TABLE `pointshistory` (
+  `HistoryID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `PointsChange` int(11) NOT NULL,
+  `ActionType` varchar(50) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-----------------------------------------------------------------------
+Table structure for table `pointsexpiration`
+------------------------------------------
+
+CREATE TABLE `pointsexpiration` (
+  `ExpirationID` int(11) NOT NULL,
+  `ExpiryDays` int(11) DEFAULT 365,
+  `LastEarnedPointsExpire` tinyint(1) DEFAULT 1,
+  `NotificationDays` int(11) DEFAULT 30,
+  `Enabled` tinyint(1) DEFAULT 1,
+  `UpdatedAt` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+----------------------------------------------------------------------
+-- Dumping data for table `pointsexpiration`
+----------------------------------------------
+
+INSERT INTO `pointsexpiration` (`ExpirationID`, `ExpiryDays`, `LastEarnedPointsExpire`, `NotificationDays`, `Enabled`, `UpdatedAt`) VALUES
+(1, 365, 1, 30, 1, '2026-03-23 08:23:45');
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `membershiptiers`
+--------------------------------------------
+
+CREATE TABLE `membershiptiers` (
+  `TierID` int(11) NOT NULL,
+  `TierName` varchar(50) NOT NULL,
+  `MinPoints` int(11) NOT NULL,
+  `MaxPoints` int(11) DEFAULT NULL,
+  `Multiplier` decimal(3,2) DEFAULT 1.00,
+  `Benefits` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`Benefits`)),
+  `Color` varchar(20) DEFAULT '#667eea',
+  `Icon` varchar(50) DEFAULT 'fa-star',
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+------------------------------------------------------------------
+-- Dumping data for table `membershiptiers`
+-------------------------------------------
+
+INSERT INTO `membershiptiers` (`TierID`, `TierName`, `MinPoints`, `MaxPoints`, `Multiplier`, `Benefits`, `Color`, `Icon`, `CreatedAt`) VALUES
+(1, 'Bronze', 0, 499, 1.00, '{\"points_multiplier\": 1.0}', '#CD7F32', 'fa-bronze', '2026-03-23 08:23:45'),
+(2, 'Silver', 500, 1999, 1.20, '{\"points_multiplier\": 1.2, \"free_drinks\": 1}', '#C0C0C0', 'fa-silver', '2026-03-23 08:23:45'),
+(3, 'Gold', 2000, 4999, 1.50, '{\"points_multiplier\": 1.5, \"free_drinks\": 2, \"priority_booking\": true}', '#FFD700', 'fa-gold', '2026-03-23 08:23:45'),
+(4, 'Platinum', 5000, NULL, 2.00, '{\"points_multiplier\": 2.0, \"free_drinks\": 4, \"priority_booking\": true, \"free_events\": true}', '#E5E4E2', 'fa-crown', '2026-03-23 08:23:45');
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `streakbonuses`
+---------------------------------------
+
+CREATE TABLE `streakbonuses` (
+  `StreakID` int(11) NOT NULL,
+  `StreakType` enum('Daily','Weekly') NOT NULL,
+  `StreakDays` int(11) NOT NULL,
+  `Multiplier` decimal(3,2) DEFAULT 1.00,
+  `BonusPoints` int(11) DEFAULT 0,
+  `Description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+------------------------------------------------------------------
+-- Dumping data for table `streakbonuses`
+----------------------------------------------
+
+INSERT INTO `streakbonuses` (`StreakID`, `StreakType`, `StreakDays`, `Multiplier`, `BonusPoints`, `Description`) VALUES
+(1, 'Daily', 7, 1.50, 50, '7-day daily streak bonus'),
+(2, 'Daily', 30, 2.00, 200, '30-day daily streak bonus'),
+(3, 'Weekly', 4, 1.20, 100, '4-week weekly streak bonus');
+------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE `rewards` (
+  `RewardID` int(11) NOT NULL,
+  `Name` varchar(100) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `PointsRequired` int(11) NOT NULL,
+  `Availability` enum('Available','Limited','Out of Stock') DEFAULT 'Available',
+  `Quantity` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------
+-- Dumping data for table `rewards`
+------------------------------------
+
+INSERT INTO `rewards` (`RewardID`, `Name`, `Description`, `PointsRequired`, `Availability`, `Quantity`, `CreatedAt`) VALUES
+(1, 'Free Café Coffee', 'Redeem for one free coffee at campus café', 50, 'Available', 100, '2026-03-23 08:23:45'),
+(2, 'Transport Pass', 'One-day unlimited transport pass', 100, 'Available', 50, '2026-03-23 08:23:45'),
+(3, 'Gym Day Pass', 'One-day gym access', 75, 'Available', 30, '2026-03-23 08:23:45'),
+(4, 'University Merch', 'University t-shirt', 200, 'Limited', 10, '2026-03-23 08:23:45');
+------------------------------------------------------------------------------------------
+Table structure for table `rewardsredemption`
+-------------------------------------------
+
+CREATE TABLE `rewardsredemption` (
+  `RedemptionID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `RewardID` int(11) NOT NULL,
+  `PointsSpent` int(11) NOT NULL,
+  `Status` enum('Pending','Approved','Completed','Cancelled') DEFAULT 'Pending',
+  `RedeemedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `CompletedAt` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
