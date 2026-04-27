@@ -1,1 +1,86 @@
+Table structure for table `campus_locations`
+----------------------------------------------
+
+CREATE TABLE `campus_locations` (
+  `location_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `category` enum('library','gym','cafeteria','lecture_hall','student_union','sports_complex','parking','other') NOT NULL,
+  `latitude` decimal(10,8) NOT NULL,
+  `longitude` decimal(11,8) NOT NULL,
+  `address` varchar(500) DEFAULT NULL,
+  `has_360_view` tinyint(1) DEFAULT 0,
+  `has_accessibility` tinyint(1) DEFAULT 0,
+  `has_elevator` tinyint(1) DEFAULT 0,
+  `has_ramp` tinyint(1) DEFAULT 0,
+  `opening_hours` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`opening_hours`)),
+  `contact_info` varchar(255) DEFAULT NULL,
+  `image_url` varchar(500) DEFAULT NULL,
+  `icon` varchar(50) DEFAULT 'fa-building',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+---------------------------------------------------------------------
+-- Dumping data for table `campus_locations`
+----------------------------------------------
+
+INSERT INTO `campus_locations` (`location_id`, `name`, `description`, `category`, `latitude`, `longitude`, `address`, `has_360_view`, `has_accessibility`, `has_elevator`, `has_ramp`, `opening_hours`, `contact_info`, `image_url`, `icon`, `created_at`) VALUES
+(28, 'Main Academic Building', 'The main academic block with lecture halls, faculty offices, and administrative departments.', 'lecture_hall', 6.90575800, 79.96825300, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-building', '2026-03-16 11:16:12'),
+(29, 'Library & Resource Center', 'Central library with extensive collection of maritime, engineering, and business resources.', 'library', 6.90580000, 79.96830000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-book', '2026-03-16 11:16:12'),
+(30, 'Maritime Simulation Center', 'State-of-the-art maritime navigation simulators and bridge simulation labs.', 'lecture_hall', 6.90570000, 79.96820000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-ship', '2026-03-16 11:16:12'),
+(31, 'Engineering Complex', 'Engineering labs, workshops, and lecture halls for engineering programs.', 'lecture_hall', 6.90585000, 79.96835000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-gears', '2026-03-16 11:16:12'),
+(32, 'Student Union Building', 'Hub for student activities, clubs, cafeteria, and social spaces.', 'student_union', 6.90568000, 79.96815000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-users', '2026-03-16 11:16:12'),
+(33, 'Campus Cafeteria', 'Main dining area serving meals, snacks, and beverages.', 'cafeteria', 6.90572000, 79.96818000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-utensils', '2026-03-16 11:16:12'),
+(34, 'Sports Complex', 'Indoor sports facilities, gymnasium, and fitness center.', 'sports_complex', 6.90590000, 79.96840000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-dumbbell', '2026-03-16 11:16:12'),
+(35, 'IT Center', 'Computer labs, IT services, and programming labs.', 'lecture_hall', 6.90578000, 79.96822000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-laptop', '2026-03-16 11:16:12'),
+(36, 'Parking Area', 'Student and staff parking facilities.', 'parking', 6.90565000, 79.96810000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-parking', '2026-03-16 11:16:12'),
+(37, 'Auditorium', 'Main auditorium for events, seminars, and ceremonies.', 'lecture_hall', 6.90582000, 79.96828000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-video', '2026-03-16 11:16:12'),
+(38, 'Hostel Block A', 'Student accommodation facilities.', 'other', 6.90560000, 79.96805000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-bed', '2026-03-16 11:16:12'),
+(39, 'Hostel Block B', 'Student accommodation facilities.', 'other', 6.90562000, 79.96807000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-bed', '2026-03-16 11:16:12'),
+(40, 'Marine Engineering Lab', 'Specialized labs for marine engineering practicals.', 'lecture_hall', 6.90574000, 79.96819000, 'CINEC Campus, Malabe', 1, 0, 0, 0, NULL, NULL, NULL, 'fa-oil-well', '2026-03-16 11:16:12'),
+(41, 'Navigation Lab', 'Navigation equipment and chart room.', 'lecture_hall', 6.90576000, 79.96821000, 'CINEC Campus, Malabe', 1, 0, 0, 0, NULL, NULL, NULL, 'fa-compass', '2026-03-16 11:16:12'),
+(42, 'Campus Medical Center', 'First aid and basic medical services for students.', 'other', 6.90583000, 79.96829000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-hospital', '2026-03-16 11:16:12'),
+(43, 'Career Guidance Unit', 'Career counseling and placement services.', 'other', 6.90584000, 79.96831000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-briefcase', '2026-03-16 11:16:12'),
+(44, 'Examination Hall', 'Central examination center.', 'lecture_hall', 6.90581000, 79.96826000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-pen', '2026-03-16 11:16:12'),
+(45, 'Campus Security', 'Security office and lost & found.', 'other', 6.90567000, 79.96812000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-shield', '2026-03-16 11:16:12'),
+(46, 'Wi-Fi Hotspot Area', 'Open area with high-speed Wi-Fi access.', 'other', 6.90588000, 79.96838000, 'CINEC Campus, Malabe', 0, 1, 0, 0, NULL, NULL, NULL, 'fa-wifi', '2026-03-16 11:16:12'),
+(47, 'Study Plaza', 'Outdoor study area with seating.', 'other', 6.90586000, 79.96836000, 'CINEC Campus, Malabe', 1, 1, 0, 0, NULL, NULL, NULL, 'fa-tree', '2026-03-16 11:16:12');
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Table structure for table `location_checkins`
+-----------------------------------------------
+
+CREATE TABLE `location_checkins` (
+  `checkin_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `location_id` int(11) NOT NULL,
+  `checkin_type` enum('gps','qr') NOT NULL,
+  `points_earned` int(11) DEFAULT 10,
+  `checkin_time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `checkin_date` date GENERATED ALWAYS AS (cast(`checkin_time` as date)) VIRTUAL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-----------------------------------------------------------------------------------
+-- Dumping data for table `location_checkins`
+----------------------------------------------------------
+
+INSERT INTO `location_checkins` (`checkin_id`, `user_id`, `location_id`, `checkin_type`, `points_earned`, `checkin_time`) VALUES
+(3, 1, 32, 'gps', 10, '2026-03-18 03:03:15');
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Table structure for table `panorama_images`
+----------------------------------------
+
+CREATE TABLE `panorama_images` (
+  `panorama_id` int(11) NOT NULL,
+  `location_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `image_path` varchar(500) NOT NULL,
+  `thumbnail_path` varchar(500) DEFAULT NULL,
+  `is_primary` tinyint(1) DEFAULT 0,
+  `heading_offset` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
