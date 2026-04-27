@@ -1,1 +1,70 @@
+Table structure for table `campus_transport`
+------------------------------------------------
 
+CREATE TABLE `campus_transport` (
+  `route_id` int(11) NOT NULL,
+  `from_campus` varchar(100) NOT NULL,
+  `to_campus` varchar(100) NOT NULL,
+  `next_departure` varchar(50) DEFAULT NULL,
+  `status` varchar(50) DEFAULT 'On Time',
+  `frequency` varchar(100) DEFAULT NULL,
+  `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-----------------------------------------------------------------------------------------------
+-- Dumping data for table `campus_transport`
+------------------------------------------------
+
+INSERT INTO `campus_transport` (`route_id`, `from_campus`, `to_campus`, `next_departure`, `status`, `frequency`, `last_updated`) VALUES
+(1, 'Negombo', 'CINEC', '6:15 AM', 'On Time', 'Morning Pickup', '2026-03-23 08:23:45'),
+(2, 'Gampaha', 'CINEC', '6:20 AM', 'On Time', 'Morning Pickup', '2026-03-23 08:23:45'),
+(3, 'Gampaha (via Oruthota)', 'CINEC', '6:25 AM', 'On Time', 'Morning Pickup', '2026-03-23 08:23:45'),
+(4, 'Hendala', 'CINEC', '6:30 AM', 'On Time', 'Morning Pickup', '2026-03-23 08:23:45'),
+(5, 'Moratuwa', 'CINEC', '6:20 AM', 'On Time', 'Morning Pickup', '2026-03-23 08:23:45'),
+(6, 'CINEC', 'All Locations', '5:05 PM', 'On Time', 'Evening Departure', '2026-03-23 08:23:45');
+------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `bus_routes`
+----------------------------------------
+
+CREATE TABLE `bus_routes` (
+  `id` int(11) NOT NULL,
+  `route_id` varchar(50) DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `updated_time` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--------------------------------------------------------------------------
+-- Dumping data for table `bus_routes`
+-----------------------------------------
+
+INSERT INTO `bus_routes` (`id`, `route_id`, `location`, `updated_time`, `created_at`) VALUES
+(1, 'cinec', 'colombo', '11:19 PM', '2026-03-23 08:23:45'),
+(2, 'gampaha1', 'Gampaha', '10:15 AM', '2026-03-23 08:23:45'),
+(3, 'gampaha2', 'Kadawatha', '10:45 AM', '2026-03-23 08:23:45'),
+(4, 'hendala', 'Hendala', '10:20 AM', '2026-03-23 08:23:45'),
+(5, 'moratuwa', 'Moratuwa', '10:10 AM', '2026-03-23 08:23:45'),
+(6, 'negombo', 'Negombo', '10:00 AM', '2026-03-23 08:23:45');
+---------------------------------------------------------------------------------------------
+Table structure for table `transportpasses`
+-------------------------------------------
+
+CREATE TABLE `transportpasses` (
+  `PassID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `RouteName` varchar(100) NOT NULL,
+  `ValidUntil` date NOT NULL,
+  `Status` enum('Active','Expired','Cancelled') DEFAULT 'Active',
+  `IssuedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+---------------------------------------------------------------------------------------------------
+-- Dumping data for table `transportpasses`
+----------------------------------------------
+
+INSERT INTO `transportpasses` (`PassID`, `UserID`, `RouteName`, `ValidUntil`, `Status`, `IssuedAt`) VALUES
+(1, 2, 'Malabe - Colombo', '2026-04-22', 'Active', '2026-03-23 08:23:45'),
+(2, 3, 'Malabe - Kandy', '2026-04-07', 'Active', '2026-03-23 08:23:45'),
+(3, 5, 'Hendala', '2026-05-26', 'Active', '2026-04-26 07:09:50'),
+(4, 6, 'Malabe', '2026-05-26', 'Active', '2026-04-26 16:57:09'),
+(5, 5, 'Malabe', '2026-05-27', 'Active', '2026-04-27 08:23:14');
