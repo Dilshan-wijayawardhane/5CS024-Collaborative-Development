@@ -1,1 +1,105 @@
+CREATE TABLE `facilities` (
+  `FacilityID` int(11) NOT NULL,
+  `Name` varchar(100) NOT NULL,
+  `Type` enum('Gym','Library','Café','Transport','GameField','Pool') NOT NULL,
+  `Status` enum('Open','Closed','Maintenance') DEFAULT 'Open',
+  `Capacity` int(11) DEFAULT NULL,
+  `ExtraInfo` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`ExtraInfo`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--------------------------------------------------------------------------------------------------------------
+-- Dumping data for table `facilities`
+---------------------------------------------------------------------------------------------------------------
+
+INSERT INTO `facilities` (`FacilityID`, `Name`, `Type`, `Status`, `Capacity`, `ExtraInfo`) VALUES
+(1, 'Main Library', 'Library', 'Open', 500, '{\"floors\": 3, \"wifi\": true, \"air_conditioned\": true}'),
+(2, 'University Gym', 'Gym', 'Open', 100, '{\"equipment\": [\"treadmill\", \"weights\"], \"lockers\": true}'),
+(3, 'Campus Café', 'Café', 'Open', 150, '{\"menu_available\": true, \"vegetarian_options\": true}'),
+(4, 'Shuttle Service', 'Transport', 'Open', 50, '{\"routes\": [\"Malabe\", \"Kaduwela\"], \"frequency\": \"30min\"}'),
+(5, 'Sports Field', 'GameField', 'Open', 200, '{\"games\": [\"football\", \"cricket\"], \"lights\": true}'),
+(6, 'Olympic Swimming Pool', 'Pool', 'Open', 80, '{\"depth\": \"1.2m-2.5m\", \"lanes\": 8, \"waterTemp\": 27, \"lifeguards\": 4, \"medicalRequired\": true, \"amenities\": [\"Changing Rooms\", \"Showers\", \"Lockers\", \"Pool Equipment\", \"First Aid Station\"]}');
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `checkins`
+-----------------------------------
+
+CREATE TABLE `checkins` (
+  `CheckInID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `FacilityID` int(11) NOT NULL,
+  `Timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  `PointsAwarded` int(11) DEFAULT 10
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------
+-- Dumping data for table `checkins`
+-------------------------------------
+
+INSERT INTO `checkins` (`CheckInID`, `UserID`, `FacilityID`, `Timestamp`, `PointsAwarded`) VALUES
+(1, 2, 1, '2026-03-23 08:23:45', 10),
+(2, 2, 3, '2026-03-23 08:23:45', 10),
+(3, 3, 2, '2026-03-23 08:23:45', 10),
+(4, 3, 1, '2026-03-23 08:23:45', 10),
+(5, 5, 2, '2026-03-24 06:01:43', 10),
+(6, 5, 1, '2026-03-24 06:02:15', 10),
+(7, 6, 1, '2026-03-24 09:12:47', 10),
+(8, 5, 2, '2026-03-27 17:12:29', 10),
+(9, 5, 1, '2026-03-27 17:12:49', 10),
+(10, 5, 3, '2026-03-27 17:13:11', 10),
+(11, 5, 4, '2026-03-27 17:13:40', 10),
+(12, 5, 1, '2026-04-21 05:26:45', 10),
+(13, 5, 2, '2026-04-21 05:28:26', 10),
+(14, 5, 2, '2026-04-23 18:56:51', 10),
+(15, 5, 1, '2026-04-24 07:38:24', 10),
+(16, 5, 3, '2026-04-24 08:56:06', 10),
+(17, 5, 4, '2026-04-24 15:32:02', 10),
+(18, 5, 5, '2026-04-24 16:12:44', 10),
+(19, 5, 6, '2026-04-24 17:53:52', 10),
+(20, 5, 2, '2026-04-24 18:37:15', 10),
+(21, 5, 1, '2026-04-24 18:38:36', 10),
+(22, 5, 3, '2026-04-24 19:07:46', 10),
+(23, 5, 4, '2026-04-24 19:07:59', 10),
+(24, 5, 5, '2026-04-24 19:08:12', 10),
+(25, 5, 1, '2026-04-26 07:08:17', 10),
+(26, 5, 3, '2026-04-26 07:09:30', 10),
+(27, 5, 4, '2026-04-26 07:09:42', 10),
+(28, 5, 6, '2026-04-26 07:17:44', 10),
+(29, 5, 5, '2026-04-26 07:18:34', 10),
+(30, 5, 2, '2026-04-26 08:42:06', 10),
+(31, 6, 2, '2026-04-26 13:29:03', 10),
+(32, 6, 1, '2026-04-26 13:29:42', 10),
+(33, 6, 3, '2026-04-26 13:30:13', 10),
+(34, 6, 6, '2026-04-26 13:30:23', 10),
+(35, 6, 4, '2026-04-26 13:32:43', 10),
+(36, 5, 2, '2026-04-26 18:35:02', 10),
+(37, 5, 4, '2026-04-26 18:35:16', 10),
+(38, 7, 1, '2026-04-27 06:19:43', 10),
+(39, 7, 4, '2026-04-27 06:19:56', 10),
+(40, 5, 3, '2026-04-27 07:03:17', 10),
+(41, 6, 5, '2026-04-27 07:25:17', 10),
+(42, 6, 4, '2026-04-27 07:39:36', 10),
+(43, 8, 2, '2026-04-27 08:00:10', 10),
+(44, 8, 1, '2026-04-27 08:00:47', 10),
+(45, 5, 1, '2026-04-27 08:19:49', 10),
+(46, 5, 5, '2026-04-27 08:20:31', 10),
+(47, 5, 6, '2026-04-27 08:20:50', 10);
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE `facilityusage` (
+  `FacilityID` int(11) DEFAULT NULL,
+  `Name` varchar(100) DEFAULT NULL,
+  `Type` enum('Gym','Library','Café','Transport','GameField','Pool') DEFAULT NULL,
+  `TotalCheckIns` bigint(21) DEFAULT NULL,
+  `UniqueUsers` bigint(21) DEFAULT NULL,
+  `LastCheckIn` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+---------------------------------------------------------------------------------------------------
+ Table structure for table `activemembers`
+----------------------------------------
+
+CREATE TABLE `activemembers` (
+  `UserID` int(11) DEFAULT NULL,
+  `StudentID` varchar(20) DEFAULT NULL,
+  `Name` varchar(100) DEFAULT NULL,
+  `Email` varchar(100) DEFAULT NULL,
+  `PointsBalance` int(11) DEFAULT NULL,
+  `MembershipStatus` enum('Active','Inactive','Expired') DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
