@@ -1,1 +1,57 @@
+Table structure for table `lifeguards`
+-------------------------------------
 
+CREATE TABLE `lifeguards` (
+  `lifeguard_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `certification` varchar(100) DEFAULT NULL,
+  `experience` int(11) DEFAULT 0,
+  `status` enum('active','inactive','on_leave') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------------------------------------
+-- Dumping data for table `lifeguards`
+-------------------------------------------
+
+INSERT INTO `lifeguards` (`lifeguard_id`, `name`, `email`, `phone`, `certification`, `experience`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Kumara Sangakra', 'Kumara.doe@example.com', '0771234567', 'Lifeguard Certificate', 5, 'active', '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(2, 'John kells', 'john.smith@example.com', '0772345678', 'Water Safety Instructor', 3, 'active', '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(3, 'Mike Johnson', 'mike.johnson@example.com', '0773456789', 'CPR Instructor', 7, 'active', '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(4, 'Sanath jayasuriya ', 'sanat.wilson@example.com', '0774567890', 'First Aid', 2, 'active', '2026-03-23 08:23:45', '2026-03-23 08:23:45'),
+(5, 'Tom Brown', 'tom.brown@example.com', '0775678901', 'Pool Operator', 4, 'on_leave', '2026-03-23 08:23:45', '2026-03-23 08:23:45');
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+-- Table structure for table `lifeguard_schedule`
+--------------------------------------------------
+
+CREATE TABLE `lifeguard_schedule` (
+  `schedule_id` int(11) NOT NULL,
+  `lifeguard_id` int(11) NOT NULL,
+  `schedule_date` date NOT NULL,
+  `time_slot` varchar(20) NOT NULL,
+  `status` enum('scheduled','completed','cancelled') DEFAULT 'scheduled',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------
+Table structure for table `pool_bookings`
+------------------------------------------
+
+CREATE TABLE `pool_bookings` (
+  `booking_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `facility_id` int(11) NOT NULL,
+  `lane_number` int(11) NOT NULL,
+  `booking_date` date NOT NULL,
+  `time_slot` varchar(50) NOT NULL,
+  `status` enum('pending','confirmed','cancelled','completed') DEFAULT 'confirmed',
+  `medical_report_id` int(11) DEFAULT NULL,
+  `points_earned` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
