@@ -1,1 +1,175 @@
+ Table structure for table `achievements`
+----------------------------------------------
+
+CREATE TABLE `achievements` (
+  `AchievementID` int(11) NOT NULL,
+  `Name` varchar(100) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `Category` enum('Login','Facility','Event','Game','Social','Special') NOT NULL,
+  `Icon` varchar(50) DEFAULT 'fa-trophy',
+  `PointsReward` int(11) DEFAULT 0,
+  `Requirements` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'JSON defining achievement requirements' CHECK (json_valid(`Requirements`)),
+  `IsHidden` tinyint(1) DEFAULT 0,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Dumping data for table `achievements`
+------------------------------------------
+
+INSERT INTO `achievements` (`AchievementID`, `Name`, `Description`, `Category`, `Icon`, `PointsReward`, `Requirements`, `IsHidden`, `CreatedAt`) VALUES
+(1, 'Early Bird', 'Login 7 days in a row', 'Login', 'fa-sun', 100, '{\"streak_days\": 7}', 0, '2026-03-13 03:05:32'),
+(2, 'Social Butterfly', 'RSVP to 10 events', 'Event', 'fa-calendar-check', 150, '{\"events_rsvped\": 10}', 0, '2026-03-13 03:05:32'),
+(3, 'Gym Rat', 'Check in to gym 20 times', 'Facility', 'fa-dumbbell', 200, '{\"gym_checkins\": 20}', 0, '2026-03-13 03:05:32'),
+(4, 'Bookworm', 'Borrow 15 books', 'Facility', 'fa-book', 150, '{\"books_borrowed\": 15}', 0, '2026-03-13 03:05:32'),
+(5, 'Game Master', 'Win 5 games', 'Game', 'fa-gamepad', 250, '{\"games_won\": 5}', 0, '2026-03-13 03:05:32'),
+(6, 'Campus Explorer', 'Visit all facilities', 'Facility', 'fa-map-marked-alt', 300, '{\"facilities_visited\": \"all\"}', 0, '2026-03-13 03:05:32'),
+(7, 'Club Hopper', 'Join 3 different clubs', 'Social', 'fa-users', 100, '{\"clubs_joined\": 3}', 0, '2026-03-13 03:05:32'),
+(8, 'Transport Guru', 'Use transport feature 50 times', 'Special', 'fa-bus', 150, '{\"transport_uses\": 50}', 0, '2026-03-13 03:05:32'),
+(9, 'Challenge Champion', 'Complete 10 daily challenges', 'Game', 'fa-tasks', 200, '{\"challenges_completed\": 10}', 0, '2026-03-13 03:05:32');
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Table structure for table `usergroups`
+--------------------------------------
+
+CREATE TABLE `usergroups` (
+  `GroupID` int(11) NOT NULL,
+  `GroupName` varchar(100) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `CreatedBy` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+------------------------------------------------------------------------------------
+-- Dumping data for table `usergroups`
+------------------------------------------
+
+INSERT INTO `usergroups` (`GroupID`, `GroupName`, `Description`, `CreatedBy`, `CreatedAt`) VALUES
+(1, 'All Students', 'All registered students', NULL, '2026-03-23 08:23:45'),
+(2, 'Active Users', 'Users who logged in within last 30 days', NULL, '2026-03-23 08:23:45'),
+(3, 'Gym Members', 'Users who have checked into gym', NULL, '2026-03-23 08:23:45'),
+(4, 'Library Users', 'Users who have borrowed books', NULL, '2026-03-23 08:23:45'),
+(5, 'Transport Users', 'Users who use campus transport', NULL, '2026-03-23 08:23:45');
+----------------------------------------------------------------------------------------------------------
+
+ Table structure for table `usergroupmembers`
+----------------------------------------------
+
+CREATE TABLE `usergroupmembers` (
+  `GroupID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `AddedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+----------------------------------------------------------------------------------------------------
+Table structure for table `notifications`
+------------------------------------------
+
+CREATE TABLE `notifications` (
+  `notification_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `type` enum('gym','event','transport','general','reminder') DEFAULT 'general',
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-----------------------------------------------------------------------------------------------------------
+-- Dumping data for table `notifications`
+---------------------------------------------
+
+INSERT INTO `notifications` (`notification_id`, `user_id`, `title`, `message`, `type`, `is_read`, `created_at`) VALUES
+(1, 2, 'Hackathon Reminder', 'Reminder: Hackathon registration closes tomorrow', 'event', 0, '2026-03-23 08:23:45'),
+(2, 2, 'Transport Pass Expiry', 'Your transport pass expires in 7 days', 'transport', 0, '2026-03-23 08:23:45'),
+(3, 3, 'Club Meeting Today', 'Club meeting today at 3 PM', 'event', 0, '2026-03-23 08:23:45'),
+(5, 2, 'Points Earned', 'You earned 20 points from Memory Game!', 'general', 0, '2026-03-23 08:23:45'),
+(6, 5, 'Welcome to Synergy Hub!', 'Thank you for joining. Explore our facilities and earn points!', 'general', 1, '2026-04-27 06:47:05'),
+(7, 5, 'Gym Special Offer', 'Get 20% off on gym membership this week only!', 'gym', 1, '2026-04-26 06:47:05'),
+(8, 5, 'Transport Schedule Updated', 'New bus schedule has been published. Check it out!', 'transport', 1, '2026-04-25 06:47:05'),
+(9, 5, 'Coding Club Meeting', 'Coding Club meeting tomorrow at 3 PM in Lab 101', 'event', 1, '2026-04-24 06:47:05'),
+(10, 6, 'Welcome to Synergy Hub!', 'Thank you for joining. Explore our facilities and earn points!', 'general', 1, '2026-04-27 06:47:05'),
+(11, 6, 'Gym Status', 'Gym is open from 6 AM to 10 PM today', 'gym', 1, '2026-04-26 06:47:05');
+-----------------------------------------------------------------------------------------------------------------------------------
+ Table structure for table `notificationlog`
+-------------------------------------------
+
+CREATE TABLE `notificationlog` (
+  `LogID` int(11) NOT NULL,
+  `NotificationID` int(11) DEFAULT NULL,
+  `Title` varchar(255) NOT NULL,
+  `Message` text NOT NULL,
+  `Type` enum('gym','event','transport','general','emergency') NOT NULL,
+  `TargetType` enum('all','user_group','location','tier') NOT NULL,
+  `TargetValue` varchar(255) DEFAULT NULL,
+  `ScheduledFor` datetime DEFAULT NULL,
+  `SentAt` datetime DEFAULT NULL,
+  `Status` enum('scheduled','sending','sent','failed','cancelled') DEFAULT 'scheduled',
+  `SentCount` int(11) DEFAULT 0,
+  `FailedCount` int(11) DEFAULT 0,
+  `OpenedCount` int(11) DEFAULT 0,
+  `CreatedBy` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `notificationopens`
+---------------------------------------------
+
+CREATE TABLE `notificationopens` (
+  `OpenID` int(11) NOT NULL,
+  `NotificationID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `NotificationLogID` int(11) DEFAULT NULL,
+  `OpenedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-------------------------------------------------------------------------------------------------------------
+Table structure for table `notificationtemplates`
+--------------------------------------------------
+
+CREATE TABLE `notificationtemplates` (
+  `TemplateID` int(11) NOT NULL,
+  `Name` varchar(100) NOT NULL,
+  `Title` varchar(255) NOT NULL,
+  `Message` text NOT NULL,
+  `Type` enum('gym','event','transport','general','emergency') DEFAULT 'general',
+  `CreatedBy` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `UpdatedAt` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+------------------------------------------------------------------------------------------------------------------
+
+Table structure for table `system_settings`
+------------------------------------------
+
+CREATE TABLE `system_settings` (
+  `setting_id` int(11) NOT NULL,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-----------------------------------------------------------------------------------------------------------------------
+-- Dumping data for table `system_settings`
+----------------------------------------------
+
+INSERT INTO `system_settings` (`setting_id`, `setting_key`, `setting_value`, `updated_at`) VALUES
+(1, 'theme', 'dark', '2026-04-22 12:36:26'),
+(2, 'primary_color', '#667eea', '2026-04-22 12:36:21'),
+(3, 'sidebar_color', '#1e293b', '2026-04-22 12:36:21'),
+(4, 'logo_path', '', '2026-04-22 12:36:21');
+------------------------------------------------------------------------------------------------------------------------
+
+ Table structure for table `importhistory`
+-------------------------------------------
+
+CREATE TABLE `importhistory` (
+  `ImportID` int(11) NOT NULL,
+  `FileName` varchar(255) NOT NULL,
+  `RecordsImported` int(11) DEFAULT 0,
+  `Status` varchar(50) DEFAULT 'Success',
+  `ImportedBy` int(11) DEFAULT NULL,
+  `ImportedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
 
