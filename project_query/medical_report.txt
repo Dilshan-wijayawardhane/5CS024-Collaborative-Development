@@ -1,1 +1,16 @@
+Table structure for table `medical_reports`
+----------------------------------------------------
 
+CREATE TABLE `medical_reports` (
+  `report_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `file_name` varchar(255) NOT NULL,
+  `file_path` varchar(500) NOT NULL,
+  `file_size` int(11) DEFAULT NULL,
+  `upload_date` date DEFAULT curdate(),
+  `expiry_date` date DEFAULT NULL,
+  `is_valid` tinyint(1) DEFAULT 1,
+  `emergency_contact_name` varchar(255) DEFAULT NULL,
+  `emergency_contact_phone` varchar(50) DEFAULT NULL,
+  `medical_conditions` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
