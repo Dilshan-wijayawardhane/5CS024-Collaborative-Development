@@ -1,1 +1,179 @@
+Table structure for table `cafe_menu`
+---------------------------------------
 
+CREATE TABLE `cafe_menu` (
+  `item_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `category` enum('Food','Beverage','Dessert') NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `points_price` int(11) DEFAULT 0,
+  `image_icon` varchar(50) DEFAULT 'fa-utensils',
+  `available` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+----------------------------------------------------------------------
+-- Dumping data for table `cafe_menu`
+-----------------------------------------
+
+INSERT INTO `cafe_menu` (`item_id`, `name`, `category`, `price`, `points_price`, `image_icon`, `available`, `created_at`) VALUES
+(1, 'Chicken Sandwich', 'Food', 450.00, 45, 'fa-burger', 1, '2026-03-23 08:23:45'),
+(2, 'Veggie Wrap', 'Food', 350.00, 35, 'fa-leaf', 1, '2026-03-23 08:23:45'),
+(3, 'Chicken Rice', 'Food', 550.00, 55, 'fa-bowl-food', 1, '2026-03-23 08:23:45'),
+(4, 'Pasta', 'Food', 480.00, 48, 'fa-utensils', 1, '2026-03-23 08:23:45'),
+(5, 'Coffee', 'Beverage', 250.00, 25, 'fa-mug-hot', 1, '2026-03-23 08:23:45'),
+(6, 'Tea', 'Beverage', 150.00, 15, 'fa-mug-saucer', 1, '2026-03-23 08:23:45'),
+(7, 'Soft Drink', 'Beverage', 200.00, 20, 'fa-bottle-water', 1, '2026-03-23 08:23:45'),
+(8, 'Fresh Juice', 'Beverage', 300.00, 30, 'fa-glass-water', 1, '2026-03-23 08:23:45'),
+(9, 'Chocolate Cake', 'Dessert', 350.00, 35, 'fa-cake-candles', 1, '2026-03-23 08:23:45'),
+(10, 'Ice Cream', 'Dessert', 250.00, 25, 'fa-ice-cream', 1, '2026-03-23 08:23:45'),
+(11, 'Fruit Salad', 'Dessert', 280.00, 28, 'fa-bowl-food', 1, '2026-03-23 08:23:45');
+-------------------------------------------------------------------------------------------------------------------------------
+
+Table structure for table `ordernotes`
+---------------------------------------
+
+CREATE TABLE `ordernotes` (
+  `NoteID` int(11) NOT NULL,
+  `OrderID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `Note` text NOT NULL,
+  `CreatedAt` datetime DEFAULT current_timestamp(),
+  `IsAdminNote` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------------------------------------------------
+
+
+-- Table structure for table `orders`
+--------------------------------------
+
+CREATE TABLE `orders` (
+  `OrderID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `ItemName` varchar(100) NOT NULL,
+  `Category` enum('Food','Beverage','Dessert') NOT NULL,
+  `Price` decimal(10,2) NOT NULL,
+  `Quantity` int(11) DEFAULT 1,
+  `Timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  `Status` enum('Pending','Preparing','Ready','Completed','Cancelled') DEFAULT 'Pending'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--------------------------------------------------------------------------------------
+-- Dumping data for table `orders`
+---------------------------------
+
+INSERT INTO `orders` (`OrderID`, `UserID`, `ItemName`, `Category`, `Price`, `Quantity`, `Timestamp`, `Status`) VALUES
+(1, 2, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-03-23 08:23:45', 'Completed'),
+(2, 2, 'Coffee', 'Beverage', 250.00, 2, '2026-03-23 08:23:45', 'Preparing'),
+(3, 3, 'Chocolate Cake', 'Dessert', 350.00, 1, '2026-03-23 08:23:45', 'Pending'),
+(4, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:18:03', 'Pending'),
+(5, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:18:03', 'Pending'),
+(6, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:18:15', 'Pending'),
+(7, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:18:15', 'Pending'),
+(8, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:20:44', 'Pending'),
+(9, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:20:44', 'Pending'),
+(12, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:21:24', 'Pending'),
+(13, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:21:24', 'Pending'),
+(14, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:40:31', 'Pending'),
+(15, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:40:31', 'Pending'),
+(16, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:40:34', 'Pending'),
+(17, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:40:34', 'Pending'),
+(18, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:40:59', 'Pending'),
+(19, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:40:59', 'Pending'),
+(20, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:42:12', 'Pending'),
+(21, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:42:12', 'Pending'),
+(22, 5, 'Chicken Sandwich', 'Food', 450.00, 1, '2026-04-24 15:46:27', 'Pending'),
+(23, 5, 'Pasta', 'Food', 480.00, 1, '2026-04-24 15:52:06', 'Pending'),
+(24, 5, 'Pasta', 'Food', 480.00, 1, '2026-04-24 15:52:27', 'Pending');
+
+-------------------------------------------------------------------------------------------------
+
+
+-- Table structure for table `orderstatuslog`
+------------------------------------------------
+
+CREATE TABLE `orderstatuslog` (
+  `LogID` int(11) NOT NULL,
+  `OrderID` int(11) NOT NULL,
+  `OldStatus` enum('Pending','Preparing','Ready','Completed','Cancelled') DEFAULT NULL,
+  `NewStatus` enum('Pending','Preparing','Ready','Completed','Cancelled') NOT NULL,
+  `ChangedBy` int(11) NOT NULL,
+  `ChangedAt` datetime DEFAULT current_timestamp(),
+  `Notes` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+----------------------------------------------------------------------
+-- Dumping data for table `orderstatuslog`
+-----------------------------------------------
+
+INSERT INTO `orderstatuslog` (`LogID`, `OrderID`, `OldStatus`, `NewStatus`, `ChangedBy`, `ChangedAt`, `Notes`) VALUES
+(3, 16, 'Pending', 'Preparing', 12, '2026-04-20 22:03:16', 'Status changed by admin'),
+(4, 15, 'Pending', 'Preparing', 12, '2026-04-20 22:04:34', 'Status changed by admin'),
+(5, 15, 'Preparing', 'Ready', 12, '2026-04-20 22:04:50', 'Status changed by admin'),
+(6, 16, 'Preparing', 'Ready', 12, '2026-04-20 22:05:01', 'Status changed by admin'),
+(7, 11, 'Pending', 'Preparing', 12, '2026-04-20 22:05:27', 'Status changed by admin'),
+(8, 11, 'Preparing', 'Ready', 12, '2026-04-20 22:05:31', 'Status changed by admin'),
+(9, 14, 'Pending', 'Preparing', 12, '2026-04-20 22:05:42', 'Status changed by admin'),
+(10, 14, 'Preparing', 'Ready', 12, '2026-04-20 22:05:44', 'Status changed by admin'),
+(11, 11, 'Ready', 'Completed', 12, '2026-04-20 22:06:00', 'Status changed by admin'),
+(12, 16, 'Ready', 'Completed', 12, '2026-04-20 22:06:21', 'Status changed by admin'),
+(13, 17, 'Pending', 'Completed', 12, '2026-04-20 22:26:09', NULL),
+(14, 18, 'Pending', 'Preparing', 12, '2026-04-21 12:15:52', 'Status changed by admin'),
+(15, 18, 'Preparing', 'Ready', 12, '2026-04-21 12:16:03', 'Status changed by admin'),
+(16, 14, 'Ready', 'Completed', 12, '2026-04-21 12:16:11', 'Status changed by admin'),
+(17, 15, 'Ready', 'Completed', 12, '2026-04-21 12:16:26', 'Status changed by admin'),
+(18, 18, 'Ready', 'Completed', 12, '2026-04-21 12:16:29', 'Status changed by admin');
+
+--------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `table_reservations`
+------------------------------------------------
+
+CREATE TABLE `table_reservations` (
+  `reservation_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `facility_id` int(11) NOT NULL,
+  `reservation_date` date NOT NULL,
+  `reservation_time` time NOT NULL,
+  `guest_count` int(11) DEFAULT 2,
+  `special_requests` text DEFAULT NULL,
+  `status` enum('pending','confirmed','cancelled','completed') DEFAULT 'pending',
+  `points_used` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-----------------------------------------------------------------------------------------------------------
+-- Dumping data for table `table_reservations`
+--------------------------------------------------
+
+INSERT INTO `table_reservations` (`reservation_id`, `user_id`, `facility_id`, `reservation_date`, `reservation_time`, `guest_count`, `special_requests`, `status`, `points_used`, `created_at`) VALUES
+(1, 5, 3, '2026-04-24', '14:00:00', 2, 'birthday party', 'pending', 0, '2026-04-24 15:31:25');
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `special_offers`
+-----------------------------------------------
+
+CREATE TABLE `special_offers` (
+  `offer_id` int(11) NOT NULL,
+  `facility_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `discount_type` enum('percentage','points','bogo') DEFAULT 'percentage',
+  `discount_value` int(11) DEFAULT NULL,
+  `original_price` decimal(10,2) DEFAULT NULL,
+  `offer_price` decimal(10,2) DEFAULT NULL,
+  `points_required` int(11) DEFAULT NULL,
+  `valid_from` date DEFAULT NULL,
+  `valid_until` date DEFAULT NULL,
+  `image_url` varchar(500) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------------------------
+-- Dumping data for table `special_offers`
+--------------------------------------------
+
+INSERT INTO `special_offers` (`offer_id`, `facility_id`, `title`, `description`, `discount_type`, `discount_value`, `original_price`, `offer_price`, `points_required`, `valid_from`, `valid_until`, `image_url`, `is_active`, `created_at`) VALUES
+(1, 3, 'Happy Hour Special', 'Get 20% off on all beverages from 4 PM to 6 PM', 'percentage', 20, NULL, NULL, 0, NULL, '2026-04-22', 'https://images.unsplash.com/photo-1470119693884-47d3a1d1f180?w=300&h=200&fit=crop', 1, '2026-03-23 08:23:45'),
+(2, 3, 'Combo Meal Deal', 'Chicken Rice + Soft Drink for only 450 points', 'points', 450, 550.00, NULL, 450, NULL, '2026-04-07', 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=300&h=200&fit=crop', 1, '2026-03-23 08:23:45'),
+(3, 3, 'Buy 1 Get 1 Free', 'Buy any coffee and get one free', 'bogo', 1, 250.00, NULL, 0, NULL, '2026-03-30', 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop', 1, '2026-03-23 08:23:45');
