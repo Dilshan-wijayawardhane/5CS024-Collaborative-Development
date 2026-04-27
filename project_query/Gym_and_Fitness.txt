@@ -1,1 +1,235 @@
+Table structure for table `gym_announcements`
+-------------------------------------------
 
+CREATE TABLE `gym_announcements` (
+  `announcement_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `expires_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+---------------------------------------------------------------------
+-- Dumping data for table `gym_announcements`
+------------------------------------------------------------------
+
+INSERT INTO `gym_announcements` (`announcement_id`, `title`, `message`, `is_active`, `created_by`, `created_at`, `expires_at`) VALUES
+(1, 'hn', 'n', 1, 12, '2026-04-22 12:28:47', NULL);
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+ Table structure for table `gym_equipment`
+----------------------------------------
+
+CREATE TABLE `gym_equipment` (
+  `equipment_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `quantity` int(11) DEFAULT 1,
+  `available` int(11) DEFAULT 1,
+  `category` varchar(100) DEFAULT NULL,
+  `image_id` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+----------------------------------------------------------------------
+-- Dumping data for table `gym_equipment`
+------------------------------------------------------------------------
+
+INSERT INTO `gym_equipment` (`equipment_id`, `name`, `quantity`, `available`, `category`, `image_id`, `created_at`) VALUES
+(1, 'Treadmill', 5, 3, 'Cardio', 'treadmill.jpg', '2026-03-23 08:23:45'),
+(2, 'Dumbbells Set', 20, 15, 'Strength', 'dumbbell.jpg', '2026-03-23 08:23:45'),
+(3, 'Bench Press', 4, 2, 'Strength', 'bench_press.jpg', '2026-03-23 08:23:45'),
+(4, 'Pull-up Bar', 3, 3, 'Strength', 'pull_up_bar.jpg', '2026-03-23 08:23:45'),
+(5, 'Exercise Bike', 4, 1, 'Cardio', 'exercise_bike.jpg', '2026-03-23 08:23:45'),
+(6, 'Rowing Machine', 2, 1, 'Cardio', 'rowing_machine.jpg', '2026-03-23 08:23:45'),
+(7, 'Yoga Mats', 15, 8, 'Accessories', 'yoga_mat.jpg', '2026-03-23 08:23:45');
+
+------------------------------------------------------------------------------
+
+
+-- Table structure for table `gym_operating_hours`
+------------------------------------------------
+
+CREATE TABLE `gym_operating_hours` (
+  `id` int(11) NOT NULL,
+  `day_of_week` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `open_time` time DEFAULT NULL,
+  `close_time` time DEFAULT NULL,
+  `is_closed` tinyint(1) DEFAULT 0,
+  `special_note` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+----------------------------------------------------------------------
+-- Dumping data for table `gym_operating_hours`
+--------------------------------------------------
+
+INSERT INTO `gym_operating_hours` (`id`, `day_of_week`, `open_time`, `close_time`, `is_closed`, `special_note`) VALUES
+(1, 'Monday', '06:00:00', '22:00:00', 0, NULL),
+(2, 'Tuesday', '06:00:00', '22:00:00', 0, NULL),
+(3, 'Wednesday', '06:00:00', '22:00:00', 0, NULL),
+(4, 'Thursday', '06:00:00', '22:00:00', 0, NULL),
+(5, 'Friday', '06:00:00', '21:00:00', 0, NULL),
+(6, 'Saturday', '08:00:00', '20:00:00', 0, NULL),
+(7, 'Sunday', '08:00:00', '18:00:00', 0, NULL);
+
+--------------------------------------------------------------------------------------------
+
+
+-- Table structure for table `gym_settings`
+--------------------------------------------
+
+CREATE TABLE `gym_settings` (
+  `setting_id` int(11) NOT NULL,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------
+-- Dumping data for table `gym_settings`
+------------------------------------------
+
+INSERT INTO `gym_settings` (`setting_id`, `setting_key`, `setting_value`, `description`) VALUES
+(1, 'points_per_class', '5', 'Points awarded for joining a class'),
+(2, 'max_classes_per_day', '3', 'Maximum classes a user can book per day'),
+(3, 'cancellation_window_hours', '2', 'Hours before class to cancel without penalty'),
+(4, 'waitlist_enabled', '1', 'Enable/disable waitlist feature'),
+(5, 'bonus_points_attendance', '5', 'Bonus points for attending class (QR check-in)');
+
+------------------------------------------------------------------------------------
+
+
+-- Table structure for table `gym_status`
+---------------------------------------
+
+CREATE TABLE `gym_status` (
+  `id` int(11) NOT NULL,
+  `status` varchar(50) DEFAULT 'Open',
+  `closing_time` varchar(20) DEFAULT '10:00 PM',
+  `pool_available` tinyint(1) DEFAULT 1,
+  `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--------------------------------------------------------------------------------------------
+-- Dumping data for table `gym_status`
+-----------------------------------------
+
+INSERT INTO `gym_status` (`id`, `status`, `closing_time`, `pool_available`, `last_updated`) VALUES
+(1, 'Open', '10:00 PM', 1, '2026-03-23 08:23:45');
+-----------------------------------------------------------------------------------------------------
+Table structure for table `fitness_classes`
+----------------------------------------------
+
+CREATE TABLE `fitness_classes` (
+  `class_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `time` varchar(50) DEFAULT NULL,
+  `instructor` varchar(255) DEFAULT NULL,
+  `capacity` int(11) DEFAULT 20,
+  `booked` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------
+-- Dumping data for table `fitness_classes`
+-------------------------------------------------------------------------
+
+INSERT INTO `fitness_classes` (`class_id`, `name`, `time`, `instructor`, `capacity`, `booked`, `created_at`) VALUES
+(1, 'Morning Yoga', '8:00 AM', 'Ms. Perera', 20, 12, '2026-03-23 08:23:45'),
+(2, 'Zumba Dance', '10:00 AM', 'Mr. Silva', 25, 21, '2026-03-23 08:23:45'),
+(3, 'HIIT Workout', '5:00 PM', 'Mr. Fernando', 15, 12, '2026-03-23 08:23:45'),
+(4, 'Strength Training', '6:30 PM', 'Ms. Kumari', 12, 6, '2026-03-23 08:23:45');
+----------------------------------------------------------------------------------
+
+Table structure for table `class_bookings`
+----------------------------------------
+
+CREATE TABLE `class_bookings` (
+  `booking_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `class_id` int(11) NOT NULL,
+  `booking_date` date DEFAULT curdate(),
+  `status` enum('booked','cancelled','attended') DEFAULT 'booked'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------
+-- Dumping data for table `class_bookings`
+---------------------------------------------
+
+INSERT INTO `class_bookings` (`booking_id`, `user_id`, `class_id`, `booking_date`, `status`) VALUES
+(1, 5, 2, '2026-03-27', 'booked'),
+(2, 5, 3, '2026-04-24', 'booked'),
+(3, 6, 2, '2026-04-26', 'booked'),
+(4, 6, 3, '2026-04-26', 'booked'),
+(5, 8, 2, '2026-04-27', 'booked'),
+(6, 5, 4, '2026-04-27', 'booked');
+--------------------------------------------------------------------------------------------------------
+
+Table structure for table `class_reviews`
+------------------------------------------
+
+CREATE TABLE `class_reviews` (
+  `review_id` int(11) NOT NULL,
+  `booking_id` int(11) NOT NULL,
+  `rating` int(11) DEFAULT NULL CHECK (`rating` between 1 and 5),
+  `comment` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-----------------------------------------------------------------------------
+
+
+-- Table structure for table `class_waitlist`
+-------------------------------------------------
+
+CREATE TABLE `class_waitlist` (
+  `waitlist_id` int(11) NOT NULL,
+  `class_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `joined_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('waiting','notified','converted','expired') DEFAULT 'waiting'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-----------------------------------------------------------------
+
+Table structure for table `equipment_categories`
+----------------------------------------------------
+
+CREATE TABLE `equipment_categories` (
+  `category_id` int(11) NOT NULL,
+  `category_name` varchar(100) NOT NULL,
+  `icon` varchar(50) DEFAULT 'fa-tag',
+  `display_order` int(11) DEFAULT 0,
+  `description` text DEFAULT NULL,
+  `image_url` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------
+-- Dumping data for table `equipment_categories`
+---------------------------------------------------
+
+INSERT INTO `equipment_categories` (`category_id`, `category_name`, `icon`, `display_order`, `description`, `image_url`) VALUES
+(1, 'Cardio', 'fa-heartbeat', 1, NULL, NULL),
+(2, 'Strength', 'fa-dumbbell', 2, NULL, NULL),
+(3, 'Weight Training', 'fa-weight-hanging', 3, NULL, NULL),
+(4, 'Functional', 'fa-person-walking', 4, NULL, NULL),
+(5, 'Yoga', 'fa-pray', 5, NULL, NULL),
+(6, 'Other', 'fa-tag', 6, NULL, NULL);
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+
+-- Table structure for table `equipment_issues`
+-----------------------------------------------
+
+CREATE TABLE `equipment_issues` (
+  `issue_id` int(11) NOT NULL,
+  `equipment_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `issue_description` text NOT NULL,
+  `status` enum('pending','in_progress','resolved') DEFAULT 'pending',
+  `reported_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `resolved_at` datetime DEFAULT NULL,
+  `resolved_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
