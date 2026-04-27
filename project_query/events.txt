@@ -1,1 +1,60 @@
+Table structure for table `events`
+-----------------------------
+
+CREATE TABLE `events` (
+  `EventID` int(11) NOT NULL,
+  `Title` varchar(200) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `Location` varchar(200) DEFAULT NULL,
+  `StartTime` datetime NOT NULL,
+  `EndTime` datetime NOT NULL,
+  `OrganizerID` int(11) DEFAULT NULL,
+  `Category` enum('SU','Club','Workshop') NOT NULL,
+  `Status` enum('Upcoming','Ongoing','Completed','Cancelled') DEFAULT 'Upcoming',
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------------
+-- Dumping data for table `events`
+------------------------------------
+
+INSERT INTO `events` (`EventID`, `Title`, `Description`, `Location`, `StartTime`, `EndTime`, `OrganizerID`, `Category`, `Status`, `CreatedAt`) VALUES
+(1, 'Hackathon 2024', '24-hour coding competition', 'CS Building', '2026-03-30 13:53:45', '2026-03-31 13:53:45', NULL, 'Club', 'Upcoming', '2026-03-23 08:23:45'),
+(2, 'Workshop: Web Development', 'Learn modern web development', 'Lab 101', '2026-03-26 13:53:45', '2026-03-26 13:53:45', NULL, 'Workshop', 'Upcoming', '2026-03-23 08:23:45'),
+(3, 'SU Meeting', 'Student Union general meeting', 'Auditorium', '2026-03-25 13:53:45', '2026-03-25 13:53:45', NULL, 'SU', 'Upcoming', '2026-03-23 08:23:45');
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `su_events`
+------------------------------------
+
+CREATE TABLE `su_events` (
+  `event_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `event_time` datetime NOT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--------------------------------------------------------------------------
+-- Dumping data for table `su_events`
+---------------------------------------------
+
+INSERT INTO `su_events` (`event_id`, `title`, `event_time`, `location`, `description`, `created_at`) VALUES
+(1, 'Quiz Night', '2026-03-25 13:53:45', 'Main Hall', 'Test your knowledge!', '2026-03-23 08:23:45'),
+(2, 'SU Meeting', '2026-03-24 13:53:45', 'Room 101', 'Weekly student union meeting', '2026-03-23 08:23:45'),
+(3, 'Movie Night', '2026-03-26 13:53:45', 'Lecture Theatre', 'Free movie screening', '2026-03-23 08:23:45');
+-------------------------------------------------------------------------------------------------------------
+ Table structure for table `upcomingevents`
+----------------------------------------
+
+CREATE TABLE `upcomingevents` (
+  `EventID` int(11) DEFAULT NULL,
+  `Title` varchar(200) DEFAULT NULL,
+  `Description` text DEFAULT NULL,
+  `Location` varchar(200) DEFAULT NULL,
+  `StartTime` datetime DEFAULT NULL,
+  `EndTime` datetime DEFAULT NULL,
+  `Category` enum('SU','Club','Workshop') DEFAULT NULL,
+  `DaysUntil` int(7) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
