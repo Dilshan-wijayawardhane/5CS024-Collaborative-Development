@@ -1,1 +1,140 @@
+ Table structure for table `emergencyalerts`
+-------------------------------------------
+
+CREATE TABLE `emergencyalerts` (
+  `id` int(11) NOT NULL,
+  `severity` enum('info','warning','critical') NOT NULL DEFAULT 'info',
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `expires_at` datetime DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--------------------------------------------------------------------------
+-- Dumping data for table `emergencyalerts`
+-----------------------------------------------
+
+INSERT INTO `emergencyalerts` (`id`, `severity`, `title`, `message`, `created_at`, `expires_at`, `created_by`, `is_active`) VALUES
+(1, 'critical', '⚠️ Fire Drill in Progress', 'A fire drill is scheduled for the Main Building at 2:00 PM. Please follow evacuation procedures.', '2026-03-23 08:23:46', '2026-03-23 15:53:46', NULL, 1),
+(2, 'warning', 'Severe Weather Alert', 'Heavy rain expected. Please avoid low-lying areas and use covered walkways.', '2026-03-23 08:23:46', '2026-03-24 01:53:46', NULL, 1);
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Table structure for table `emergencycontacts`
+----------------------------------------------
+
+CREATE TABLE `emergencycontacts` (
+  `id` int(11) NOT NULL,
+  `type` enum('security','medical','support','other') NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `display_order` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+---------------------------------------------------------------------
+-- Dumping data for table `emergencycontacts`
+----------------------------------------------
+
+INSERT INTO `emergencycontacts` (`id`, `type`, `name`, `phone`, `description`, `display_order`, `is_active`, `created_at`) VALUES
+(1, 'security', 'Campus Security', '011-2345678', '24/7 Emergency Hotline', 1, 1, '2026-03-23 08:23:46'),
+(2, 'medical', 'Medical Center', '011-8765432', 'Emergency Medical Services', 2, 1, '2026-03-23 08:23:46'),
+(3, 'support', 'Student Support', '011-5678901', 'Counseling & Crisis Support', 3, 1, '2026-03-23 08:23:46'),
+(4, 'support', 'IT Support', '011-3456789', 'Technical Emergencies', 4, 1, '2026-03-23 08:23:46');
+-------------------------------------------------------------------------------------------------------------------------------
+
+Table structure for table `safetyincidents`
+------------------------------------------
+
+CREATE TABLE `safetyincidents` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `severity` enum('low','medium','high') DEFAULT 'medium',
+  `report_date` datetime NOT NULL,
+  `status` enum('active','resolved','investigating') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+----------------------------------------------------------------------------
+-- Dumping data for table `safetyincidents`
+--------------------------------------------
+
+INSERT INTO `safetyincidents` (`id`, `title`, `description`, `location`, `severity`, `report_date`, `status`, `created_at`) VALUES
+(1, 'Minor Fire in Science Lab', 'Small chemical fire contained quickly. No injuries. Lab evacuated safely.', 'Science Building, Lab 203', 'medium', '2026-03-21 13:53:46', 'resolved', '2026-03-23 08:23:46'),
+(2, 'Suspicious Person Reported', 'Unknown person attempting to access dormitories. Security responded.', 'Student Housing, Block C', 'high', '2026-03-18 13:53:46', 'investigating', '2026-03-23 08:23:46'),
+(3, 'Power Outage', 'Short power outage in Library. Emergency lighting worked properly.', 'Main Library', 'low', '2026-03-16 13:53:46', 'resolved', '2026-03-23 08:23:46'),
+(4, 'Medical Emergency', 'Student fainted in cafeteria. Treated by campus medical team.', 'Student Center', 'medium', '2026-03-13 13:53:46', 'resolved', '2026-03-23 08:23:46');
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Table structure for table `safetytips`
+---------------------------------------
+
+CREATE TABLE `safetytips` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `category` varchar(100) NOT NULL,
+  `priority` enum('low','medium','high') DEFAULT 'medium',
+  `tags` varchar(255) DEFAULT NULL,
+  `image_url` varchar(500) DEFAULT NULL,
+  `video_url` varchar(500) DEFAULT NULL,
+  `views` int(11) DEFAULT 0,
+  `likes` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+------------------------------------------------------------------------------------------
+-- Dumping data for table `safetytips`
+-------------------------------------------
+INSERT INTO `safetytips` (`id`, `title`, `content`, `category`, `priority`, `tags`, `image_url`, `video_url`, `views`, `likes`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'Fire Evacuation Procedures', 'In case of fire: 1. Stay calm 2. Alert others 3. Use nearest exit 4. Do not use elevators 5. Assemble at designated meeting point 6. Wait for further instructions. Remember: Your safety is more important than belongings. Never re-enter a burning building.', 'Fire Safety', 'high', 'fire,evacuation,emergency,safety', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(2, 'Campus Safe Walk Program', 'The Safe Walk program provides escort services between 6 PM and 6 AM. Call security at 011-2345678 to request an escort. Available for all students and staff. Wait in well-lit areas for the escort. Have your ID ready.', 'Personal Safety', 'medium', 'walk,night,safety,escort,security', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(3, 'Cyber Security Best Practices', 'Use strong passwords (mix of letters, numbers, symbols). Enable two-factor authentication on all accounts. Avoid public WiFi for banking. Don\'t click suspicious links. Keep software updated. Report phishing to IT.', 'Cyber Safety', 'high', 'cyber,security,password,phishing,hacking', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(4, 'Medical Emergency Response', 'For medical emergencies: Call 011-8765432 immediately. Provide: your location, what happened, number of people injured. Do not move the person unless danger. Stay on line. Apply pressure to bleeding. Know CPR.', 'Medical Emergency', 'high', 'medical,firstaid,emergency,cpr', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(5, 'Lab Safety Guidelines', 'Always wear PPE: goggles, gloves, lab coat. Know emergency exits and eyewash stations. Report spills immediately. Follow chemical handling procedures. No food or drinks. Never work alone after hours.', 'Lab Safety', 'high', 'lab,science,chemicals,ppe', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(6, 'Bus Safety Tips', 'Wait at designated stops. Board and exit carefully. Remain seated while moving. Keep aisles clear. Hold handrails. Report suspicious activity to driver. Know your stop. Be aware of surroundings.', 'Travel Safety', 'medium', 'bus,transport,safety,commute', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(7, 'Earthquake Preparedness', 'DROP to hands and knees. COVER head and neck under sturdy table. HOLD ON until shaking stops. Stay away from windows. If outdoors, move to open area. After shaking, evacuate carefully. Watch for falling debris.', 'Emergency Preparedness', 'high', 'earthquake,natural disaster,emergency', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(8, 'Personal Safety at Night', 'Travel in groups of 2+. Stay in well-lit areas. Keep phone charged. Share location with friends. Trust your instincts. Know emergency phone locations. Avoid shortcuts. Keep keys ready. Be aware.', 'Personal Safety', 'high', 'night,safety,walking,campus', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(9, 'Mental Health Resources', '24/7 Counseling: 011-5678901. Walk-in: Mon-Fri 9 AM-5 PM at Student Services. Free and confidential. Support groups available. Online resources. Don\'t struggle alone. Reach out for help.', 'Health & Wellness', 'medium', 'mental health,counseling,support,wellness', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46'),
+(10, 'Lost and Found Procedures', 'Report lost items to Security Office (Building A, Room 101). Check online portal. Label belongings. For valuable items (laptops, phones, wallets), file police report. Check within 24 hours.', 'Campus Services', 'low', 'lost,found,property,security', NULL, NULL, 0, 0, 1, '2026-03-23 08:23:46', '2026-03-23 08:23:46');
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Table structure for table `safetyquiz`
+---------------------------------------
+
+CREATE TABLE `safetyquiz` (
+  `id` int(11) NOT NULL,
+  `question` text NOT NULL,
+  `options` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`options`)),
+  `correct_answer` int(11) NOT NULL,
+  `explanation` text DEFAULT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `difficulty` enum('easy','medium','hard') DEFAULT 'medium',
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-------------------------------------------------------------------------------
+-- Dumping data for table `safetyquiz`
+-------------------------------------------
+
+INSERT INTO `safetyquiz` (`id`, `question`, `options`, `correct_answer`, `explanation`, `category`, `difficulty`, `is_active`, `created_at`) VALUES
+(1, 'What is the first thing you should do in case of a fire?', '[\"Grab your belongings\", \"Call your parents\", \"Alert others and evacuate\", \"Try to put out the fire yourself\"]', 2, 'Alerting others and evacuating immediately is crucial. Your safety is more important than belongings. Fires spread quickly - every second counts.', 'Fire Safety', 'easy', 1, '2026-03-23 08:23:46'),
+(2, 'What is the campus security emergency number?', '[\"011-1234567\", \"011-2345678\", \"011-3456789\", \"011-4567890\"]', 1, 'Campus Security can be reached 24/7 at 011-2345678. Save this number in your phone right now. It could save your life or someone else\'s.', 'Emergency Contacts', 'easy', 1, '2026-03-23 08:23:46'),
+(3, 'Which of these is NOT a good password practice?', '[\"Using different passwords for each account\", \"Enabling two-factor authentication\", \"Using your birthday as password\", \"Changing passwords every 3 months\"]', 2, 'Never use personal information like birthdays, names, or common words as passwords. Hackers can easily guess these. Use a password manager instead.', 'Cyber Safety', 'medium', 1, '2026-03-23 08:23:46'),
+(4, 'What should you do if someone is having a medical emergency?', '[\"Take a video for evidence\", \"Call for help and stay with them\", \"Move them to a comfortable position\", \"Give them water or food\"]', 1, 'Call for emergency help immediately and stay with the person. Do not move them unless they are in immediate danger. Keep them calm and comfortable until help arrives.', 'Medical Emergency', 'medium', 1, '2026-03-23 08:23:46'),
+(5, 'Where should you assemble after evacuating a building?', '[\"In the parking lot near your car\", \"At the designated assembly point\", \"At the nearest cafe or restaurant\", \"Go home immediately\"]', 1, 'Always go to the designated assembly point so authorities can account for everyone. This helps ensure no one is trapped inside and rescue efforts can be focused.', 'Fire Safety', 'easy', 1, '2026-03-23 08:23:46'),
+(6, 'What should you do if you receive a suspicious email?', '[\"Click links to check if they work\", \"Reply and ask who sent it\", \"Delete it without opening\", \"Forward to all your friends as warning\"]', 2, 'Delete suspicious emails immediately without opening any links or attachments. Report to IT if it appears to come from a campus source. Never engage with potential phishing attempts.', 'Cyber Safety', 'medium', 1, '2026-03-23 08:23:46'),
+(7, 'How can you request a safe walk escort?', '[\"Call campus security\", \"Use mobile safety app\", \"Ask campus police\", \"All of the above\"]', 3, 'Campus security is the primary method (011-2345678), but you can also use safety apps or ask campus police. The service is free and available 24/7 for all students and staff.', 'Personal Safety', 'easy', 1, '2026-03-23 08:23:46'),
+(8, 'What should be in your personal emergency kit?', '[\"Water and snacks\", \"First aid supplies\", \"Flashlight and batteries\", \"All of the above\"]', 3, 'A complete emergency kit should include: water (1 gallon per person/day), non-perishable food, first aid kit, flashlight, batteries, whistle, dust masks, wet wipes, and important documents.', 'Emergency Preparedness', 'medium', 1, '2026-03-23 08:23:46'),
+(9, 'How often should you update your emergency contacts?', '[\"Never, once set\", \"Every semester\", \"Every year or when they change\", \"Only during orientation\"]', 2, 'Review and update your emergency contacts at least once a year, or whenever your contacts change (new phone numbers, etc.). Keep both digital and written copies.', 'Personal Safety', 'easy', 1, '2026-03-23 08:23:46'),
+(10, 'What is the correct way to use a fire extinguisher?', '[\"Spray and run\", \"PULL, AIM, SQUEEZE, SWEEP\", \"Throw it at the fire\", \"Call someone to use it\"]', 1, 'Remember PASS: PULL the pin, AIM at the base of the fire, SQUEEZE the handle, SWEEP from side to side. Only use if fire is small and you have clear exit path.', 'Fire Safety', 'hard', 1, '2026-03-23 08:23:46');
+
 
