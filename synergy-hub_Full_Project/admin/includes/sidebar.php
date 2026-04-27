@@ -1,5 +1,5 @@
 <?php
-
+// admin/includes/sidebar.php
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <div class="sidebar">
@@ -9,13 +9,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </div>
     
     <nav class="sidebar-nav">
-        
+        <!-- Dashboard -->
         <a href="index.php" class="<?php echo $current_page == 'index.php' ? 'active' : ''; ?>">
             <i class="fa-solid fa-gauge-high"></i>
             <span>Dashboard</span>
         </a>
         
-        
+        <!-- User Management -->
         <div class="nav-section">
             <div class="nav-section-title">User Management</div>
             <a href="users.php" class="<?php echo $current_page == 'users.php' ? 'active' : ''; ?>">
@@ -38,7 +38,19 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         </div>
         
-        
+        <div class="nav-section">
+            <div class="nav-section-title">Club Management</div>
+            <a href="club_management.php" class="<?php echo $current_page == 'club_management.php' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-users"></i>
+                <span>Manage Clubs</span>
+            </a>
+            <a href="club_management.php?tab=requests" class="<?php echo $current_page == 'club_management.php' && isset($_GET['tab']) && $_GET['tab'] == 'requests' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-ticket"></i>
+                <span>Join Requests</span>
+            </a>
+        </div>
+
+        <!-- Facility Management -->
         <div class="nav-section">
             <div class="nav-section-title">Facility Management</div>
             <a href="facility_management.php" class="<?php echo $current_page == 'facility_management.php' ? 'active' : ''; ?>">
@@ -55,7 +67,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        
+        <!-- Café Management -->
         <div class="nav-section">
             <div class="nav-section-title">Café Management</div>
             <a href="cafe_menu_admin.php" class="<?php echo $current_page == 'cafe_menu_admin.php' ? 'active' : ''; ?>">
@@ -72,7 +84,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        
+        <!-- Library Management -->
         <div class="nav-section">
             <div class="nav-section-title">Library Management</div>
             <a href="library_management.php" class="<?php echo $current_page == 'library_management.php' ? 'active' : ''; ?>">
@@ -89,7 +101,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        
+        <!-- Pool Management -->
         <div class="nav-section">
             <div class="nav-section-title">Pool Management</div>
             <a href="pool_management.php" class="<?php echo $current_page == 'pool_management.php' ? 'active' : ''; ?>">
@@ -110,29 +122,27 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        
         <div class="nav-section">
             <div class="nav-section-title">Gym Management</div>
-            <a href="gym_equipment_admin.php" class="<?php echo $current_page == 'gym_equipment_admin.php' ? 'active' : ''; ?>">
+            <a href="gym_management.php" class="<?php echo $current_page == 'gym_management.php' ? 'active' : ''; ?>">
                 <i class="fa-solid fa-dumbbell"></i>
-                <span>Equipment</span>
-            </a>
-            <a href="fitness_classes.php" class="<?php echo $current_page == 'fitness_classes.php' ? 'active' : ''; ?>">
-                <i class="fa-solid fa-people-group"></i>
-                <span>Fitness Classes</span>
+                <span>Gym Manager</span>
             </a>
         </div>
-        
         
         <div class="nav-section">
             <div class="nav-section-title">Transport</div>
-            <a href="transport_admin.php" class="<?php echo $current_page == 'transport_admin.php' ? 'active' : ''; ?>">
+            <a href="transport_management.php" class="<?php echo $current_page == 'transport_management.php' ? 'active' : ''; ?>">
                 <i class="fa-solid fa-bus"></i>
-                <span>Manage Transport</span>
+                <span>Transport Manager</span>
+            </a>
+            <a href="../transport.php" target="_blank">
+                <i class="fa-solid fa-eye"></i>
+                <span>View Transport</span>
             </a>
         </div>
         
-        
+        <!-- Game Field Management -->
         <div class="nav-section">
             <div class="nav-section-title">Game Field</div>
             <a href="game_field_admin.php" class="<?php echo $current_page == 'game_field_admin.php' ? 'active' : ''; ?>">
@@ -141,16 +151,32 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        
+        <!-- Orders Management -->
         <div class="nav-section">
             <div class="nav-section-title">Orders</div>
-            <a href="orders_admin.php" class="<?php echo $current_page == 'orders_admin.php' ? 'active' : ''; ?>">
+            <a href="admin_orders.php" class="<?php echo $current_page == 'admin_orders.php' ? 'active' : ''; ?>">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span>Manage Orders</span>
             </a>
+            <a href="admin_kitchen.php" class="<?php echo $current_page == 'admin_kitchen.php' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Kitchen Display</span>
+            </a>
+            <a href="admin_customers.php" class="<?php echo $current_page == 'admin_customers.php' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-users"></i>
+                <span>Customers</span>
+            </a>
+            <a href="admin_reports.php" class="<?php echo $current_page == 'admin_reports.php' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+            <a href="admin_menu.php" class="<?php echo $current_page == 'admin_menu.php' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Menu Items</span>
+            </a>
         </div>
         
-        
+        <!-- Notifications -->
         <div class="nav-section">
             <div class="nav-section-title">Communications</div>
             <a href="notifications.php" class="<?php echo $current_page == 'notifications.php' ? 'active' : ''; ?>">
@@ -159,7 +185,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
         
-        
+        <!-- System -->
         <div class="nav-section">
             <div class="nav-section-title">System</div>
             <a href="settings.php" class="<?php echo $current_page == 'settings.php' ? 'active' : ''; ?>">
