@@ -1,1 +1,15 @@
 user query
+----------
+CREATE TABLE Users (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    StudentID VARCHAR(20) UNIQUE,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Role ENUM('Admin', 'User', 'Visitor') DEFAULT 'User',
+    PointsBalance INT DEFAULT 0,
+    MembershipStatus ENUM('Active', 'Inactive', 'Expired') DEFAULT 'Active',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (Email),
+    INDEX idx_role (Role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
