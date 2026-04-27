@@ -1,0 +1,61 @@
+Table structure for table `books`
+---------------------------------
+
+CREATE TABLE `books` (
+  `book_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `author` varchar(255) DEFAULT NULL,
+  `isbn` varchar(50) DEFAULT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `quantity` int(11) DEFAULT 1,
+  `available` int(11) DEFAULT 1,
+  `description` text DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+---------------------------------------------------------------------
+ Dumping data for table `books`
+--------------------------------------------------------------------
+
+INSERT INTO `books` (`book_id`, `title`, `author`, `isbn`, `category`, `quantity`, `available`, `description`, `image`, `created_at`) VALUES
+(1, 'The Great Gatsby', 'F. Scott Fitzgerald', NULL, 'Fiction', 3, 3, 'A classic novel about the American Dream', 'the-great-gatsby.jpg', '2026-03-23 08:23:45'),
+(2, 'To Kill a Mockingbird', 'Harper Lee', NULL, 'Fiction', 2, 2, 'A story of racial injustice in the Deep South', 'to-kill-a-mockingbird.jpg', '2026-03-23 08:23:45'),
+(3, '1984', 'George Orwell', NULL, 'Science Fiction', 4, 4, 'Dystopian social science fiction novel', '1984.jpg', '2026-03-23 08:23:45'),
+(4, 'Pride and Prejudice', 'Jane Austen', NULL, 'Romance', 2, 2, 'A romantic novel of manners', 'pride-and-prejudice.jpg', '2026-03-23 08:23:45'),
+(5, 'The Catcher in the Rye', 'J.D. Salinger', NULL, 'Fiction', 2, 2, 'Story of teenage alienation', 'catcher-in-the-rye.jpg', '2026-03-23 08:23:45'),
+(6, 'Introduction to Algorithms', 'Thomas H. Cormen', NULL, 'Academic', 5, 4, 'Comprehensive algorithms textbook', 'introduction-to-algorithms.jpg', '2026-03-23 08:23:45'),
+(7, 'Clean Code', 'Robert C. Martin', NULL, 'Programming', 3, 3, 'Handbook of agile software craftsmanship', 'clean-code.jpg', '2026-03-23 08:23:45'),
+(8, 'The Pragmatic Programmer', 'David Thomas', NULL, 'Programming', 2, 2, 'Your journey to mastery', 'pragmatic-programmer.jpg', '2026-03-23 08:23:45'),
+(9, 'Database Systems', 'Elmasri & Navathe', NULL, 'Academic', 3, 0, 'Complete database textbook', 'database-systems.jpg', '2026-03-23 08:23:45'),
+(10, 'Harry Potter and the Philosopher\'s Stone', 'J.K. Rowling', NULL, 'Fantasy', 4, 3, 'First book in the Harry Potter series', 'harry-potter.jpg', '2026-03-23 08:23:45');
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+ Table structure for table `borrowed_books`
+------------------------------------------
+
+CREATE TABLE `borrowed_books` (
+  `borrow_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `book_id` int(11) NOT NULL,
+  `borrow_date` date DEFAULT curdate(),
+  `due_date` date DEFAULT NULL,
+  `return_date` date DEFAULT NULL,
+  `status` enum('borrowed','returned','overdue') DEFAULT 'borrowed',
+  `fine` decimal(5,2) DEFAULT 0.00
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------
+-- Dumping data for table `borrowed_books`
+----------------------------------------------
+
+INSERT INTO `borrowed_books` (`borrow_id`, `user_id`, `book_id`, `borrow_date`, `due_date`, `return_date`, `status`, `fine`) VALUES
+(1, 6, 9, '2026-03-24', '2026-04-07', NULL, 'borrowed', 0.00),
+(2, 5, 9, '2026-03-27', '2026-04-10', '2026-04-21', 'returned', 0.00),
+(3, 5, 9, '2026-04-24', '2026-05-08', NULL, 'borrowed', 0.00),
+(4, 6, 6, '2026-04-26', '2026-05-10', NULL, 'borrowed', 0.00),
+(5, 8, 9, '2026-04-27', '2026-05-11', NULL, 'borrowed', 0.00),
+(6, 5, 10, '2026-04-27', '2026-05-11', NULL, 'borrowed', 0.00);
+
