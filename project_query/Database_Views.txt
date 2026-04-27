@@ -1,1 +1,37 @@
+ Table structure for table `activemembers`
+----------------------------------------------
 
+CREATE TABLE `activemembers` (
+  `UserID` int(11) DEFAULT NULL,
+  `StudentID` varchar(20) DEFAULT NULL,
+  `Name` varchar(100) DEFAULT NULL,
+  `Email` varchar(100) DEFAULT NULL,
+  `PointsBalance` int(11) DEFAULT NULL,
+  `MembershipStatus` enum('Active','Inactive','Expired') DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+------------------------------------------------------------------------------
+Table structure for table `facilityusage`
+----------------------------------------------
+
+CREATE TABLE `facilityusage` (
+  `FacilityID` int(11) DEFAULT NULL,
+  `Name` varchar(100) DEFAULT NULL,
+  `Type` enum('Gym','Library','Café','Transport','GameField','Pool') DEFAULT NULL,
+  `TotalCheckIns` bigint(21) DEFAULT NULL,
+  `UniqueUsers` bigint(21) DEFAULT NULL,
+  `LastCheckIn` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+---------------------------------------------------------------------------------------------
+ Table structure for table `upcomingevents`
+---------------------------------------------
+
+CREATE TABLE `upcomingevents` (
+  `EventID` int(11) DEFAULT NULL,
+  `Title` varchar(200) DEFAULT NULL,
+  `Description` text DEFAULT NULL,
+  `Location` varchar(200) DEFAULT NULL,
+  `StartTime` datetime DEFAULT NULL,
+  `EndTime` datetime DEFAULT NULL,
+  `Category` enum('SU','Club','Workshop') DEFAULT NULL,
+  `DaysUntil` int(7) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
