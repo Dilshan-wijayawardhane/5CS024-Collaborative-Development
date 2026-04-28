@@ -1,0 +1,22 @@
+Table structure for table `gamefield`
+---------------------------------------
+
+CREATE TABLE `gamefield` (
+  `GameID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `GameType` varchar(50) NOT NULL,
+  `PointsUsed` int(11) DEFAULT 0,
+  `PointsEarned` int(11) DEFAULT 0,
+  `Timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  `GameData` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`GameData`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------------------------------------------------
+-- Dumping data for table `gamefield`
+----------------------------------------
+
+INSERT INTO `gamefield` (`GameID`, `UserID`, `GameType`, `PointsUsed`, `PointsEarned`, `Timestamp`, `GameData`) VALUES
+(1, 2, 'Quiz Challenge', 0, 20, '2026-03-23 08:23:45', NULL),
+(2, 2, 'AR Treasure Hunt', 10, 15, '2026-03-23 08:23:45', NULL),
+(3, 3, 'Memory Game', 5, 10, '2026-03-23 08:23:45', NULL),
+(4, 5, 'Math Game', 0, 174, '2026-04-27 08:22:21', NULL);

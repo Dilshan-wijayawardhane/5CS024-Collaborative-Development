@@ -1,0 +1,61 @@
+Table structure for table `study_rooms`
+---------------------------------------
+
+CREATE TABLE `study_rooms` (
+  `room_id` int(11) NOT NULL,
+  `room_name` varchar(255) NOT NULL,
+  `capacity` int(11) DEFAULT 4,
+  `has_projector` tinyint(1) DEFAULT 0,
+  `has_whiteboard` tinyint(1) DEFAULT 1,
+  `is_available` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------
+-- Dumping data for table `study_rooms`
+-------------------------------------------
+
+INSERT INTO `study_rooms` (`room_id`, `room_name`, `capacity`, `has_projector`, `has_whiteboard`, `is_available`, `created_at`) VALUES
+(1, 'Study Room 1', 4, 1, 1, 1, '2026-03-23 08:23:45'),
+(2, 'Study Room 2', 6, 1, 1, 1, '2026-03-23 08:23:45'),
+(3, 'Group Study Hall', 10, 1, 1, 1, '2026-03-23 08:23:45'),
+(4, 'Quiet Reading Room', 2, 0, 0, 1, '2026-03-23 08:23:45');
+--------------------------------------------------------------------------------------
+
+Table structure for table `room_bookings`
+------------------------------------------
+
+CREATE TABLE `room_bookings` (
+  `booking_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `room_id` int(11) NOT NULL,
+  `booking_date` date NOT NULL,
+  `time_slot` varchar(50) DEFAULT NULL,
+  `status` enum('booked','cancelled','completed') DEFAULT 'booked'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-------------------------------------------------------------------
+
+Table structure for table `field_bookings`
+-----------------------------------------------
+
+CREATE TABLE `field_bookings` (
+  `booking_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `field_name` varchar(255) NOT NULL,
+  `booking_date` date NOT NULL,
+  `time_slot` varchar(50) DEFAULT NULL,
+  `status` enum('booked','cancelled','completed') DEFAULT 'booked',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------------------
+-- Dumping data for table `field_bookings`
+-----------------------------------------------
+
+INSERT INTO `field_bookings` (`booking_id`, `user_id`, `field_name`, `booking_date`, `time_slot`, `status`, `created_at`) VALUES
+(1, 5, 'Basketball Court', '2026-04-24', '9:00 AM - 11:00 AM', 'cancelled', '2026-04-24 17:42:34'),
+(2, 5, 'Basketball Court', '2026-04-27', '9:00 AM - 11:00 AM', 'booked', '2026-04-27 08:20:36');
+
+
+
+

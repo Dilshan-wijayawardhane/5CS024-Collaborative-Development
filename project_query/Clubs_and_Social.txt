@@ -1,0 +1,187 @@
+ Table structure for table `clubs`
+----------------------------------
+
+CREATE TABLE `clubs` (
+  `ClubID` int(11) NOT NULL,
+  `Name` varchar(100) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `LeaderID` int(11) DEFAULT NULL,
+  `Category` varchar(50) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `Status` enum('Active','Inactive') DEFAULT 'Active'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--------------------------------------------------------------------
+-- Dumping data for table `clubs`
+--------------------------------
+
+INSERT INTO `clubs` (`ClubID`, `Name`, `Description`, `LeaderID`, `Category`, `CreatedAt`, `Status`) VALUES
+(1, 'Coding Club', 'Programming and software development club', NULL, 'Academic', '2026-03-23 08:23:45', 'Active'),
+(2, 'Cybersecurity Club', 'Ethical hacking and security enthusiasts', NULL, 'Academic', '2026-03-23 08:23:45', 'Active'),
+(3, 'IEEE Student Branch', 'IEEE student chapter', NULL, 'Academic', '2026-03-23 08:23:45', 'Active'),
+(4, 'Robotics Club', 'Robotics and automation', NULL, 'Technical', '2026-03-23 08:23:45', 'Active');
+----------------------------------------------------------------------------------------------------------
+Table structure for table `clubmemberships`
+-------------------------------------------
+
+CREATE TABLE `clubmemberships` (
+  `MembershipID` int(11) NOT NULL,
+  `ClubID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `JoinDate` date DEFAULT curdate(),
+  `Role` enum('Member','Leader') DEFAULT 'Member',
+  `Status` enum('Active','Inactive') DEFAULT 'Active'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-------------------------------------------------------------------------
+-- Dumping data for table `clubmemberships`
+-----------------------------------------------
+
+INSERT INTO `clubmemberships` (`MembershipID`, `ClubID`, `UserID`, `JoinDate`, `Role`, `Status`) VALUES
+(1, 1, 2, '2026-03-23', 'Member', 'Active'),
+(2, 1, 3, '2026-03-23', 'Member', 'Active'),
+(3, 2, 2, '2026-03-23', 'Leader', 'Active'),
+(4, 3, 3, '2026-03-23', 'Member', 'Active'),
+(5, 1, 5, '2026-03-28', 'Member', 'Inactive'),
+(7, 4, 5, '2026-04-24', 'Member', 'Inactive'),
+(9, 2, 5, '2026-04-24', 'Member', 'Inactive'),
+(11, 3, 5, '2026-04-24', 'Member', 'Inactive'),
+(40, 1, 6, '2026-04-26', 'Member', 'Inactive'),
+(41, 2, 6, '2026-04-26', 'Member', 'Active'),
+(45, 3, 6, '2026-04-26', 'Member', 'Inactive'),
+(48, 4, 6, '2026-04-26', 'Member', 'Inactive');
+
+---------------------------------------------------------------------------------------------------
+Table structure for table `joinrequests`
+------------------------------------------
+
+CREATE TABLE `joinrequests` (
+  `RequestID` int(11) NOT NULL,
+  `ClubID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `RequestDate` datetime DEFAULT current_timestamp(),
+  `Status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+  `AdminNotes` text DEFAULT NULL,
+  `ReviewedBy` int(11) DEFAULT NULL,
+  `ReviewedAt` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+----------------------------------------------------------------------------------------------------------
+-- Dumping data for table `joinrequests`
+--------------------------------------------
+
+INSERT INTO `joinrequests` (`RequestID`, `ClubID`, `UserID`, `RequestDate`, `Status`, `AdminNotes`, `ReviewedBy`, `ReviewedAt`) VALUES
+(1, 5, 12, '2026-04-20 21:18:24', 'Approved', '', 12, '2026-04-20 21:18:57'),
+(3, 4, 12, '2026-04-20 21:24:34', 'Approved', '', 12, '2026-04-20 21:25:07'),
+(4, 2, 12, '2026-04-20 21:28:29', 'Pending', NULL, NULL, NULL),
+(5, 3, 12, '2026-04-21 12:13:22', 'Approved', '', 12, '2026-04-21 12:13:45'),
+(6, 2, 7, '2026-04-26 15:28:56', 'Pending', NULL, NULL, NULL);
+---------------------------------------------------------------------------------------------------------------------------------------
+ Table structure for table `clubevents`
+---------------------------------------
+
+CREATE TABLE `clubevents` (
+  `EventID` int(11) NOT NULL,
+  `ClubID` int(11) NOT NULL,
+  `Title` varchar(200) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `EventDate` datetime NOT NULL,
+  `EndDate` datetime DEFAULT NULL,
+  `Location` varchar(255) DEFAULT NULL,
+  `MaxAttendees` int(11) DEFAULT NULL,
+  `CurrentAttendees` int(11) DEFAULT 0,
+  `PointsAwarded` int(11) DEFAULT 10,
+  `CreatedBy` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `Status` enum('Upcoming','Ongoing','Completed','Cancelled') DEFAULT 'Upcoming'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+---------------------------------------------------------------------------------------------------------------------------------
+
+ Table structure for table `eventregistrations`
+----------------------------------------------
+
+CREATE TABLE `eventregistrations` (
+  `RegistrationID` int(11) NOT NULL,
+  `EventID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `RegistrationDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `AttendanceStatus` enum('Registered','Attended','No-Show') DEFAULT 'Registered',
+  `PointsAwarded` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-------------------------------------------------------------------------------------------------------------------------------
+
+-- Table structure for table `eventreminders`
+-----------------------------------------------
+
+CREATE TABLE `eventreminders` (
+  `ReminderID` int(11) NOT NULL,
+  `EventID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `ReminderTime` datetime NOT NULL,
+  `ReminderType` enum('email','push','in-app') DEFAULT 'in-app',
+  `IsSent` tinyint(1) DEFAULT 0,
+  `SentAt` timestamp NULL DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+----------------------------------------------------------------------------
+Table structure for table `clubdiscussions`
+----------------------------------------------
+
+CREATE TABLE `clubdiscussions` (
+  `DiscussionID` int(11) NOT NULL,
+  `ClubID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `Title` varchar(200) NOT NULL,
+  `Content` text NOT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `LastActivity` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `IsPinned` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+------------------------------------------------------------------------------------------------
+Table structure for table `discussionreplies`
+----------------------------------------------
+
+CREATE TABLE `discussionreplies` (
+  `ReplyID` int(11) NOT NULL,
+  `DiscussionID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `Content` text NOT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+---------------------------------------------------------------------------------------------------------
+Table structure for table `chatparticipants`
+--------------------------------------------
+
+CREATE TABLE `chatparticipants` (
+  `ParticipantID` int(11) NOT NULL,
+  `ClubID` int(11) NOT NULL,
+  `UserID` int(11) NOT NULL,
+  `LastReadMessageID` int(11) DEFAULT NULL,
+  `LastActiveAt` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `IsTyping` tinyint(1) DEFAULT 0,
+  `TypingUpdatedAt` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-----------------------------------------------------------------------------------------------------------
+Table structure for table `clubchatmessages`
+------------------------------------------------
+
+CREATE TABLE `clubchatmessages` (
+  `MessageID` int(11) NOT NULL,
+  `ClubID` int(11) NOT NULL,
+  `SenderID` int(11) NOT NULL,
+  `ReceiverID` int(11) DEFAULT NULL,
+  `MessageType` enum('text','image','file','system') DEFAULT 'text',
+  `Content` text NOT NULL,
+  `FileURL` varchar(500) DEFAULT NULL,
+  `FileName` varchar(255) DEFAULT NULL,
+  `FileSize` int(11) DEFAULT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `IsRead` tinyint(1) DEFAULT 0,
+  `ReadAt` timestamp NULL DEFAULT NULL,
+  `IsDeleted` tinyint(1) DEFAULT 0,
+  `ReplyToID` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
