@@ -1,0 +1,62 @@
+
+-- System Settings Queries
+ ========================================
+
+-- 1. View all system settings
+SELECT * FROM system_settings;
+
+-- 2. Update system setting
+UPDATE system_settings 
+SET setting_value = ?, updated_at = NOW() 
+WHERE setting_key = ?;
+
+-- 3. Get specific setting
+SELECT setting_value FROM system_settings WHERE setting_key = ?;
+
+-- 4. Points expiration settings
+SELECT * FROM pointsexpiration;
+
+-- 5. Update points expiration
+UPDATE pointsexpiration 
+SET ExpiryDays = ?, 
+    NotificationDays = ?, 
+    Enabled = ? 
+WHERE ExpirationID = 1;
+
+-- 6. Streak bonus settings
+SELECT * FROM streakbonuses;
+
+-- 7. Update streak bonus
+UPDATE streakbonuses 
+SET Multiplier = ?, BonusPoints = ? 
+WHERE StreakType = ? AND StreakDays = ?;
+
+-- 8. Gym settings
+SELECT * FROM gym_settings;
+
+-- 9. Update gym setting
+UPDATE gym_settings 
+SET setting_value = ? 
+WHERE setting_key = ?;
+
+-- 10. Get all configuration in one query
+SELECT 
+    'points' as category,
+    ActionType,
+    Points as value,
+    Description
+FROM pointsconfig
+UNION ALL
+SELECT 
+    'streak' as category,
+    CONCAT(StreakType, '_', StreakDays) as ActionType,
+    BonusPoints as value,
+    Description
+FROM streakbonuses
+UNION ALL
+SELECT 
+    'system' as category,
+    setting_key as ActionType,
+    setting_value as value,
+    NULL as Description
+FROM system_settings;
