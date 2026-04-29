@@ -1,0 +1,77 @@
+
+ Order Management (Café) Queries
+ ========================================
+
+-- 1. All orders with user details
+SELECT 
+    o.OrderID,
+    u.Name as CustomerName,
+    u.StudentID,
+    o.ItemName,
+    o.Category,
+    o.Price,
+    o.Quantity,
+    (o.Price * o.Quantity) as total,
+    o.Timestamp,
+    o.Status
+FROM orders o
+JOIN users u ON o.UserID = u.UserID
+ORDER BY o.Timestamp DESC;
+
+-----------------------------------------------------
+
+-- 2. Pending orders (for kitchen display)
+SELECT 
+    o.OrderID,
+    u.Name as CustomerName,
+    o.ItemName,
+    o.Quantity,
+    o.Timestamp,
+    TIMESTAMPDIFF(MINUTE, o.Timestamp, NOW()) as waiting_minutes
+FROM orders o
+JOIN users u ON o.UserID = u.UserID
+WHERE o.Status IN ('Pending', 'Preparing')
+ORDER BY o.Timestamp ASC;
+----------------------------------------------------------------------
+
+-- 3. Update order status
+UPDATE orders SET Status = ? WHERE OrderID = ?;
+-- Status: 'Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled'
+-----------------------------------------------------------------------------
+
+-- 4. Log order status change
+INSERT INTO orderstatuslog (OrderID, OldStatus, NewStatus, ChangedBy, Notes) 
+VALUES (?, ?, ?, ?, ?);
+----------------------------------------------------------------------------------
+
+-- 5. Today's sales summary
+SELECT 
+    COUNT(*) as total_orders,
+    SUM(Price * Quantity) as total_revenue,
+    AVG(Price * Quantity) as avg_order_value,
+    COUNT(DISTINCT UserID) as unique_customers
+FROM orders
+WHERE DATE(Timestamp) = CURDATE();
+--------------------------------------------------------------------------
+
+-- 6. Popular items
+SELECT 
+    ItemName,
+    Category,
+    COUNT(*) as times_ordered,
+    SUM(Quantity) as total_quantity,
+    SUM(Price * Quantity) as total_revenue
+FROM orders
+GROUP BY ItemName, Category
+ORDER BY times_ordered DESC
+LIMIT 10;
+-------------------------------------------------------------------------------------
+
+-- 7. Orders by hour (peak times)
+SELECT 
+    HOUR(Timestamp) as hour,
+    COUNT(*) as orders_count,
+    SUM(Price * Quantity) as revenue
+FROM orders
+GROUP BY HOUR(Timestamp)
+ORDER BY hour;
