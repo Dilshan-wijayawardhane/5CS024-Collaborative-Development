@@ -1,0 +1,80 @@
+
+-- Report Generation Queries
+
+-- 1. Daily activity report (last 7 days)
+SELECT 
+    DATE(Timestamp) as date,
+    COUNT(*) as total_activities,
+    COUNT(DISTINCT UserID) as unique_users,
+    SUM(CASE WHEN Action = 'LOGIN' THEN 1 ELSE 0 END) as logins,
+    SUM(CASE WHEN Action = 'CHECKIN' THEN 1 ELSE 0 END) as checkins
+FROM auditlogs
+WHERE Timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+GROUP BY DATE(Timestamp)
+ORDER BY date DESC;
+---------------------------------------------------------
+
+-- 2. Monthly user signups
+SELECT 
+    DATE_FORMAT(CreatedAt, '%Y-%m') as month,
+    COUNT(*) as new_users,
+    SUM(CASE WHEN Role = 'Admin' THEN 1 ELSE 0 END) as admins,
+    SUM(CASE WHEN Role = 'User' THEN 1 ELSE 0 END) as regular_users
+FROM users
+GROUP BY DATE_FORMAT(CreatedAt, '%Y-%m')
+ORDER BY month DESC;
+-----------------------------------------------------------------
+
+-- 3. Facility usage report (last 30 days)
+SELECT 
+    f.Name,
+    f.Type,
+    COUNT(c.CheckInID) as total_visits,
+    COUNT(DISTINCT c.UserID) as unique_visitors,
+    ROUND(COUNT(c.CheckInID) / 30, 2) as avg_daily_visits
+FROM facilities f
+LEFT JOIN checkins c ON f.FacilityID = c.FacilityID
+WHERE c.Timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY) OR c.Timestamp IS NULL
+GROUP BY f.FacilityID;
+-------------------------------------------------------------------------------------
+
+-- 4. Points earned by source (last 30 days)
+SELECT 
+    ActionType,
+    SUM(PointsChange) as total_points,
+    COUNT(*) as occurrences,
+    ROUND(AVG(PointsChange), 2) as avg_points
+FROM pointshistory
+WHERE CreatedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+AND PointsChange > 0
+GROUP BY ActionType;
+-------------------------------------------------------------------------------------
+
+-- 5. Export all users data
+SELECT 
+    UserID,
+    StudentID,
+    Name,
+    Email,
+    Role,
+    PointsBalance,
+    MembershipStatus,
+    DATE(CreatedAt) as registered_date
+FROM users
+INTO OUTFILE '/tmp/users_export.csv'
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
+-------------------------------------------------------------------------------------------
+-- 6. User engagement report
+SELECT 
+    u.UserID,
+    u.Name,
+    DATEDIFF(NOW(), u.CreatedAt) as days_since_join,
+    (SELECT COUNT(*) FROM checkins WHERE UserID = u.UserID) as checkins,
+    (SELECT COUNT(*) FROM orders WHERE UserID = u.UserID) as orders,
+    (SELECT COUNT(*) FROM gamefield WHERE UserID = u.UserID) as games_played,
+    (SELECT COUNT(*) FROM clubmemberships WHERE UserID = u.UserID AND Status = 'Active') as clubs_joined
+FROM users u
+WHERE u.Role = 'User'
+ORDER BY days_since_join;
