@@ -1,0 +1,69 @@
+
+ Join Request Management
+ ========================================
+
+ 1. Get all pending join requests
+SELECT 
+    jr.RequestID,
+    jr.ClubID,
+    c.Name as ClubName,
+    jr.UserID,
+    u.Name as UserName,
+    u.Email,
+    u.StudentID,
+    jr.RequestDate,
+    jr.Status
+FROM joinrequests jr
+JOIN clubs c ON jr.ClubID = c.ClubID
+JOIN users u ON jr.UserID = u.UserID
+WHERE jr.Status = 'Pending'
+ORDER BY jr.RequestDate ASC;
+---------------------------------------------------
+
+-- 2. Approve join request
+-- First update the request
+UPDATE joinrequests 
+SET Status = 'Approved', 
+    ReviewedBy = ?, 
+    ReviewedAt = NOW(), 
+    AdminNotes = ? 
+WHERE RequestID = ?;
+
+-- Then add to clubmemberships
+INSERT INTO clubmemberships (ClubID, UserID, JoinDate, Role, Status) 
+VALUES (?, ?, CURDATE(), 'Member', 'Active');
+---------------------------------------------------------------------------
+
+-- 3. Reject join request
+UPDATE joinrequests 
+SET Status = 'Rejected', 
+    ReviewedBy = ?, 
+    ReviewedAt = NOW(), 
+    AdminNotes = ? 
+WHERE RequestID = ?;
+-------------------------------------------------------------------------------
+
+-- 4. Get all requests for a specific club
+SELECT 
+    jr.RequestID,
+    u.Name,
+    u.Email,
+    jr.RequestDate,
+    jr.Status
+FROM joinrequests jr
+JOIN users u ON jr.UserID = u.UserID
+WHERE jr.ClubID = ?
+ORDER BY jr.RequestDate DESC;
+--------------------------------------------------------------------------------------
+
+-- 5. Get all clubs with member counts
+SELECT 
+    c.ClubID,
+    c.Name,
+    c.Category,
+    COUNT(cm.MembershipID) as member_count,
+    COUNT(jr.RequestID) as pending_requests
+FROM clubs c
+LEFT JOIN clubmemberships cm ON c.ClubID = cm.ClubID AND cm.Status = 'Active'
+LEFT JOIN joinrequests jr ON c.ClubID = jr.ClubID AND jr.Status = 'Pending'
+GROUP BY c.ClubID;
