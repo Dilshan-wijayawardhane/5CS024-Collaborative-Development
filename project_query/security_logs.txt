@@ -1,0 +1,69 @@
+
+-- Security & Audit Logs Queries
+ ========================================
+
+-- 1. Recent admin actions
+SELECT 
+    al.LogID,
+    COALESCE(u.Name, 'Unknown') as UserName,
+    u.Role,
+    al.Action,
+    al.Details,
+    al.Timestamp,
+    al.IPAddress,
+    al.UserAgent
+FROM auditlogs al
+LEFT JOIN users u ON al.UserID = u.UserID
+WHERE u.Role = 'Admin' 
+   OR al.Action IN ('ADMIN_LOGOUT', 'ADMIN_ADJUSTMENT', 'UPDATE_ROLE')
+ORDER BY al.Timestamp DESC
+LIMIT 50;
+--------------------------------------------------------------------------
+-- 2. Login activity (last 24 hours)
+SELECT 
+    al.Timestamp,
+    u.Name,
+    u.Email,
+    al.IPAddress,
+    al.UserAgent
+FROM auditlogs al
+JOIN users u ON al.UserID = u.UserID
+WHERE al.Action = 'LOGIN'
+AND al.Timestamp >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+ORDER BY al.Timestamp DESC;
+-------------------------------------------------------------------------
+-- 3. Suspicious/Unauthorized activities
+SELECT * FROM auditlogs 
+WHERE Action IN ('LOGIN_FAILED', 'UNAUTHORIZED_ACCESS', 'INVALID_TOKEN')
+ORDER BY Timestamp DESC
+LIMIT 100;
+---------------------------------------------------------------------------------
+-- 4. User activity timeline for specific user
+SELECT 
+    Action,
+    Details,
+    Timestamp,
+    IPAddress
+FROM auditlogs
+WHERE UserID = ?
+ORDER BY Timestamp DESC
+LIMIT 100;
+--------------------------------------------------------------------------------------------
+-- 5. Activity by IP address (potential bot detection)
+SELECT 
+    IPAddress,
+    COUNT(*) as activity_count,
+    COUNT(DISTINCT UserID) as unique_users,
+    MIN(Timestamp) as first_activity,
+    MAX(Timestamp) as last_activity
+FROM auditlogs
+WHERE Timestamp >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+GROUP BY IPAddress
+HAVING activity_count > 100
+ORDER BY activity_count DESC;
+----------------------------------------------------------------------------------------------
+-- 6. Database changes log
+SELECT * FROM auditlogs 
+WHERE TableName IS NOT NULL
+ORDER BY Timestamp DESC
+LIMIT 100;
