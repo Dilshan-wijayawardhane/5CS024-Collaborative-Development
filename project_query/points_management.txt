@@ -1,0 +1,77 @@
+
+ Points Management Queries
+---------------------------
+
+-- 1. View points configuration
+SELECT * FROM pointsconfig;
+----------------------------------
+-- 2. Update points for an action
+UPDATE pointsconfig SET Points = ? WHERE ActionType = ?;
+-------------------------------------------------------------
+-- 3. Add new points action type
+INSERT INTO pointsconfig (ActionType, Points, Description, MaxPerDay) 
+VALUES (?, ?, ?, ?);
+-----------------------------------------------------------------------
+
+-- 4. User points leaderboard
+SELECT 
+    UserID,
+    Name,
+    PointsBalance,
+    Role
+FROM users 
+ORDER BY PointsBalance DESC 
+LIMIT 10;
+----------------------------------------------------------------------------
+-- 5. Points history for a user
+SELECT 
+    ph.HistoryID,
+    ph.PointsChange,
+    ph.ActionType,
+    ph.Description,
+    ph.CreatedAt,
+    (SELECT SUM(PointsChange) FROM pointshistory 
+     WHERE UserID = ph.UserID AND HistoryID <= ph.HistoryID) as running_balance
+FROM pointshistory ph
+WHERE ph.UserID = ?
+ORDER BY ph.CreatedAt DESC
+LIMIT 50;
+-------------------------------------------------------------------------------------------------
+-- 6. Award points to user (admin)
+INSERT INTO pointshistory (UserID, PointsChange, ActionType, Description) 
+VALUES (?, ?, 'ADMIN_ADJUSTMENT', ?);
+
+UPDATE users SET PointsBalance = PointsBalance + ? WHERE UserID = ?;
+-----------------------------------------------------------------------------------------
+
+-- 7. Deduct points from user
+INSERT INTO pointshistory (UserID, PointsChange, ActionType, Description) 
+VALUES (?, -?, 'ADMIN_ADJUSTMENT', ?);
+
+UPDATE users SET PointsBalance = PointsBalance - ? WHERE UserID = ?;
+-----------------------------------------------------------------------------------------------
+
+-- 8. Points earned by action type (last 30 days)
+SELECT 
+    ActionType,
+    SUM(PointsChange) as total_points,
+    COUNT(*) as total_actions
+FROM pointshistory
+WHERE CreatedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+AND PointsChange > 0
+GROUP BY ActionType
+ORDER BY total_points DESC;
+----------------------------------------------------------------------------------------------------------
+
+-- 9. Membership tier distribution
+SELECT 
+    CASE 
+        WHEN PointsBalance < 500 THEN 'Bronze'
+        WHEN PointsBalance BETWEEN 500 AND 1999 THEN 'Silver'
+        WHEN PointsBalance BETWEEN 2000 AND 4999 THEN 'Gold'
+        ELSE 'Platinum'
+    END as tier,
+    COUNT(*) as user_count
+FROM users
+GROUP BY tier
+ORDER BY FIELD(tier, 'Bronze', 'Silver', 'Gold', 'Platinum');
