@@ -1,0 +1,54 @@
+
+ Facility Management Queries
+ ========================================
+
+-- 1. All facilities with statistics
+SELECT 
+    f.FacilityID,
+    f.Name,
+    f.Type,
+    f.Status,
+    f.Capacity,
+    COUNT(c.CheckInID) as total_visits,
+    COUNT(DISTINCT c.UserID) as unique_visitors,
+    MAX(c.Timestamp) as last_visit,
+    SUM(c.PointsAwarded) as points_awarded
+FROM facilities f
+LEFT JOIN checkins c ON f.FacilityID = c.FacilityID
+GROUP BY f.FacilityID;
+-----------------------------------------------------------------
+-- 2. Update facility status
+UPDATE facilities SET Status = ? WHERE FacilityID = ?;
+-- Status: 'Open', 'Closed', 'Maintenance'
+-----------------------------------------------------------------
+-- 3. Get facility usage for last 7 days
+SELECT 
+    f.Name,
+    DATE(c.Timestamp) as visit_date,
+    COUNT(*) as visits
+FROM facilities f
+JOIN checkins c ON f.FacilityID = c.FacilityID
+WHERE c.Timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+GROUP BY f.FacilityID, DATE(c.Timestamp)
+ORDER BY visit_date DESC;
+----------------------------------------------------------------
+-- 4. Most popular facilities
+SELECT 
+    Name,
+    Type,
+    COUNT(c.CheckInID) as total_visits
+FROM facilities f
+LEFT JOIN checkins c ON f.FacilityID = c.FacilityID
+GROUP BY f.FacilityID
+ORDER BY total_visits DESC
+LIMIT 5;
+----------------------------------------------------------------
+-- 5. Facility check-in by hour (peak times)
+SELECT 
+    f.Name,
+    HOUR(c.Timestamp) as hour,
+    COUNT(*) as checkins
+FROM facilities f
+JOIN checkins c ON f.FacilityID = c.FacilityID
+GROUP BY f.FacilityID, HOUR(c.Timestamp)
+ORDER BY checkins DESC;
