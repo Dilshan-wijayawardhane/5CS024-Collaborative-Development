@@ -1,0 +1,54 @@
+
+ Event Management Queries
+ ========================================
+
+-- 1. All events with registration counts
+SELECT 
+    e.EventID,
+    e.Title,
+    e.Location,
+    e.StartTime,
+    e.EndTime,
+    e.Status,
+    e.Category,
+    e.max_capacity,
+    COUNT(er.RegistrationID) as registered_count,
+    SUM(CASE WHEN er.AttendanceStatus = 'Attended' THEN 1 ELSE 0 END) as attended_count
+FROM events e
+LEFT JOIN eventregistrations er ON e.EventID = er.EventID
+GROUP BY e.EventID
+ORDER BY e.StartTime DESC;
+------------------------------------------------------------------------
+
+-- 2. Upcoming events
+SELECT * FROM events 
+WHERE StartTime > NOW() 
+AND Status != 'Cancelled'
+ORDER BY StartTime ASC;
+----------------------------------------------------------------------
+
+-- 3. Create new event
+INSERT INTO events (
+    Title, Description, Location, StartTime, EndTime, 
+    OrganizerID, Category, Status, max_capacity, ticket_price
+) VALUES (?, ?, ?, ?, ?, ?, ?, 'Upcoming', ?, ?);
+----------------------------------------------------------------------------
+
+-- 4. Update event status
+UPDATE events SET Status = ? WHERE EventID = ?;
+-- Status: 'Upcoming', 'Ongoing', 'Completed', 'Cancelled'
+--------------------------------------------------------------------------------
+
+-- 5. Get event attendees list
+SELECT 
+    u.Name,
+    u.Email,
+    u.StudentID,
+    er.RegistrationDate,
+    er.AttendanceStatus
+FROM eventregistrations er
+JOIN users u ON er.UserID = u.UserID
+WHERE er.EventID = ?;
+
+-- 6. Delete event (cascade will remove registrations)
+DELETE FROM events WHERE EventID = ?;
