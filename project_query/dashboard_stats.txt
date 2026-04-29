@@ -1,0 +1,50 @@
+
+ Admin Dashboard - Main Statistics
+ ========================================
+
+ 1. Total users count
+SELECT COUNT(*) as total_users FROM users;
+
+ 2. Today's active users (login today)
+SELECT COUNT(DISTINCT UserID) as today_active 
+FROM auditlogs 
+WHERE Action = 'LOGIN' 
+AND DATE(Timestamp) = CURDATE();
+
+ 3. Total check-ins today
+SELECT COUNT(*) as today_checkins 
+FROM checkins 
+WHERE DATE(Timestamp) = CURDATE();
+
+ 4. Points awarded today
+SELECT SUM(PointsAwarded) as points_awarded 
+FROM checkins 
+WHERE DATE(Timestamp) = CURDATE();
+
+ 5. Pending join requests
+SELECT COUNT(*) as pending_requests 
+FROM joinrequests 
+WHERE Status = 'Pending';
+
+ 6. Active facilities count
+SELECT COUNT(*) as active_facilities 
+FROM facilities 
+WHERE Status = 'Open';
+
+ 7. Today's orders
+SELECT COUNT(*) as today_orders 
+FROM orders 
+WHERE DATE(Timestamp) = CURDATE();
+
+ 8. Current borrowed books
+SELECT COUNT(*) as borrowed_books 
+FROM borrowed_books 
+WHERE status = 'borrowed';
+
+ 9. All in one dashboard query
+SELECT 
+    (SELECT COUNT(*) FROM users) as total_users,
+    (SELECT COUNT(DISTINCT UserID) FROM auditlogs WHERE Action = 'LOGIN' AND DATE(Timestamp) = CURDATE()) as today_active,
+    (SELECT COUNT(*) FROM checkins WHERE DATE(Timestamp) = CURDATE()) as today_checkins,
+    (SELECT COUNT(*) FROM joinrequests WHERE Status = 'Pending') as pending_requests,
+    (SELECT COUNT(*) FROM orders WHERE DATE(Timestamp) = CURDATE()) as today_orders;
