@@ -1,0 +1,50 @@
+
+ User Management Queries
+---------------------------------------
+
+ 1. Get all users with statistics
+SELECT 
+    u.UserID,
+    u.StudentID,
+    u.Name,
+    u.Email,
+    u.Role,
+    u.PointsBalance,
+    u.MembershipStatus,
+    DATE(u.CreatedAt) as joined_date,
+    COUNT(DISTINCT c.CheckInID) as total_checkins,
+    COUNT(DISTINCT bb.borrow_id) as books_borrowed,
+    COUNT(DISTINCT cm.MembershipID) as clubs_joined
+FROM users u
+LEFT JOIN checkins c ON u.UserID = c.UserID
+LEFT JOIN borrowed_books bb ON u.UserID = bb.user_id AND bb.status = 'borrowed'
+LEFT JOIN clubmemberships cm ON u.UserID = cm.UserID AND cm.Status = 'Active'
+GROUP BY u.UserID
+ORDER BY u.UserID;
+----------------------------------------------------------------------------------
+ 2. Search users by name or email
+SELECT * FROM users 
+WHERE Name LIKE CONCAT('%', ?, '%') 
+OR Email LIKE CONCAT('%', ?, '%');
+--------------------------------------------------------------------------------
+ 3. Update user role
+UPDATE users SET Role = ? WHERE UserID = ?;
+ Role options: 'Admin', 'User', 'Visitor'
+------------------------------------------------------------------
+-- 4. Update membership status
+UPDATE users SET MembershipStatus = ? WHERE UserID = ?;
+-- Status options: 'Active', 'Inactive', 'Expired'
+----------------------------------------------------------------------
+-- 5. Get user activity summary
+SELECT 
+    u.Name,
+    u.Email,
+    (SELECT COUNT(*) FROM checkins WHERE UserID = u.UserID) as checkins,
+    (SELECT COUNT(*) FROM orders WHERE UserID = u.UserID) as orders,
+    (SELECT COUNT(*) FROM gamefield WHERE UserID = u.UserID) as games_played,
+    (SELECT PointsBalance FROM users WHERE UserID = u.UserID) as current_points
+FROM users u
+WHERE u.UserID = ?;
+------------------------------------------------------------------------------------
+-- 6. Delete user (if needed)
+DELETE FROM users WHERE UserID = ?;
