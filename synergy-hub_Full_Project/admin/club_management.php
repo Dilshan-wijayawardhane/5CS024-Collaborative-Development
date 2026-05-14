@@ -31,7 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_club'])) {
     $insert_sql = "INSERT INTO Clubs (Name, Description, LeaderID, Category, MeetingDay, MeetingTime, Status) 
                    VALUES (?, ?, ?, ?, ?, ?, ?)";
     $insert_stmt = mysqli_prepare($conn, $insert_sql);
-    mysqli_stmt_bind_param($insert_stmt, "ssissss", $name, $description, $leader_id, $category, $meeting_day, $meeting_time, $status);
+    
+    // Fix: Handle null leader_id properly
+    $null_leader = null;
+    if ($leader_id === null) {
+        mysqli_stmt_bind_param($insert_stmt, "ssissss", $name, $description, $null_leader, $category, $meeting_day, $meeting_time, $status);
+    } else {
+        mysqli_stmt_bind_param($insert_stmt, "ssissss", $name, $description, $leader_id, $category, $meeting_day, $meeting_time, $status);
+    }
     
     if (mysqli_stmt_execute($insert_stmt)) {
         $message = "Club created successfully!";
@@ -44,19 +51,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_club'])) {
 // Handle Delete Club
 if (isset($_POST['delete_club'])) {
     $club_id = intval($_POST['club_id']);
-    $delete_sql = "DELETE FROM Clubs WHERE ClubID = ?";
-    $delete_stmt = mysqli_prepare($conn, $delete_sql);
-    mysqli_stmt_bind_param($delete_stmt, "i", $club_id);
     
-    if (mysqli_stmt_execute($delete_stmt)) {
+    // Start transaction
+    mysqli_begin_transaction($conn);
+    
+    try {
+        // Delete club memberships first
+        $delete_members_sql = "DELETE FROM ClubMemberships WHERE ClubID = ?";
+        $delete_members_stmt = mysqli_prepare($conn, $delete_members_sql);
+        mysqli_stmt_bind_param($delete_members_stmt, "i", $club_id);
+        mysqli_stmt_execute($delete_members_stmt);
+        
+        // Delete join requests
+        $delete_requests_sql = "DELETE FROM JoinRequests WHERE ClubID = ?";
+        $delete_requests_stmt = mysqli_prepare($conn, $delete_requests_sql);
+        mysqli_stmt_bind_param($delete_requests_stmt, "i", $club_id);
+        mysqli_stmt_execute($delete_requests_stmt);
+        
+        // Delete the club
+        $delete_sql = "DELETE FROM Clubs WHERE ClubID = ?";
+        $delete_stmt = mysqli_prepare($conn, $delete_sql);
+        mysqli_stmt_bind_param($delete_stmt, "i", $club_id);
+        mysqli_stmt_execute($delete_stmt);
+        
+        mysqli_commit($conn);
         $message = "Club deleted successfully!";
         logAdminActivity($conn, 'DELETE_CLUB', "Deleted club ID: $club_id");
-    } else {
-        $error = "Error deleting club";
+    } catch (Exception $e) {
+        mysqli_rollback($conn);
+        $error = "Error deleting club: " . $e->getMessage();
     }
 }
 
-// Handle Approve Request
+// Handle Approve Request - FIXED VERSION
 if (isset($_POST['approve_request'])) {
     $request_id = intval($_POST['request_id']);
     $club_id = intval($_POST['club_id']);
@@ -78,17 +105,39 @@ if (isset($_POST['approve_request'])) {
             throw new Exception('User is already a member of this club');
         }
         
-        // Update join request
-        $update_sql = "UPDATE JoinRequests SET Status='Approved', ReviewedBy=?, ReviewedAt=NOW(), AdminNotes=? WHERE RequestID=?";
-        $update_stmt = mysqli_prepare($conn, $update_sql);
-        mysqli_stmt_bind_param($update_stmt, "isi", $_SESSION['user_id'], $admin_notes, $request_id);
-        mysqli_stmt_execute($update_stmt);
+        // FIRST: Delete any existing approved/rejected/pending requests for this user and club to avoid duplicate constraint
+        $delete_old_sql = "DELETE FROM JoinRequests WHERE UserID = ? AND ClubID = ?";
+        $delete_old_stmt = mysqli_prepare($conn, $delete_old_sql);
+        mysqli_stmt_bind_param($delete_old_stmt, "ii", $user_id, $club_id);
+        mysqli_stmt_execute($delete_old_stmt);
         
-        // Add to club memberships
-        $insert_sql = "INSERT INTO ClubMemberships (ClubID, UserID, Role, Status) VALUES (?, ?, 'Member', 'Active')";
-        $insert_stmt = mysqli_prepare($conn, $insert_sql);
-        mysqli_stmt_bind_param($insert_stmt, "ii", $club_id, $user_id);
-        mysqli_stmt_execute($insert_stmt);
+        // THEN: Insert new approved request (or update if you want to keep history)
+        $insert_request_sql = "INSERT INTO JoinRequests (UserID, ClubID, Status, AdminNotes, ReviewedBy, RequestDate, ReviewedAt) 
+                               VALUES (?, ?, 'Approved', ?, ?, NOW(), NOW())";
+        $insert_request_stmt = mysqli_prepare($conn, $insert_request_sql);
+        mysqli_stmt_bind_param($insert_request_stmt, "iisi", $user_id, $club_id, $admin_notes, $_SESSION['user_id']);
+        mysqli_stmt_execute($insert_request_stmt);
+        
+        // Check if user already has membership (in case of soft delete)
+        $check_existing = "SELECT MembershipID FROM ClubMemberships WHERE ClubID = ? AND UserID = ?";
+        $check_existing_stmt = mysqli_prepare($conn, $check_existing);
+        mysqli_stmt_bind_param($check_existing_stmt, "ii", $club_id, $user_id);
+        mysqli_stmt_execute($check_existing_stmt);
+        $existing_result = mysqli_stmt_get_result($check_existing_stmt);
+        
+        if (mysqli_num_rows($existing_result) > 0) {
+            // Update existing membership to active
+            $update_member_sql = "UPDATE ClubMemberships SET Status = 'Active', Role = 'Member', JoinDate = NOW() WHERE ClubID = ? AND UserID = ?";
+            $update_member_stmt = mysqli_prepare($conn, $update_member_sql);
+            mysqli_stmt_bind_param($update_member_stmt, "ii", $club_id, $user_id);
+            mysqli_stmt_execute($update_member_stmt);
+        } else {
+            // Add new membership
+            $insert_sql = "INSERT INTO ClubMemberships (ClubID, UserID, Role, Status, JoinDate) VALUES (?, ?, 'Member', 'Active', NOW())";
+            $insert_stmt = mysqli_prepare($conn, $insert_sql);
+            mysqli_stmt_bind_param($insert_stmt, "ii", $club_id, $user_id);
+            mysqli_stmt_execute($insert_stmt);
+        }
         
         // Add 20 points to user
         $points_sql = "UPDATE Users SET PointsBalance = PointsBalance + 20 WHERE UserID = ?";
@@ -136,7 +185,7 @@ if (isset($_POST['approve_request'])) {
                                     CONCAT('Your request to join ', ?, ' has been approved! You received 20 points.'), 
                                     'club', NOW())";
                 $notif_stmt = mysqli_prepare($conn, $notif_sql);
-                mysqli_stmt_bind_param($notif_stmt, "iss", $user_id, $club_name);
+                mysqli_stmt_bind_param($notif_stmt, "is", $user_id, $club_name);
                 mysqli_stmt_execute($notif_stmt);
             }
         }
@@ -151,7 +200,7 @@ if (isset($_POST['approve_request'])) {
     }
 }
 
-// Handle Reject Request
+// Handle Reject Request - FIXED VERSION
 if (isset($_POST['reject_request'])) {
     $request_id = intval($_POST['request_id']);
     $admin_notes = mysqli_real_escape_string($conn, $_POST['admin_notes'] ?? '');
@@ -169,25 +218,42 @@ if (isset($_POST['reject_request'])) {
     $info = mysqli_fetch_assoc($info_result);
     
     if ($info) {
-        $update_sql = "UPDATE JoinRequests SET Status='Rejected', ReviewedBy=?, ReviewedAt=NOW(), AdminNotes=? WHERE RequestID=?";
-        $update_stmt = mysqli_prepare($conn, $update_sql);
-        mysqli_stmt_bind_param($update_stmt, "isi", $_SESSION['user_id'], $admin_notes, $request_id);
-        mysqli_stmt_execute($update_stmt);
+        // Start transaction
+        mysqli_begin_transaction($conn);
         
-        // Check if notifications table exists
-        $check_notif = mysqli_query($conn, "SHOW TABLES LIKE 'notifications'");
-        if (mysqli_num_rows($check_notif) > 0) {
-            $notif_sql = "INSERT INTO notifications (user_id, title, message, type, created_at) 
-                         VALUES (?, 'Club Join Request Rejected', 
-                                CONCAT('Your request to join ', ?, ' has been rejected. Reason: ', ?), 
-                                'club', NOW())";
-            $notif_stmt = mysqli_prepare($conn, $notif_sql);
-            mysqli_stmt_bind_param($notif_stmt, "isss", $info['UserID'], $info['ClubName'], $admin_notes);
-            mysqli_stmt_execute($notif_stmt);
+        try {
+            // Delete existing requests for this user and club
+            $delete_old_sql = "DELETE FROM JoinRequests WHERE UserID = ? AND ClubID = ?";
+            $delete_old_stmt = mysqli_prepare($conn, $delete_old_sql);
+            mysqli_stmt_bind_param($delete_old_stmt, "ii", $info['UserID'], $info['ClubID']);
+            mysqli_stmt_execute($delete_old_stmt);
+            
+            // Insert new rejected request
+            $insert_sql = "INSERT INTO JoinRequests (UserID, ClubID, Status, AdminNotes, ReviewedBy, RequestDate, ReviewedAt) 
+                          VALUES (?, ?, 'Rejected', ?, ?, NOW(), NOW())";
+            $insert_stmt = mysqli_prepare($conn, $insert_sql);
+            mysqli_stmt_bind_param($insert_stmt, "iisi", $info['UserID'], $info['ClubID'], $admin_notes, $_SESSION['user_id']);
+            mysqli_stmt_execute($insert_stmt);
+            
+            // Check if notifications table exists
+            $check_notif = mysqli_query($conn, "SHOW TABLES LIKE 'notifications'");
+            if (mysqli_num_rows($check_notif) > 0) {
+                $notif_sql = "INSERT INTO notifications (user_id, title, message, type, created_at) 
+                             VALUES (?, 'Club Join Request Rejected', 
+                                    CONCAT('Your request to join ', ?, ' has been rejected. Reason: ', ?), 
+                                    'club', NOW())";
+                $notif_stmt = mysqli_prepare($conn, $notif_sql);
+                mysqli_stmt_bind_param($notif_stmt, "isss", $info['UserID'], $info['ClubName'], $admin_notes);
+                mysqli_stmt_execute($notif_stmt);
+            }
+            
+            mysqli_commit($conn);
+            $message = "Request rejected.";
+            logAdminActivity($conn, 'REJECT_REQUEST', "Rejected request for club: {$info['ClubName']}");
+        } catch (Exception $e) {
+            mysqli_rollback($conn);
+            $error = "Error: " . $e->getMessage();
         }
-        
-        $message = "Request rejected.";
-        logAdminActivity($conn, 'REJECT_REQUEST', "Rejected request ID: $request_id");
     } else {
         $error = "Request not found";
     }
@@ -202,7 +268,7 @@ $stats_sql = "SELECT
 $stats_result = mysqli_query($conn, $stats_sql);
 $stats = mysqli_fetch_assoc($stats_result);
 
-// Get pending join requests
+// Get pending join requests (only Pending status)
 $pending_sql = "SELECT jr.*, c.Name as ClubName, u.Name as UserName, u.Email, u.StudentID 
                 FROM JoinRequests jr
                 JOIN Clubs c ON jr.ClubID = c.ClubID
@@ -229,12 +295,17 @@ $clubs_sql = "SELECT c.*, u.Name as LeaderName,
              ORDER BY c.Name";
 $clubs_result = mysqli_query($conn, $clubs_sql);
 
-// Get all join requests for requests tab
-$all_requests_sql = "SELECT jr.*, c.Name as ClubName, u.Name as UserName, u.Email, u.StudentID 
-                    FROM JoinRequests jr
-                    JOIN Clubs c ON jr.ClubID = c.ClubID
-                    JOIN Users u ON jr.UserID = u.UserID
-                    ORDER BY FIELD(jr.Status, 'Pending'), jr.RequestDate DESC";
+// Get all join requests for requests tab (excluding duplicates - show only the latest per user-club)
+$all_requests_sql = "SELECT jr1.*, c.Name as ClubName, u.Name as UserName, u.Email, u.StudentID 
+                    FROM JoinRequests jr1
+                    JOIN Clubs c ON jr1.ClubID = c.ClubID
+                    JOIN Users u ON jr1.UserID = u.UserID
+                    WHERE jr1.RequestID IN (
+                        SELECT MAX(RequestID) 
+                        FROM JoinRequests 
+                        GROUP BY UserID, ClubID
+                    )
+                    ORDER BY FIELD(jr1.Status, 'Pending'), jr1.RequestDate DESC";
 $all_requests_result = mysqli_query($conn, $all_requests_sql);
 ?>
 <!DOCTYPE html>
@@ -375,6 +446,45 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
         .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
         .status-active { background: #dcfce7; color: #16a34a; }
         .status-inactive { background: #fee; color: #ef4444; }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-sm { padding: 4px 8px; font-size: 12px; }
+        
+        .view-all {
+            display: inline-block;
+            margin-top: 10px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Utility classes */
+        .text-center { text-align: center; }
+        .mt-3 { margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -388,10 +498,10 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
                 <h1 class="page-title"><i class="fa-solid fa-users"></i> Club Management</h1>
                 
                 <?php if($message): ?>
-                    <div class="alert alert-success"><?php echo $message; ?></div>
+                    <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
                 <?php endif; ?>
                 <?php if($error): ?>
-                    <div class="alert alert-danger"><?php echo $error; ?></div>
+                    <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
                 
                 <!-- Stats -->
@@ -413,7 +523,7 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
                 
                 <!-- Dashboard Tab -->
                 <div id="tab-dashboard" class="tab-content <?php echo $active_tab == 'dashboard' ? 'active' : ''; ?>">
-                    <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="dashboard-grid">
                         <div class="dashboard-card">
                             <h3>Pending Join Requests</h3>
                             <?php if(mysqli_num_rows($pending_result) > 0): ?>
@@ -461,30 +571,34 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
                 
                 <!-- Clubs Tab -->
                 <div id="tab-clubs" class="tab-content <?php echo $active_tab == 'clubs' ? 'active' : ''; ?>">
-                    <?php while($club = mysqli_fetch_assoc($clubs_result)): ?>
-                    <div class="club-card">
-                        <div class="club-header">
-                            <div><span class="club-name"><?php echo htmlspecialchars($club['Name']); ?></span> <span class="club-category"><?php echo $club['Category']; ?></span></div>
-                            <div><span class="status-badge status-<?php echo strtolower($club['Status']); ?>"><?php echo $club['Status']; ?></span></div>
+                    <?php if(mysqli_num_rows($clubs_result) > 0): ?>
+                        <?php while($club = mysqli_fetch_assoc($clubs_result)): ?>
+                        <div class="club-card">
+                            <div class="club-header">
+                                <div><span class="club-name"><?php echo htmlspecialchars($club['Name']); ?></span> <span class="club-category"><?php echo htmlspecialchars($club['Category']); ?></span></div>
+                                <div><span class="status-badge status-<?php echo strtolower($club['Status']); ?>"><?php echo $club['Status']; ?></span></div>
+                            </div>
+                            <div class="club-details">
+                                <div><i class="fa-regular fa-calendar"></i> Since <?php echo date('Y', strtotime($club['CreatedAt'])); ?></div>
+                                <div><i class="fa-solid fa-users"></i> Members: <?php echo $club['MemberCount']; ?></div>
+                                <div><i class="fa-solid fa-crown"></i> Leader: <?php echo htmlspecialchars($club['LeaderName'] ?: 'Not Assigned'); ?></div>
+                            </div>
+                            <div class="club-details">
+                                <?php if($club['MeetingDay']): ?><div><i class="fa-regular fa-calendar-alt"></i> <?php echo htmlspecialchars($club['MeetingDay']); ?> at <?php echo htmlspecialchars($club['MeetingTime']); ?></div><?php endif; ?>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-sm" onclick="editClub(<?php echo $club['ClubID']; ?>)">Edit</button>
+                                <button class="btn btn-secondary btn-sm" onclick="viewMembers(<?php echo $club['ClubID']; ?>)">Members</button>
+                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this club? This will remove all memberships and requests.');">
+                                    <input type="hidden" name="club_id" value="<?php echo $club['ClubID']; ?>">
+                                    <button type="submit" name="delete_club" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="club-details">
-                            <div><i class="fa-regular fa-calendar"></i> Since <?php echo date('Y', strtotime($club['CreatedAt'])); ?></div>
-                            <div><i class="fa-solid fa-users"></i> Members: <?php echo $club['MemberCount']; ?></div>
-                            <div><i class="fa-solid fa-crown"></i> Leader: <?php echo htmlspecialchars($club['LeaderName'] ?: 'Not Assigned'); ?></div>
-                        </div>
-                        <div class="club-details">
-                            <?php if($club['MeetingDay']): ?><div><i class="fa-regular fa-calendar-alt"></i> <?php echo $club['MeetingDay']; ?> at <?php echo $club['MeetingTime']; ?></div><?php endif; ?>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-primary btn-sm" onclick="editClub(<?php echo $club['ClubID']; ?>)">Edit</button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewMembers(<?php echo $club['ClubID']; ?>)">Members</button>
-                            <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this club? This will remove all memberships.');">
-                                <input type="hidden" name="club_id" value="<?php echo $club['ClubID']; ?>">
-                                <button type="submit" name="delete_club" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                        </div>
-                    </div>
-                    <?php endwhile; ?>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p>No clubs found. <a href="?tab=add">Create your first club</a></p>
+                    <?php endif; ?>
                 </div>
                 
                 <!-- Add Club Tab -->
@@ -493,10 +607,10 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
                         <h3>Add New Club</h3>
                         <form method="POST">
                             <div class="form-row">
-                                <div class="form-group"><label>Club Name</label><input type="text" name="name" required></div>
-                                <div class="form-group"><label>Category</label><select name="category"><option value="Technical">Technical</option><option value="Cultural">Cultural</option><option value="Sports">Sports</option><option value="Academic">Academic</option><option value="Arts">Arts</option><option value="Other">Other</option></select></div>
+                                <div class="form-group"><label>Club Name *</label><input type="text" name="name" required></div>
+                                <div class="form-group"><label>Category *</label><select name="category" required><option value="Technical">Technical</option><option value="Cultural">Cultural</option><option value="Sports">Sports</option><option value="Academic">Academic</option><option value="Arts">Arts</option><option value="Other">Other</option></select></div>
                             </div>
-                            <div class="form-group"><label>Description</label><textarea name="description" rows="4" required></textarea></div>
+                            <div class="form-group"><label>Description *</label><textarea name="description" rows="4" required></textarea></div>
                             <div class="form-row">
                                 <div class="form-group"><label>Meeting Day</label><input type="text" name="meeting_day" placeholder="e.g., Monday"></div>
                                 <div class="form-group"><label>Meeting Time</label><input type="text" name="meeting_time" placeholder="e.g., 3:00 PM"></div>
@@ -513,32 +627,36 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
                 <!-- Requests Tab -->
                 <div id="tab-requests" class="tab-content <?php echo $active_tab == 'requests' ? 'active' : ''; ?>">
                     <h3>All Join Requests</h3>
-                    <?php while($request = mysqli_fetch_assoc($all_requests_result)): 
-                        $status_class = $request['Status'] == 'Pending' ? 'pending-card' : ($request['Status'] == 'Approved' ? 'approved-card' : 'rejected-card');
-                    ?>
-                    <div class="request-card <?php echo $status_class; ?>">
-                        <div class="request-header">
-                            <div><span class="request-user"><?php echo htmlspecialchars($request['UserName']); ?></span> wants to join <strong><?php echo htmlspecialchars($request['ClubName']); ?></strong></div>
-                            <span class="status-badge" style="background: <?php echo $request['Status'] == 'Pending' ? '#f59e0b' : ($request['Status'] == 'Approved' ? '#10b981' : '#ef4444'); ?>; color: white;"><?php echo $request['Status']; ?></span>
+                    <?php if(mysqli_num_rows($all_requests_result) > 0): ?>
+                        <?php while($request = mysqli_fetch_assoc($all_requests_result)): 
+                            $status_class = $request['Status'] == 'Pending' ? 'pending-card' : ($request['Status'] == 'Approved' ? 'approved-card' : 'rejected-card');
+                        ?>
+                        <div class="request-card <?php echo $status_class; ?>">
+                            <div class="request-header">
+                                <div><span class="request-user"><?php echo htmlspecialchars($request['UserName']); ?></span> wants to join <strong><?php echo htmlspecialchars($request['ClubName']); ?></strong></div>
+                                <span class="status-badge" style="background: <?php echo $request['Status'] == 'Pending' ? '#f59e0b' : ($request['Status'] == 'Approved' ? '#10b981' : '#ef4444'); ?>; color: white;"><?php echo $request['Status']; ?></span>
+                            </div>
+                            <div class="request-details">Student ID: <?php echo htmlspecialchars($request['StudentID']); ?> | Requested: <?php echo date('M d, Y', strtotime($request['RequestDate'])); ?></div>
+                            <?php if($request['Status'] == 'Pending'): ?>
+                            <div class="pending-actions">
+                                <form method="POST" action="" style="display: inline-block;">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['RequestID']; ?>">
+                                    <input type="hidden" name="club_id" value="<?php echo $request['ClubID']; ?>">
+                                    <input type="hidden" name="user_id" value="<?php echo $request['UserID']; ?>">
+                                    <button type="submit" name="approve_request" class="btn btn-success btn-sm" onclick="return confirm('Approve this request? User will receive 20 points.');">Approve</button>
+                                </form>
+                                <form method="POST" action="" style="display: inline-block;">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['RequestID']; ?>">
+                                    <input type="text" name="admin_notes" placeholder="Reason" style="padding: 6px; width: 200px;">
+                                    <button type="submit" name="reject_request" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                            </div>
+                            <?php endif; ?>
                         </div>
-                        <div class="request-details">Student ID: <?php echo $request['StudentID']; ?> | Requested: <?php echo date('M d, Y', strtotime($request['RequestDate'])); ?></div>
-                        <?php if($request['Status'] == 'Pending'): ?>
-                        <div class="pending-actions">
-                            <form method="POST" action="" style="display: inline-block;">
-                                <input type="hidden" name="request_id" value="<?php echo $request['RequestID']; ?>">
-                                <input type="hidden" name="club_id" value="<?php echo $request['ClubID']; ?>">
-                                <input type="hidden" name="user_id" value="<?php echo $request['UserID']; ?>">
-                                <button type="submit" name="approve_request" class="btn btn-success btn-sm" onclick="return confirm('Approve this request? User will receive 20 points.');">Approve</button>
-                            </form>
-                            <form method="POST" action="" style="display: inline-block;">
-                                <input type="hidden" name="request_id" value="<?php echo $request['RequestID']; ?>">
-                                <input type="text" name="admin_notes" placeholder="Reason" style="padding: 6px; width: 200px;">
-                                <button type="submit" name="reject_request" class="btn btn-danger btn-sm">Reject</button>
-                            </form>
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                    <?php endwhile; ?>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p>No join requests found.</p>
+                    <?php endif; ?>
                 </div>
                 
                 <!-- Members Tab -->
@@ -586,20 +704,20 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
                     let html = '<div class="table-container"><table class="data-table"><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Role</th><th>Join Date</th><th>Actions</th></tr></thead><tbody>';
                     data.forEach(member => {
                         html += `<tr>
-                                    <td>${escapeHtml(member.Name)}</td>
-                                    <td>${escapeHtml(member.StudentID || 'N/A')}</td>
-                                    <td>${escapeHtml(member.Email)}</td>
-                                    <td>
+                                      <td>${escapeHtml(member.Name)}</td>
+                                      <td>${escapeHtml(member.StudentID || 'N/A')}</td>
+                                      <td>${escapeHtml(member.Email)}</td>
+                                      <td>
                                         <select onchange="updateRole(${member.UserID}, ${member.ClubID}, this.value)">
                                             <option value="Member" ${member.Role == 'Member' ? 'selected' : ''}>Member</option>
                                             <option value="Leader" ${member.Role == 'Leader' ? 'selected' : ''}>Leader</option>
                                         </select>
-                                    </td>
-                                    <td>${member.JoinDate}</td>
-                                    <td><button class="btn btn-danger btn-sm" onclick="removeMember(${member.UserID}, ${member.ClubID})">Remove</button></td>
-                                </tr>`;
+                                      </td>
+                                      <td>${member.JoinDate}</td>
+                                      <td><button class="btn btn-danger btn-sm" onclick="removeMember(${member.UserID}, ${member.ClubID})">Remove</button></td>
+                                  </tr>`;
                     });
-                    html += '</tbody></table></div>';
+                    html += '</tbody><table></div>';
                     document.getElementById('members_list').innerHTML = html;
                     
                     const searchInput = document.getElementById('member_search');
@@ -613,6 +731,10 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
                             });
                         };
                     }
+                })
+                .catch(error => {
+                    console.error('Error loading members:', error);
+                    document.getElementById('members_list').innerHTML = '<p class="text-center">Error loading members. Please make sure get_club_members.php exists.</p>';
                 });
         }
         
@@ -645,6 +767,14 @@ $all_requests_result = mysqli_query($conn, $all_requests_sql);
             const clubId = document.getElementById('member_club_select').value;
             if(clubId) window.location.href = 'export_members.php?club_id=' + clubId;
         }
+        
+        // Set active tab on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeTab = '<?php echo $active_tab; ?>';
+            if(activeTab === 'members' && document.getElementById('member_club_select').value) {
+                loadMembers();
+            }
+        });
     </script>
 </body>
 </html>
