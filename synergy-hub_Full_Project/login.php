@@ -91,13 +91,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             content: "";
             position: absolute;
             inset: 0;
-            background-image: url("campus.jpg");
+            background-image: url('loginimage.jpg');
             background-size: cover;
             background-position: center;
             filter: blur(4px) brightness(0.65);
             transform: scale(1.05);
             pointer-events: none;
-        }
+}
         
         .auth-container {
             flex: 1;
@@ -110,46 +110,82 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .auth-box {
-            background: rgba(255, 255, 255, 0.15);
+            background: #ffffff;  /* සුදු පසුබිම */
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 400px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-        }
+            backdrop-filter: none;  /* blur ඉවත් කරන්න */
+            border: 1px solid rgba(0, 0, 0, 0.1);
+}
         
         .auth-box h2 {
-            color: white;
+            color: #1e4a76;  /* ගැඹුරු නිල් */
             margin-bottom: 30px;
             text-align: center;
             font-size: 28px;
             font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
+            text-shadow: none;
+}
+        /* Profile Icon Container - Center */
+.profile-icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.profile-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid #1e4a76;
+    box-shadow: 0 4px 15px rgba(30, 74, 118, 0.2);
+}
+
+.profile-icon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(30, 74, 118, 0.3);
+    border-color: #2c7da0;
+}
+
+.profile-icon svg {
+    transition: transform 0.3s ease;
+}
+
+.profile-icon:hover svg {
+    transform: scale(1.1);
+}
         
-        .auth-box input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            background: rgba(255,255,255,0.9);
-        }
-        
-        .auth-box input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-        }
+       .auth-box input {
+          width: 100%;
+          padding: 15px;
+          margin-bottom: 15px;
+          border: 2px solid #e2e8f0;
+          border-radius: 10px;
+          font-size: 16px;
+          transition: border-color 0.3s;
+          background: #ffffff;
+          color: #1e293b;
+}
+
+       .auth-box input:focus {
+        outline: none;
+        border-color: #2c7da0;  /* නිල් focus border */
+        background: white;
+}
         
         .auth-box button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -158,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
             margin-bottom: 15px;
-        }
+}
         
         .auth-box button:hover {
             transform: translateY(-2px);
@@ -166,17 +202,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .auth-box p {
-            text-align: center;
-            color: white;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
+             text-align: center;
+             color: #475569;
+             text-shadow: none;
+}
         
         .auth-box a {
-            color: #22d3ee;
+            color: #2c7da0;
             text-decoration: none;
             font-weight: 500;
-        }
-        
+}
         .auth-box a:hover {
             text-decoration: underline;
         }
@@ -192,16 +227,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .error {
-            background: rgba(255, 0, 0, 0.2);
-            color: white;
+            background: #fee2e2;
+            color: #b91c1c;
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 15px;
             text-align: center;
             font-size: 14px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
-        }
+            border: 1px solid #fecaca;
+}
     </style>
 </head>
 <body class="auth">
@@ -211,6 +245,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="auth-container">
     <div class="auth-box">
         <h2>Synergy Hub</h2>
+        <div class="profile-icon-container">
+        <div class="profile-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1e4a76" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+    </div>
         
         <?php if($error): ?>
             <div class="error"><?php echo escape($error); ?></div>
