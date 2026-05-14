@@ -1,13 +1,20 @@
 <?php
+
+
 require_once 'config.php';
 require_once 'functions.php';
+
+
+
 
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
 
-// Get gym status
+
+
+
 $sql = "SELECT * FROM gym_status ORDER BY id DESC LIMIT 1";
 $result = mysqli_query($conn, $sql);
 $gym = mysqli_fetch_assoc($result);
