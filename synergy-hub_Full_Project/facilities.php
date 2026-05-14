@@ -1,12 +1,7 @@
 <?php
 
-
-
 require_once 'config.php';
 require_once 'functions.php';
-
-
-
 
 if (!isLoggedIn()) {
     header("Location: login.php");
@@ -15,16 +10,10 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-
-
-
 $sql = "SELECT * FROM Facilities ORDER BY Type, Name";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
-
-
-
 
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
@@ -33,16 +22,9 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
-
-
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
-
-
-
-
 
 $crowd_data = [
     'Gym' => ['current' => 82, 'total' => 150, 'hours' => '06:00 - 22:00'],
@@ -50,6 +32,16 @@ $crowd_data = [
     'Café' => ['current' => 45, 'total' => 80, 'hours' => '07:00 - 21:00'],
     'GameField' => ['current' => 28, 'total' => 100, 'hours' => '09:00 - 20:00'],
     'Transport' => ['current' => 12, 'total' => 50, 'hours' => '24/7'],
+];
+
+// Facility images mapping
+$facility_images = [
+    'Gym' => 'GYM.jfif',
+    'Library' => 'LIBRARY.jfif',
+    'Café' => 'CAFÉ.jpg',
+    'GameField' => 'SPORT.jpg',
+    'Transport' => 'TRANSPORT.jfif',
+    'default' => 'SWIMMING.jfif'
 ];
 ?>
 
@@ -69,47 +61,29 @@ $crowd_data = [
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR - White/Blue theme */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -119,7 +93,7 @@ $crowd_data = [
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -136,29 +110,33 @@ $crowd_data = [
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
         }
         
+        .home-link:hover {
+            color: #2c7da0;
+        }
+        
+        /* SIDEBAR - White/Blue theme */
         .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             width: 280px;
             height: 100%;
-            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
-            backdrop-filter: blur(10px);
+            background: white;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
             overflow-y: auto;
         }
 
@@ -168,22 +146,9 @@ $crowd_data = [
 
         .sidebar-header {
             padding: 25px 20px 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
             margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
         }
 
         .sidebar-header h2 {
@@ -191,32 +156,25 @@ $crowd_data = [
             font-size: 24px;
             font-weight: 700;
             margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-header p {
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 13px;
             margin: 0;
-            font-weight: 400;
         }
 
         .sidebar-header p i {
             color: #22d3ee;
             margin-right: 5px;
-            font-size: 10px;
         }
 
         .sidebar-user {
             padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             margin: 0 15px 20px 15px;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -226,34 +184,29 @@ $crowd_data = [
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-user-info h4 {
-            color: white;
+            color: #1e293b;
             font-size: 15px;
             margin: 0 0 3px 0;
             font-weight: 600;
         }
 
         .sidebar-user-info p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 12px;
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .sidebar-user-info p i {
             color: #fbbf24;
-            font-size: 10px;
         }
 
         .sidebar-nav {
@@ -270,43 +223,39 @@ $crowd_data = [
             display: flex;
             align-items: center;
             padding: 12px 18px;
-            color: #b8c7de;
+            color: #475569;
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
             gap: 12px;
             font-weight: 500;
             font-size: 15px;
-            position: relative;
-            overflow: hidden;
         }
 
         .sidebar-nav-link i {
             width: 22px;
             font-size: 1.1rem;
-            color: #5f7d9e;
+            color: #94a3b8;
             transition: all 0.3s ease;
-            text-align: center;
         }
 
         .sidebar-nav-link:hover {
-            background: rgba(168, 192, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
+            background: #e0f2fe;
+            color: #1e4a76;
         }
 
         .sidebar-nav-link:hover i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
-            color: white;
-            border-left: 3px solid #a5b4fc;
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
         }
 
         .sidebar-nav-link.active i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-badge {
@@ -317,48 +266,35 @@ $crowd_data = [
             padding: 2px 6px;
             border-radius: 30px;
             margin-left: auto;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .sidebar-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
             margin: 20px 20px;
         }
 
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .sidebar-club-preview {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin: 0 15px 20px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-club-preview h4 {
-            color: white;
+            color: #1e4a76;
             font-size: 13px;
             margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            opacity: 0.8;
         }
 
         .sidebar-club-preview h4 i {
@@ -366,46 +302,40 @@ $crowd_data = [
         }
 
         .sidebar-club-item {
-            background: rgba(0, 0, 0, 0.2);
+            background: white;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid #e2e8f0;
             transition: transform 0.2s;
         }
 
         .sidebar-club-item:hover {
             transform: translateX(5px);
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .sidebar-club-item:last-child {
-            margin-bottom: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .sidebar-club-item h5 {
-            color: white;
+            color: #1e293b;
             font-size: 14px;
             margin: 0 0 4px 0;
             font-weight: 600;
         }
 
         .sidebar-club-item p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             margin: 0 0 6px 0;
-            line-height: 1.4;
         }
 
         .sidebar-club-tag {
-            background: #2d4c6e;
-            color: white;
+            background: #e0f2fe;
+            color: #1e4a76;
             font-size: 9px;
             font-weight: 600;
             padding: 3px 8px;
             border-radius: 30px;
             display: inline-block;
-            text-transform: uppercase;
         }
 
         .sidebar-stats {
@@ -413,31 +343,22 @@ $crowd_data = [
             justify-content: space-around;
             padding: 15px 10px;
             margin: 0 15px;
-            background: rgba(255, 255, 255, 0.02);
+            background: #f8fafc;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .sidebar-stat-item {
-            text-align: center;
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-stat-value {
-            color: white;
+            color: #1e4a76;
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 3px;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-stat-label {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
 
         .sidebar-footer {
@@ -452,25 +373,18 @@ $crowd_data = [
         }
 
         .sidebar-footer-links a {
-            color: #94a3b8;
+            color: #64748b;
             text-decoration: none;
             font-size: 11px;
             transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
 
         .sidebar-footer-links a:hover {
-            color: white;
-        }
-
-        .sidebar-footer-links a i {
-            font-size: 10px;
+            color: #1e4a76;
         }
 
         .sidebar-copyright {
-            color: #64748b;
+            color: #94a3b8;
             font-size: 10px;
             text-align: center;
         }
@@ -481,17 +395,14 @@ $crowd_data = [
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(3px);
             z-index: 9998;
             display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .sidebar-overlay.active {
             display: block;
-            opacity: 1;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -503,22 +414,19 @@ $crowd_data = [
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 20px;
         }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
         
+        /* PAGE TITLE */
         .page-title {
             text-align: center;
-            color: white;
+            color: #1e4a76;
             font-size: 36px;
             margin: 30px 0;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         
+        /* FACILITY GRID */
         .facility-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -529,52 +437,55 @@ $crowd_data = [
         }
         
         .facility-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden;
             transition: all 0.3s;
             cursor: pointer;
             text-decoration: none;
-            color: white;
+            color: #1e293b;
             display: block;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
         
         .facility-card:hover {
             transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
         
-        .facility-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
+        /* CARD IMAGE SECTION */
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
         }
         
-        .facility-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            padding: 20px;
+        }
+        
+        .facility-name-card {
             color: white;
-        }
-        
-        .facility-name {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
             margin-bottom: 5px;
         }
         
-        .facility-type {
+        .facility-type-card {
             color: #22d3ee;
             font-size: 14px;
+        }
+        
+        /* CARD CONTENT SECTION */
+        .card-content {
+            padding: 20px;
         }
         
         .facility-status {
@@ -583,7 +494,7 @@ $crowd_data = [
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            margin: 10px 0;
+            margin-bottom: 15px;
         }
         
         .status-Open {
@@ -601,22 +512,10 @@ $crowd_data = [
             color: white;
         }
         
-        .facility-details {
-            color: rgba(255,255,255,0.8);
-            margin: 10px 0;
-            line-height: 1.6;
-        }
-        
-        .facility-details i {
-            color: #22d3ee;
-            width: 20px;
-            margin-right: 5px;
-        }
-        
         .crowd-info {
             margin: 15px 0;
             padding: 10px;
-            background: rgba(0,0,0,0.2);
+            background: #f8fafc;
             border-radius: 12px;
         }
         
@@ -625,13 +524,13 @@ $crowd_data = [
             justify-content: space-between;
             margin-bottom: 8px;
             font-size: 13px;
-            color: rgba(255,255,255,0.9);
+            color: #475569;
         }
         
         .crowd-bar {
             width: 100%;
             height: 8px;
-            background: rgba(255,255,255,0.2);
+            background: #e2e8f0;
             border-radius: 10px;
             overflow: hidden;
             margin-bottom: 5px;
@@ -639,7 +538,7 @@ $crowd_data = [
         
         .crowd-fill {
             height: 100%;
-            background: linear-gradient(90deg, #22d3ee, #667eea);
+            background: linear-gradient(90deg, #2c7da0, #1e4a76);
             border-radius: 10px;
             transition: width 0.3s;
         }
@@ -647,7 +546,7 @@ $crowd_data = [
         .crowd-numbers {
             font-size: 13px;
             font-weight: 600;
-            color: #22d3ee;
+            color: #1e4a76;
         }
         
         .hours {
@@ -655,18 +554,18 @@ $crowd_data = [
             align-items: center;
             gap: 8px;
             margin: 10px 0;
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 13px;
         }
         
         .hours i {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .cafe-special {
             margin: 10px 0;
             padding: 10px;
-            background: rgba(0,0,0,0.2);
+            background: #f8fafc;
             border-radius: 12px;
         }
         
@@ -678,11 +577,11 @@ $crowd_data = [
         }
         
         .cuisine-tag {
-            background: rgba(255,255,255,0.1);
+            background: #e0f2fe;
             padding: 4px 10px;
             border-radius: 30px;
             font-size: 11px;
-            color: white;
+            color: #1e4a76;
         }
         
         .rating {
@@ -697,18 +596,20 @@ $crowd_data = [
         }
         
         .reviews {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 12px;
         }
         
         .checkin-badge {
             margin-top: 15px;
-            padding: 8px;
-            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            background: #f0f9ff;
             border-radius: 10px;
             text-align: center;
             font-size: 14px;
-            color: #22d3ee;
+            color: #2c7da0;
+            border: 1px solid #bae6fd;
+            font-weight: 500;
         }
         
         .checkin-badge i {
@@ -719,12 +620,14 @@ $crowd_data = [
             .facility-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .card-image {
+                height: 180px;
+            }
         }
     </style>
 </head>
 <body>
-
-<div class="bg"></div>
 
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
@@ -859,73 +762,66 @@ $crowd_data = [
 <div class="facility-grid">
     <?php while($facility = mysqli_fetch_assoc($result)): 
         $type = $facility['Type'];
-
         
-
         $crowd = isset($crowd_data[$type]) ? $crowd_data[$type] : ['current' => rand(10, 50), 'total' => 100, 'hours' => '09:00 - 17:00'];
         $crowd_percent = ($crowd['current'] / $crowd['total']) * 100;
         
-        
-        
-        $icon = 'fa-building';
-        if($type == 'Gym') $icon = 'fa-dumbbell';
-        else if($type == 'Library') $icon = 'fa-book';
-        else if($type == 'Café') $icon = 'fa-mug-saucer';
-        else if($type == 'GameField') $icon = 'fa-futbol';
-        else if($type == 'Transport') $icon = 'fa-bus';
+        // Get image for facility type
+        $image_url = isset($facility_images[$type]) ? $facility_images[$type] : $facility_images['default'];
     ?>
     <a href="facility_details.php?id=<?php echo $facility['FacilityID']; ?>" class="facility-card">
-        <div class="facility-header">
-            <div class="facility-icon">
-                <i class="fa-solid <?php echo $icon; ?>"></i>
-            </div>
-            <div>
-                <div class="facility-name"><?php echo htmlspecialchars($facility['Name']); ?></div>
-                <div class="facility-type"><?php echo $type; ?></div>
+        <!-- TOP LAYER WITH IMAGE -->
+        <div class="card-image" style="background-image: url('<?php echo $image_url; ?>');">
+            <div class="card-overlay">
+                <div class="facility-name-card"><?php echo htmlspecialchars($facility['Name']); ?></div>
+                <div class="facility-type-card"><?php echo $type; ?></div>
             </div>
         </div>
         
-        <div class="facility-status status-<?php echo $facility['Status']; ?>">
-            <?php echo $facility['Status']; ?>
-        </div>
-        
-        <div class="crowd-info">
-            <div class="crowd-header">
-                <span>Current Crowd</span>
-                <span class="crowd-numbers"><?php echo $crowd['current']; ?>/<?php echo $crowd['total']; ?></span>
+        <!-- CARD CONTENT (remaining information) -->
+        <div class="card-content">
+            <div class="facility-status status-<?php echo $facility['Status']; ?>">
+                <?php echo $facility['Status']; ?>
             </div>
-            <div class="crowd-bar">
-                <div class="crowd-fill" style="width: <?php echo $crowd_percent; ?>%;"></div>
-            </div>
-        </div>
-        
-        <div class="hours">
-            <i class="fa-regular fa-calendar"></i>
-            <span><?php echo $crowd['hours']; ?></span>
-        </div>
-        
-        <?php if($type == 'Café'): ?>
-        <div class="cafe-special">
-            <div class="cuisine-tags">
-                <span class="cuisine-tag">International</span>
-                <span class="cuisine-tag">Sri Lankan</span>
-                <span class="cuisine-tag">Fast Food</span>
-            </div>
-            <div class="rating">
-                <div class="stars">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star-half-alt"></i>
+            
+            <div class="crowd-info">
+                <div class="crowd-header">
+                    <span>Current Crowd</span>
+                    <span class="crowd-numbers"><?php echo $crowd['current']; ?>/<?php echo $crowd['total']; ?></span>
                 </div>
-                <span class="reviews">4.5 (128 reviews)</span>
+                <div class="crowd-bar">
+                    <div class="crowd-fill" style="width: <?php echo $crowd_percent; ?>%;"></div>
+                </div>
             </div>
-        </div>
-        <?php endif; ?>
-        
-        <div class="checkin-badge">
-            <i class="fa-solid fa-location-dot"></i> Click to Check In (+10 points)
+            
+            <div class="hours">
+                <i class="fa-regular fa-calendar"></i>
+                <span><?php echo $crowd['hours']; ?></span>
+            </div>
+            
+            <?php if($type == 'Café'): ?>
+            <div class="cafe-special">
+                <div class="cuisine-tags">
+                    <span class="cuisine-tag">International</span>
+                    <span class="cuisine-tag">Sri Lankan</span>
+                    <span class="cuisine-tag">Fast Food</span>
+                </div>
+                <div class="rating">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-alt"></i>
+                    </div>
+                    <span class="reviews">4.5 (128 reviews)</span>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <div class="checkin-badge">
+                <i class="fa-solid fa-location-dot"></i> Click to Check In (+10 points)
+            </div>
         </div>
     </a>
     <?php endwhile; ?>
@@ -937,12 +833,12 @@ function toggleSidebar() {
     const overlay = document.getElementById("sidebarOverlay");
     const menuBtn = document.querySelector(".menu-btn");
     
-    if(sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         menuBtn.classList.remove("active");
     } else {
-        sidebar.style.left = "0px";
+        sidebar.classList.add("active");
         overlay.classList.add("active");
         menuBtn.classList.add("active");
     }
@@ -956,8 +852,8 @@ document.addEventListener("click", function(e) {
     if(sidebar && btn && overlay && 
        !sidebar.contains(e.target) && 
        !btn.contains(e.target) && 
-       sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         btn.classList.remove("active");
     }
