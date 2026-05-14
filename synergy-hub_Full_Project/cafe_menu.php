@@ -1,9 +1,7 @@
 <?php
 
-
 require_once 'config.php';
 require_once 'functions.php';
-
 
 if (!isLoggedIn()) {
     header("Location: login.php");
@@ -13,10 +11,8 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-
 $menu_sql = "SELECT * FROM cafe_menu WHERE available = TRUE ORDER BY category, name";
 $menu_result = mysqli_query($conn, $menu_sql);
-
 
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
@@ -25,18 +21,16 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
-
 
 $menu_by_category = [];
 while($item = mysqli_fetch_assoc($menu_result)) {
     $menu_by_category[$item['category']][] = $item;
 }
 
-
+// Food images - ඔබේ local images (වෙනස් කරන්නේ නැහැ)
 $food_images = [
     'Chicken Rice' => 'chickenrice.jpg',
     'Chicken Sandwich' => 'Chicken Sandwich.jfif',
@@ -69,47 +63,29 @@ $food_images = [
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR - White/Blue theme */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -119,7 +95,7 @@ $food_images = [
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -136,13 +112,17 @@ $food_images = [
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
+            transition: all 0.3s;
+        }
+        
+        .points.active {
+            transform: scale(1.1);
         }
         
         .order-now-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             padding: 8px 20px;
             border-radius: 30px;
@@ -157,32 +137,35 @@ $food_images = [
         
         .order-now-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(30, 74, 118, 0.3);
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .home-link:hover {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
-        
+        /* SIDEBAR - White/Blue theme */
         .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             width: 280px;
             height: 100%;
-            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
-            backdrop-filter: blur(10px);
+            background: white;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
             overflow-y: auto;
         }
 
@@ -192,22 +175,9 @@ $food_images = [
 
         .sidebar-header {
             padding: 25px 20px 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
             margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
         }
 
         .sidebar-header h2 {
@@ -215,32 +185,25 @@ $food_images = [
             font-size: 24px;
             font-weight: 700;
             margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-header p {
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 13px;
             margin: 0;
-            font-weight: 400;
         }
 
         .sidebar-header p i {
             color: #22d3ee;
             margin-right: 5px;
-            font-size: 10px;
         }
 
         .sidebar-user {
             padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             margin: 0 15px 20px 15px;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -250,34 +213,29 @@ $food_images = [
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-user-info h4 {
-            color: white;
+            color: #1e293b;
             font-size: 15px;
             margin: 0 0 3px 0;
             font-weight: 600;
         }
 
         .sidebar-user-info p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 12px;
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .sidebar-user-info p i {
             color: #fbbf24;
-            font-size: 10px;
         }
 
         .sidebar-nav {
@@ -294,7 +252,7 @@ $food_images = [
             display: flex;
             align-items: center;
             padding: 12px 18px;
-            color: #b8c7de;
+            color: #475569;
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
@@ -306,29 +264,28 @@ $food_images = [
         .sidebar-nav-link i {
             width: 22px;
             font-size: 1.1rem;
-            color: #5f7d9e;
+            color: #94a3b8;
             transition: all 0.3s ease;
             text-align: center;
         }
 
         .sidebar-nav-link:hover {
-            background: rgba(168, 192, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
+            background: #e0f2fe;
+            color: #1e4a76;
         }
 
         .sidebar-nav-link:hover i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
-            color: white;
-            border-left: 3px solid #a5b4fc;
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
         }
 
         .sidebar-nav-link.active i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-badge {
@@ -339,48 +296,35 @@ $food_images = [
             padding: 2px 6px;
             border-radius: 30px;
             margin-left: auto;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .sidebar-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
             margin: 20px 20px;
         }
 
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .sidebar-club-preview {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin: 0 15px 20px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-club-preview h4 {
-            color: white;
+            color: #1e4a76;
             font-size: 13px;
             margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            opacity: 0.8;
         }
 
         .sidebar-club-preview h4 i {
@@ -388,42 +332,40 @@ $food_images = [
         }
 
         .sidebar-club-item {
-            background: rgba(0, 0, 0, 0.2);
+            background: white;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid #e2e8f0;
             transition: transform 0.2s;
         }
 
         .sidebar-club-item:hover {
             transform: translateX(5px);
-            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .sidebar-club-item h5 {
-            color: white;
+            color: #1e293b;
             font-size: 14px;
             margin: 0 0 4px 0;
             font-weight: 600;
         }
 
         .sidebar-club-item p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             margin: 0 0 6px 0;
-            line-height: 1.4;
         }
 
         .sidebar-club-tag {
-            background: #2d4c6e;
-            color: white;
+            background: #e0f2fe;
+            color: #1e4a76;
             font-size: 9px;
             font-weight: 600;
             padding: 3px 8px;
             border-radius: 30px;
             display: inline-block;
-            text-transform: uppercase;
         }
 
         .sidebar-stats {
@@ -431,31 +373,22 @@ $food_images = [
             justify-content: space-around;
             padding: 15px 10px;
             margin: 0 15px;
-            background: rgba(255, 255, 255, 0.02);
+            background: #f8fafc;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .sidebar-stat-item {
-            text-align: center;
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-stat-value {
-            color: white;
+            color: #1e4a76;
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 3px;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-stat-label {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
 
         .sidebar-footer {
@@ -470,7 +403,7 @@ $food_images = [
         }
 
         .sidebar-footer-links a {
-            color: #94a3b8;
+            color: #64748b;
             text-decoration: none;
             font-size: 11px;
             transition: color 0.2s;
@@ -480,15 +413,11 @@ $food_images = [
         }
 
         .sidebar-footer-links a:hover {
-            color: white;
-        }
-
-        .sidebar-footer-links a i {
-            font-size: 10px;
+            color: #1e4a76;
         }
 
         .sidebar-copyright {
-            color: #64748b;
+            color: #94a3b8;
             font-size: 10px;
             text-align: center;
         }
@@ -499,17 +428,14 @@ $food_images = [
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(3px);
             z-index: 9998;
             display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .sidebar-overlay.active {
             display: block;
-            opacity: 1;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -521,14 +447,11 @@ $food_images = [
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 20px;
         }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
         
+        /* MAIN CONTAINER */
         .container {
             padding: 30px;
             max-width: 1200px;
@@ -536,61 +459,65 @@ $food_images = [
         }
         
         .page-title {
-            color: white;
+            color: #1e4a76;
             font-size: 32px;
             margin-bottom: 30px;
             text-align: center;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         .points-badge {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
-            padding: 15px 25px;
+            padding: 12px 25px;
             border-radius: 50px;
             display: inline-block;
             margin-bottom: 30px;
             font-weight: 600;
-            font-size: 18px;
-            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .points-badge i {
+            color: #fbbf24;
+            margin-right: 8px;
         }
         
         .menu-category {
-            color: white;
+            color: #1e4a76;
             font-size: 28px;
             margin: 40px 0 20px;
-            border-left: 5px solid #22d3ee;
+            border-left: 5px solid #2c7da0;
             padding-left: 15px;
         }
         
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
         }
         
+        /* MENU ITEM CARD - White background */
         .menu-item {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden;
             transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
         
         .menu-item:hover {
             transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border-color: #2c7da0;
         }
         
+        /* Food Image Section - ඔබේ local images */
         .food-image {
             width: 100%;
-            height: 160px;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 15px;
+            height: 180px;
             position: relative;
+            overflow: hidden;
         }
         
         .food-image img {
@@ -598,7 +525,6 @@ $food_images = [
             height: 100%;
             object-fit: cover;
         }
-        
         
         .stock-badge {
             position: absolute;
@@ -620,13 +546,17 @@ $food_images = [
             background: #ef4444;
         }
         
-        .item-name {
-            color: white;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
+        /* Card Content - White/Blue theme */
+        .item-content {
+            padding: 20px;
         }
         
+        .item-name {
+            color: #1e293b;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
         
         .availability-section {
             margin: 15px 0;
@@ -637,20 +567,20 @@ $food_images = [
             justify-content: space-between;
             margin-bottom: 5px;
             font-size: 13px;
-            color: rgba(255,255,255,0.8);
+            color: #64748b;
         }
         
         .availability-bar {
             width: 100%;
             height: 8px;
-            background: rgba(255,255,255,0.1);
+            background: #e2e8f0;
             border-radius: 10px;
             overflow: hidden;
         }
         
         .availability-fill {
             height: 100%;
-            background: linear-gradient(90deg, #22d3ee, #667eea);
+            background: linear-gradient(90deg, #2c7da0, #1e4a76);
             border-radius: 10px;
             transition: width 0.3s;
         }
@@ -664,7 +594,7 @@ $food_images = [
             justify-content: space-between;
             margin: 15px 0;
             padding: 10px;
-            background: rgba(0,0,0,0.2);
+            background: #f8fafc;
             border-radius: 10px;
         }
         
@@ -674,61 +604,46 @@ $food_images = [
         }
         
         .price-tag small {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 12px;
         }
         
         .price-tag div {
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 18px;
             font-weight: 600;
         }
         
-        .order-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-        
-        .order-btn:hover {
-            transform: scale(1.02);
-        }
-        
-        .order-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
         .back-btn {
             display: inline-block;
-            margin-top: 30px;
-            color: white;
+            margin-top: 40px;
+            color: #1e4a76;
             text-decoration: none;
             font-size: 16px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            background: white;
             border-radius: 30px;
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
+            font-weight: 500;
         }
         
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
-            color: #22d3ee;
+            background: #1e4a76;
+            color: white;
+            border-color: #1e4a76;
         }
         
+        .back-btn i {
+            margin-right: 8px;
+        }
         
+        /* FLOATING ORDER BUTTON */
         .floating-order-btn {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             padding: 15px 30px;
             border-radius: 50px;
@@ -738,7 +653,7 @@ $food_images = [
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
             z-index: 1000;
             transition: all 0.3s;
             border: 1px solid rgba(255,255,255,0.2);
@@ -746,7 +661,7 @@ $food_images = [
         
         .floating-order-btn:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 30px rgba(30, 74, 118, 0.4);
         }
         
         .floating-order-btn i {
@@ -755,19 +670,24 @@ $food_images = [
         
         @media (max-width: 768px) {
             .floating-order-btn {
-                bottom: 80px;
-                right: 15px;
+                bottom: 20px;
+                right: 20px;
                 padding: 12px 20px;
                 font-size: 14px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="bg"></div>
-
-<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
@@ -775,64 +695,53 @@ $food_images = [
     </div>
     
     <div class="sidebar-user">
-
         <div class="sidebar-user-avatar">
             <i class="fa-solid fa-user"></i>
         </div>
-
         <div class="sidebar-user-info">
             <h4><?php echo htmlspecialchars($user['Name'] ?? 'User'); ?></h4>
             <p><i class="fa-solid fa-star"></i> <?php echo $user['PointsBalance'] ?? 0; ?> points</p>
         </div>
-
     </div>
     
     <ul class="sidebar-nav">
-
         <li class="sidebar-nav-item">
             <a href="index.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-home"></i> Home
             </a>
         </li>
-
         <li class="sidebar-nav-item">
             <a href="facilities.php" class="sidebar-nav-link active">
                 <i class="fa-solid fa-building"></i> Facilities
                 <span class="sidebar-badge"><?php echo $facilities_count; ?></span>
             </a>
         </li>
-
         <li class="sidebar-nav-item">
             <a href="transport.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-bus"></i> Transport
             </a>
         </li>
-
         <li class="sidebar-nav-item">
             <a href="game.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-futbol"></i> Game Field
             </a>
         </li>
-
         <li class="sidebar-nav-item">
             <a href="clubs.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-users"></i> Club Hub
             </a>
         </li>
-
         <li class="sidebar-nav-item">
             <a href="qr.html" class="sidebar-nav-link">
                 <i class="fa-solid fa-qrcode"></i> QR Scanner
             </a>
         </li>
-
         <li class="sidebar-nav-item">
             <a href="notifications.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-bell"></i> Notifications
                 <span class="sidebar-badge">3</span>
             </a>
         </li>
-
     </ul>
     
     <div class="sidebar-divider"></div>
@@ -841,48 +750,39 @@ $food_images = [
     
     <div class="sidebar-club-preview">
         <h4><i class="fa-regular fa-star"></i> Active Clubs</h4>
-
         <div class="sidebar-club-item">
             <h5>Coding Club</h5>
             <p>Programming and software development...</p>
             <span class="sidebar-club-tag">Academic</span>
         </div>
-
         <div class="sidebar-club-item">
             <h5>IEEE Student Branch</h5>
             <p>IEEE student chapter...</p>
             <span class="sidebar-club-tag">Academic</span>
         </div>
-
     </div>
     
     <div class="sidebar-stats">
-
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">4</div>
             <div class="sidebar-stat-label">Clubs</div>
         </div>
-
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value">12</div>
             <div class="sidebar-stat-label">Events</div>
         </div>
-
         <div class="sidebar-stat-item">
             <div class="sidebar-stat-value"><?php echo $user['PointsBalance'] ?? 0; ?></div>
             <div class="sidebar-stat-label">Points</div>
         </div>
-
     </div>
     
     <div class="sidebar-footer">
-
         <div class="sidebar-footer-links">
             <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
             <a href="#"><i class="fa-regular fa-gear"></i> Settings</a>
             <a href="#"><i class="fa-regular fa-message"></i> Feedback</a>
         </div>
-
         <div class="sidebar-copyright">© 2025 Synergy Hub</div>
     </div>
 </div>
@@ -890,21 +790,17 @@ $food_images = [
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <header class="navbar">
-
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
     </div>
-
     
     <h1 class="logo">Synergy <span>Hub</span> - Café Menu</h1>
     
     <div class="icons">
-
         <div class="points">
             <i class="fa-solid fa-star"></i>
             <span><?php echo $user['PointsBalance']; ?></span>
         </div>
-
         <a href="facility_details.php?id=<?php echo $facility_id; ?>" class="home-link">
             <i class="fa-solid fa-arrow-left"></i> Back
         </a>
@@ -920,19 +816,14 @@ $food_images = [
     <h1 class="page-title">☕ Campus Café Menu</h1>
     
     <?php foreach($menu_by_category as $category => $items): ?>
-    <h2 class="menu-category"><?php echo $category; ?></h2>
-
+    <h2 class="menu-category"><?php echo htmlspecialchars($category); ?></h2>
     <div class="menu-grid">
         <?php foreach($items as $item):
-            
             $image_url = isset($food_images[$item['name']]) ? $food_images[$item['name']] : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop';
-            
-            
             $stock = $item['stock'] ?? 10;
             $stock_percent = ($stock / 20) * 100;
         ?>
         <div class="menu-item">
-
             <div class="food-image">
                 <img src="<?php echo $image_url; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                 <?php if($stock <= 3): ?>
@@ -941,36 +832,31 @@ $food_images = [
                 <div class="stock-badge"><?php echo $stock; ?> left</div>
                 <?php endif; ?>
             </div>
-
             
-            <div class="item-name"><?php echo htmlspecialchars($item['name']); ?></div>
-            
-            <div class="availability-section">
-
-                <div class="availability-header">
-                    <span>Availability</span>
-                    <span><?php echo $stock; ?>/20 left</span>
-                </div>
-
-                <div class="availability-bar">
-                    <div class="availability-fill <?php echo $stock <= 3 ? 'low' : ''; ?>" 
-                         style="width: <?php echo $stock_percent; ?>%;"></div>
-                </div>
-
-            </div>
-            
-            <div class="item-prices">
-
-                <div class="price-tag">
-                    <small>Cash</small>
-                    <div>Rs. <?php echo number_format($item['price'], 2); ?></div>
-                </div>
-
-                <div class="price-tag">
-                    <small>Points</small>
-                    <div><?php echo $item['points_price']; ?> ⭐</div>
+            <div class="item-content">
+                <div class="item-name"><?php echo htmlspecialchars($item['name']); ?></div>
+                
+                <div class="availability-section">
+                    <div class="availability-header">
+                        <span>Availability</span>
+                        <span><?php echo $stock; ?>/20 left</span>
+                    </div>
+                    <div class="availability-bar">
+                        <div class="availability-fill <?php echo $stock <= 3 ? 'low' : ''; ?>" 
+                             style="width: <?php echo max(5, $stock_percent); ?>%;"></div>
+                    </div>
                 </div>
                 
+                <div class="item-prices">
+                    <div class="price-tag">
+                        <small>Cash</small>
+                        <div>Rs. <?php echo number_format($item['price'], 2); ?></div>
+                    </div>
+                    <div class="price-tag">
+                        <small>Points</small>
+                        <div><?php echo $item['points_price']; ?> ⭐</div>
+                    </div>
+                </div>
             </div>
         </div>
         <?php endforeach; ?>
@@ -987,23 +873,21 @@ $food_images = [
 </a>
 
 <script>
-
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
     const menuBtn = document.querySelector(".menu-btn");
     
-    if(sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         menuBtn.classList.remove("active");
     } else {
-        sidebar.style.left = "0px";
+        sidebar.classList.add("active");
         overlay.classList.add("active");
         menuBtn.classList.add("active");
     }
 }
-
 
 document.addEventListener("click", function(e) {
     const sidebar = document.querySelector(".sidebar");
@@ -1013,8 +897,8 @@ document.addEventListener("click", function(e) {
     if(sidebar && btn && overlay && 
        !sidebar.contains(e.target) && 
        !btn.contains(e.target) && 
-       sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         btn.classList.remove("active");
     }
