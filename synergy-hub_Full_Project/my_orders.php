@@ -40,6 +40,14 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
     }
     $grouped_orders[$date][] = $order;
 }
+
+// Get user points for navbar
+$points_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
+$points_stmt = mysqli_prepare($conn, $points_sql);
+mysqli_stmt_bind_param($points_stmt, "i", $user_id);
+mysqli_stmt_execute($points_stmt);
+$points_result = mysqli_stmt_get_result($points_stmt);
+$user_points = mysqli_fetch_assoc($points_result);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -48,7 +56,6 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - Synergy Hub</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
@@ -59,57 +66,44 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR - White/Blue theme */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 40px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            padding: 16px 32px;
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .points {
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             padding: 8px 20px;
             border-radius: 30px;
             color: white;
+            font-weight: 600;
+        }
+        
+        .points i {
+            color: #fbbf24;
         }
         
         .container {
@@ -119,7 +113,7 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
         }
         
         .page-title {
-            color: white;
+            color: #1e4a76;
             font-size: 32px;
             margin-bottom: 30px;
             display: flex;
@@ -127,31 +121,42 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
             gap: 10px;
         }
         
+        .page-title i {
+            color: #2c7da0;
+        }
+        
         .date-group {
             margin-bottom: 30px;
         }
         
         .date-header {
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 18px;
             margin-bottom: 15px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid rgba(34, 211, 238, 0.3);
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0f2fe;
+            font-weight: 600;
+        }
+        
+        .date-header i {
+            margin-right: 8px;
         }
         
         .order-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
+            background: white;
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .order-card:hover {
-            background: rgba(255,255,255,0.15);
+            background: #fafcff;
             transform: translateX(5px);
+            border-color: #2c7da0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
         
         .order-header {
@@ -162,110 +167,165 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
         }
         
         .order-id {
-            color: white;
-            font-weight: 600;
+            color: #1e4a76;
+            font-weight: 700;
+            font-size: 15px;
         }
         
         .order-time {
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
+            color: #64748b;
+            font-size: 13px;
+        }
+        
+        .order-time i {
+            margin-right: 4px;
         }
         
         .order-details {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 12px;
         }
         
         .order-item {
-            color: rgba(255,255,255,0.9);
+            color: #1e293b;
+            font-weight: 500;
+        }
+        
+        .order-item span {
+            color: #64748b;
+            font-weight: normal;
+            margin-left: 8px;
         }
         
         .order-price {
-            color: #22d3ee;
-            font-weight: 600;
+            color: #2c7da0;
+            font-weight: 700;
         }
         
         .status-badge {
+            display: inline-block;
             padding: 4px 12px;
             border-radius: 30px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
+            text-transform: uppercase;
         }
         
         .status-Pending {
-            background: #f59e0b;
-            color: white;
+            background: #fef3c7;
+            color: #d97706;
         }
         
         .status-Preparing {
-            background: #3b82f6;
-            color: white;
+            background: #dbeafe;
+            color: #2563eb;
         }
         
         .status-Ready {
-            background: #10b981;
-            color: white;
+            background: #d1fae5;
+            color: #059669;
         }
         
         .status-Completed {
-            background: #6b7280;
-            color: white;
+            background: #f1f5f9;
+            color: #475569;
         }
         
         .status-Cancelled {
-            background: #ef4444;
-            color: white;
+            background: #fee2e2;
+            color: #dc2626;
         }
         
         .no-orders {
             text-align: center;
             padding: 60px;
-            color: rgba(255,255,255,0.6);
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
         }
         
         .no-orders i {
             font-size: 60px;
             margin-bottom: 20px;
-            color: rgba(255,255,255,0.3);
+            color: #cbd5e1;
+        }
+        
+        .no-orders h3 {
+            color: #1e4a76;
+            margin-bottom: 10px;
+        }
+        
+        .no-orders p {
+            color: #64748b;
+            margin-bottom: 20px;
         }
         
         .back-btn {
             display: inline-block;
             margin-top: 30px;
-            color: white;
+            color: #1e4a76;
             text-decoration: none;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            background: white;
+            border: 1px solid #e2e8f0;
             border-radius: 30px;
             transition: all 0.3s;
+            font-weight: 500;
         }
         
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
-            color: #22d3ee;
+            background: #1e4a76;
+            color: white;
+            border-color: #1e4a76;
+        }
+        
+        .back-btn i {
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+            
+            .logo {
+                font-size: 18px;
+            }
+            
+            .points {
+                padding: 6px 15px;
+                font-size: 14px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .order-card {
+                padding: 15px;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="bg"></div>
-
 <nav class="navbar">
     <div class="logo">Synergy <span>Hub</span></div>
     <div class="points">
         <i class="fa-solid fa-star"></i>
-        <?php
-
-        // Get current points for navbar
-        $points_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
-        $points_stmt = mysqli_prepare($conn, $points_sql);
-        mysqli_stmt_bind_param($points_stmt, "i", $user_id);
-        mysqli_stmt_execute($points_stmt);
-        $points_result = mysqli_stmt_get_result($points_stmt);
-        $user_points = mysqli_fetch_assoc($points_result);
-        echo $user_points['PointsBalance'];
-        ?>
+        <?php echo number_format($user_points['PointsBalance'] ?? 0); ?>
     </div>
 </nav>
 
@@ -279,7 +339,7 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
         <i class="fa-regular fa-face-frown"></i>
         <h3>No orders yet</h3>
         <p>Start by ordering from our café!</p>
-        <a href="cafe_menu.php?id=1" class="back-btn" style="margin-top: 20px;">
+        <a href="cafe_menu.php?id=1" class="back-btn" style="margin-top: 20px; display: inline-block;">
             <i class="fa-solid fa-utensils"></i> Browse Menu
         </a>
     </div>
@@ -294,7 +354,7 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
             <?php foreach($orders as $order): ?>
             <div class="order-card">
                 <div class="order-header">
-                    <span class="order-id">Order #<?php echo $order['OrderID']; ?></span>
+                    <span class="order-id"><i class="fa-regular fa-receipt"></i> Order #<?php echo $order['OrderID']; ?></span>
                     <span class="order-time">
                         <i class="fa-regular fa-clock"></i> 
                         <?php echo date('h:i A', strtotime($order['Timestamp'])); ?>
@@ -303,17 +363,24 @@ while ($order = mysqli_fetch_assoc($orders_result)) {
                 <div class="order-details">
                     <div class="order-item">
                         <?php echo htmlspecialchars($order['ItemName']); ?>
-                        <span style="color: rgba(255,255,255,0.5); margin-left: 10px;">
-                            x<?php echo $order['Quantity']; ?>
-                        </span>
+                        <span>x<?php echo $order['Quantity']; ?></span>
                     </div>
                     <div class="order-price">
                         Rs. <?php echo number_format($order['Price'] * $order['Quantity'], 2); ?>
                     </div>
                 </div>
-                <div style="margin-top: 10px;">
+                <div>
                     <span class="status-badge status-<?php echo $order['Status']; ?>">
-                        <?php echo $order['Status']; ?>
+                        <?php 
+                        switch($order['Status']) {
+                            case 'Pending': echo '⏳ Pending'; break;
+                            case 'Preparing': echo '🍳 Preparing'; break;
+                            case 'Ready': echo '✅ Ready for Pickup'; break;
+                            case 'Completed': echo '✓ Completed'; break;
+                            case 'Cancelled': echo '✗ Cancelled'; break;
+                            default: echo $order['Status'];
+                        }
+                        ?>
                     </span>
                 </div>
             </div>
