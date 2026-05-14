@@ -1,18 +1,12 @@
 <?php
 
-
 require_once 'config.php';
 require_once 'functions.php';
-
-
-
 
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit();
 }
-
-
 
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT * FROM Users WHERE UserID = ?";
@@ -22,33 +16,103 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
 
-
-
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
-
-
 
 $events_sql = "SELECT * FROM Events WHERE Status = 'Upcoming' AND StartTime > NOW() ORDER BY StartTime ASC LIMIT 3";
 $events_stmt = mysqli_prepare($conn, $events_sql);
 mysqli_stmt_execute($events_stmt);
 $events_result = mysqli_stmt_get_result($events_stmt);
 
-
-
-
 $su_events_sql = "SELECT * FROM su_events WHERE event_time > NOW() ORDER BY event_time ASC LIMIT 2";
 $su_events_result = mysqli_query($conn, $su_events_sql);
-
-
-
 
 $gym_sql = "SELECT * FROM gym_status ORDER BY id DESC LIMIT 1";
 $gym_result = mysqli_query($conn, $gym_sql);
 $gym = mysqli_fetch_assoc($gym_result);
 
 $points = $user['PointsBalance'];
+
+// ========== TIER SYSTEM ==========
+// Define tier thresholds
+$tiers = [
+    'platinum' => ['min' => 5000, 'name' => 'Platinum', 'color' => '#E5E4E2', 'icon' => 'fa-crown', 'multiplier' => 2.0],
+    'gold' => ['min' => 2000, 'name' => 'Gold', 'color' => '#FFD700', 'icon' => 'fa-medal', 'multiplier' => 1.5],
+    'silver' => ['min' => 500, 'name' => 'Silver', 'color' => '#C0C0C0', 'icon' => 'fa-medal', 'multiplier' => 1.2],
+    'bronze' => ['min' => 0, 'name' => 'Bronze', 'color' => '#CD7F32', 'icon' => 'fa-medal', 'multiplier' => 1.0]
+];
+
+// Determine current tier
+$current_tier = 'bronze';
+foreach ($tiers as $key => $tier) {
+    if ($points >= $tier['min']) {
+        $current_tier = $key;
+    }
+}
+
+// Calculate next tier
+$next_tier = null;
+$points_to_next = null;
+$tier_order = ['bronze', 'silver', 'gold', 'platinum'];
+$current_index = array_search($current_tier, $tier_order);
+if ($current_index < count($tier_order) - 1) {
+    $next_tier_key = $tier_order[$current_index + 1];
+    $next_tier = $tiers[$next_tier_key];
+    $points_to_next = $next_tier['min'] - $points;
+}
+
+// Calculate progress percentage
+$progress_percentage = 0;
+if ($next_tier) {
+    $total_needed = $next_tier['min'];
+    $progress_percentage = min(100, ($points / $total_needed) * 100);
+} else {
+    $progress_percentage = 100;
+}
+
+// Get tier benefits
+$tier_benefits = [
+    'bronze' => [
+        'Points Multiplier: 1.0x',
+        'Basic access to facilities'
+    ],
+    'silver' => [
+        'Points Multiplier: 1.2x',
+        '5% discount at campus café',
+        'Early event registration'
+    ],
+    'gold' => [
+        'Points Multiplier: 1.5x',
+        '10% discount at campus café',
+        'Priority booking for facilities',
+        '1 free drink per month'
+    ],
+    'platinum' => [
+        'Points Multiplier: 2.0x',
+        '15% discount at campus café',
+        'VIP event access',
+        '2 free drinks per month',
+        'Priority seating at events'
+    ]
+];
+
+// Get unread notification count for badge
+$unread_count = 0;
+$table_check = mysqli_query($conn, "SHOW TABLES LIKE 'notifications'");
+$table_exists = mysqli_num_rows($table_check) > 0;
+if ($table_exists) {
+    $col_check = mysqli_query($conn, "SHOW COLUMNS FROM notifications LIKE 'user_id'");
+    if(mysqli_num_rows($col_check) > 0) {
+        $unread_sql = "SELECT COUNT(*) as unread FROM notifications WHERE user_id = ? AND is_read = 0";
+        $unread_stmt = mysqli_prepare($conn, $unread_sql);
+        mysqli_stmt_bind_param($unread_stmt, "i", $user_id);
+        mysqli_stmt_execute($unread_stmt);
+        $unread_result = mysqli_stmt_get_result($unread_stmt);
+        $unread_data = mysqli_fetch_assoc($unread_result);
+        $unread_count = $unread_data ? $unread_data['unread'] : 0;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -58,7 +122,7 @@ $points = $user['PointsBalance'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Synergy Hub - Dashboard</title>
-    <style>
+   <style>
         * {
             margin: 0;
             padding: 0;
@@ -68,28 +132,8 @@ $points = $user['PointsBalance'];
         
         body {
             min-height: 100vh;
+            background: #3f3b7c;
             position: relative;
-        }
-    
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
         }
         
         .navbar {
@@ -97,20 +141,21 @@ $points = $user['PointsBalance'];
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             position: relative;
             z-index: 1000;
+            border-bottom: 1px solid #e2e8f0;
         }
         
         .logo {
-            font-size: 24px;
+            font-size: 50px;
             font-weight: 700;
-            color: white;
+            color: #0f172a;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2563eb;
         }
         
         .icons {
@@ -121,7 +166,7 @@ $points = $user['PointsBalance'];
         }
         
         .menu-btn {
-            color: white;
+            color: #2563eb;
             font-size: 24px;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -138,24 +183,29 @@ $points = $user['PointsBalance'];
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(37, 99, 235, 0.1);
             backdrop-filter: blur(10px);
-            color: white;
+            color: #2563eb;
             cursor: default;
             transition: all 0.3s;
         }
         
         .points.active {
             transform: scale(1.1);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
         }
         
         .points i {
-            color: #22d3ee;
+            color: #2563eb;
+        }
+        
+        .points.active i {
+            color: white;
         }
         
         .home-link {
-            color: white;
+            color: #2563eb;
             font-size: 20px;
             text-decoration: none;
         }
@@ -163,7 +213,7 @@ $points = $user['PointsBalance'];
         .notify {
             position: relative;
             font-size: 20px;
-            color: white;
+            color: #2563eb;
             cursor: pointer;
             z-index: 10000;
         }
@@ -198,7 +248,7 @@ $points = $user['PointsBalance'];
             max-height: 500px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
             display: none;
             z-index: 999999 !important;
             overflow: hidden;
@@ -214,7 +264,7 @@ $points = $user['PointsBalance'];
             justify-content: space-between;
             align-items: center;
             padding: 15px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             color: white;
         }
         
@@ -259,11 +309,11 @@ $points = $user['PointsBalance'];
         }
         
         .notification-item.unread {
-            background: #f0f9ff;
+            background: #eff6ff;
         }
         
         .notification-item.unread:hover {
-            background: #e0f2fe;
+            background: #dbeafe;
         }
         
         .notification-icon {
@@ -336,7 +386,7 @@ $points = $user['PointsBalance'];
         }
         
         .notification-footer a {
-            color: #667eea;
+            color: #2563eb;
             text-decoration: none;
             font-size: 13px;
             font-weight: 500;
@@ -354,8 +404,6 @@ $points = $user['PointsBalance'];
             font-size: 14px;
         }
         
-        
-
         .search-wrapper {
             position: relative;
             display: flex;
@@ -369,24 +417,23 @@ $points = $user['PointsBalance'];
             max-width: 600px;
             padding: 16px 25px;
             border-radius: 40px;
-            border: none;
+            border: 2px solid #e2e8f0;
             outline: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             font-size: 16px;
-            background: rgba(255,255,255,0.95);
+            background: white;
             transition: all 0.3s;
         }
 
         .search-wrapper input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
             background: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
         .search-wrapper input::placeholder {
             color: #94a3b8;
         }
-
-        
 
         .search-results {
             position: absolute;
@@ -397,7 +444,7 @@ $points = $user['PointsBalance'];
             max-width: 600px;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
             display: none;
             z-index: 99999 !important;
             overflow: hidden;
@@ -410,7 +457,7 @@ $points = $user['PointsBalance'];
 
         .search-results-header {
             padding: 12px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             color: white;
             font-size: 14px;
             font-weight: 600;
@@ -524,105 +571,445 @@ $points = $user['PointsBalance'];
             to { transform: rotate(360deg); }
         }
         
-        
-
         .profile {
             position: relative;
             z-index: 9998;
         }
-        
+
         .avatar {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             cursor: pointer;
-            border: 2px solid #667eea;
+            border: 2px solid #2563eb;
+            transition: all 0.3s ease;
+            object-fit: cover;
         }
-        
+
+        .avatar:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+            border-color: #60a5fa;
+        }
+
         .profile-menu {
             position: absolute;
             right: 0;
             top: 55px;
-            background: #0f172a;
-            border-radius: 12px;
-            padding: 15px;
-            width: 250px;
+            background: white;
+            border-radius: 20px;
+            width: 350px;
             opacity: 0;
-            transform: translateY(-15px) scale(.95);
+            transform: translateY(-15px) scale(0.95);
             pointer-events: none;
-            transition: all .25s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9998;
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
         }
-        
+
         .profile-menu.show {
             opacity: 1;
             transform: translateY(0) scale(1);
             pointer-events: auto;
         }
-        
-        .profile-info {
+
+        .profile-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            padding: 25px 20px;
             text-align: center;
-            padding: 10px;
+            position: relative;
         }
-        
+
         .avatar-large {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
-            margin-bottom: 10px;
-            border: 3px solid #667eea;
+            border: 4px solid white;
+            margin-bottom: 12px;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        
-        #userName {
+
+        .profile-header h4 {
             color: white;
             font-size: 18px;
             margin: 5px 0;
-        }
-        
-        #userEmail {
-            color: rgba(255,255,255,0.7);
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        .edit-btn {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
             font-weight: 600;
         }
-        
-        .logout-btn {
-            width: 100%;
-            padding: 10px;
-            background: #ff4757;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        
-        
 
+        .profile-header p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            margin: 0;
+            word-break: break-all;
+        }
+
+        .profile-tier-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            margin: 15px;
+            padding: 15px;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-tier-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .profile-tier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .profile-tier-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .profile-tier-badge i {
+            font-size: 24px;
+        }
+        
+        .profile-tier-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .profile-tier-points {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .profile-tier-progress {
+            margin: 12px 0;
+        }
+        
+        .profile-progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+        }
+        
+        .profile-progress-fill {
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            border-radius: 10px;
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .profile-points-needed {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 6px;
+            text-align: right;
+        }
+        
+        .profile-tier-benefits {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .profile-tier-benefits h5 {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .profile-tier-benefits ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .profile-tier-benefits li {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .profile-tier-benefits li i {
+            font-size: 9px;
+            color: #22d3ee;
+        }
+        
+        .profile-tier-multiplier {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: rgba(37, 99, 235, 0.3);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #93c5fd;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 18px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .profile-stat {
+            text-align: center;
+        }
+
+        .profile-stat-value {
+            color: #2563eb;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .profile-stat-label {
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .profile-actions {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: white;
+        }
+
+        .edit-profile-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .edit-profile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .logout-profile-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .logout-profile-btn:hover {
+            transform: translateY(-2px);
+            background: #dc2626;
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-modal.show {
+            display: flex;
+        }
+
+        .edit-box {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 420px;
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .edit-box h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-box h3 i {
+            color: #2563eb;
+        }
+
+        .edit-avatar-preview {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .edit-avatar-preview img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #2563eb;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .edit-avatar-preview img:hover {
+            opacity: 0.8;
+        }
+
+        .edit-box input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .edit-box input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .edit-file-input {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .edit-file-input label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #475569;
+            transition: background 0.3s;
+        }
+
+        .edit-file-input label:hover {
+            background: #e2e8f0;
+        }
+
+        .edit-file-input input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .edit-box-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .edit-box-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .edit-box-buttons button:first-child {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+        }
+
+        .edit-box-buttons button:first-child:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .edit-box-buttons button:last-child {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .edit-box-buttons button:last-child:hover {
+            background: #cbd5e1;
+        }
+        
         .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             width: 280px;
             height: 100%;
-            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
+            background: linear-gradient(180deg, #0f2b3d 0%, #0a1a2a 100%);
             backdrop-filter: blur(10px);
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.2);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             overflow-y: auto;
         }
@@ -646,7 +1033,7 @@ $points = $user['PointsBalance'];
             right: -50%;
             width: 200px;
             height: 200px;
-            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
         }
@@ -657,7 +1044,7 @@ $points = $user['PointsBalance'];
             font-weight: 700;
             margin: 0 0 5px 0;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #93c5fd 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -691,7 +1078,7 @@ $points = $user['PointsBalance'];
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -755,23 +1142,23 @@ $points = $user['PointsBalance'];
         }
 
         .sidebar-nav-link:hover {
-            background: rgba(168, 192, 255, 0.1);
+            background: rgba(37, 99, 235, 0.2);
             color: white;
             transform: translateX(5px);
         }
 
         .sidebar-nav-link:hover i {
-            color: #a5b4fc;
+            color: #60a5fa;
         }
 
         .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.05) 100%);
             color: white;
-            border-left: 3px solid #a5b4fc;
+            border-left: 3px solid #3b82f6;
         }
 
         .sidebar-nav-link.active i {
-            color: #a5b4fc;
+            color: #60a5fa;
         }
 
         .sidebar-badge {
@@ -783,11 +1170,6 @@ $points = $user['PointsBalance'];
             border-radius: 30px;
             margin-left: auto;
             animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .sidebar-divider {
@@ -888,7 +1270,7 @@ $points = $user['PointsBalance'];
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 3px;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
+            background: linear-gradient(135deg, #fff, #93c5fd);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -988,53 +1370,86 @@ $points = $user['PointsBalance'];
         }
         
         .card {
-            background: rgba(30, 144, 255, 0.18);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 18px;
-            padding: 30px;
-            color: white;
-            border: 1px solid rgba(255,255,255,0.25);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-            transition: 0.3s;
-            text-align: center;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s ease;
             cursor: pointer;
             text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
         
         .card:hover {
-            transform: translateY(-6px);
-            background: rgba(30,144,255,0.28);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            border-color: #bfdbfe;
         }
         
         .icon {
-            font-size: 38px;
+            font-size: 70px;
             display: block;
-            margin-bottom: 10px;
-            color: #22d3ee;
+            margin-bottom: 12px;
+            color: #2563eb;
         }
         
         .card h4 {
-            margin: 10px 0 5px;
-            font-size: 20px;
+            margin: 4px 0 6px;
+            font-size: 25px;
+            font-weight: 600;
+            color: #0f172a;
         }
         
         .card p {
-            opacity: .8;
-            font-size: 14px;
-            margin: 0;
+            opacity: 0.8;
+            font-size: 20px;
+            margin: 0 0 8px 0;
+            color: #475569;
+        }
+        
+        .card .price {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 10px 0 12px;
+        }
+        
+        .add-to-cart-btn {
+            background: #eff6ff;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 16px;
+            color: #2563eb;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .add-to-cart-btn:hover {
+            background: #2563eb;
+            color: white;
+            transform: scale(0.98);
         }
         
         .events {
             flex: 1;
-            background: rgba(30, 144, 255, 0.18);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: #f8fafc;
+            backdrop-filter: none;
             padding: 24px;
-            border-radius: 18px;
-            border: 1px solid rgba(255,255,255,0.25);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-            color: white;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            color: #1e293b;
             height: fit-content;
             position: relative;
             z-index: 1;
@@ -1043,18 +1458,19 @@ $points = $user['PointsBalance'];
         .events h3 {
             margin-bottom: 20px;
             font-size: 22px;
-            color: #22d3ee;
+            color: #2563eb;
+            font-weight: 600;
         }
         
         .events h4 {
-            color: #22d3ee;
+            color: #1e40af;
             margin: 15px 0 10px;
             font-size: 18px;
         }
         
         .events p {
             padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid #e2e8f0;
         }
         
         .events p:last-child {
@@ -1062,12 +1478,12 @@ $points = $user['PointsBalance'];
         }
         
         .events strong {
-            color: white;
+            color: #0f172a;
             font-size: 16px;
         }
         
         .events small {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 12px;
             display: block;
             margin-top: 4px;
@@ -1077,11 +1493,11 @@ $points = $user['PointsBalance'];
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            color: white;
+            color: #1e293b;
         }
         
         .gym-label {
-            color: rgba(255,255,255,0.7);
+            color: #475569;
         }
         
         .gym-value {
@@ -1100,8 +1516,8 @@ $points = $user['PointsBalance'];
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            color: white;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
             font-size: 14px;
         }
         
@@ -1111,21 +1527,21 @@ $points = $user['PointsBalance'];
         
         .route-name {
             font-weight: 500;
-            color: rgba(255,255,255,0.9);
+            color: #0f172a;
         }
         
         .route-time {
-            color: #fbbf24;
+            color: #2563eb;
             font-weight: 600;
-            background: rgba(251, 191, 36, 0.1);
+            background: #eff6ff;
             padding: 2px 10px;
             border-radius: 30px;
             font-size: 13px;
         }
         
         .route-time.evening {
-            color: #22d3ee;
-            background: rgba(34, 211, 238, 0.1);
+            color: #2563eb;
+            background: #eff6ff;
             font-weight: 700;
         }
         
@@ -1135,90 +1551,15 @@ $points = $user['PointsBalance'];
         
         .bus-schedule-header {
             margin-top: 10px;
-            border-top: 2px solid rgba(255,255,255,0.2);
+            border-top: 2px solid #e2e8f0;
             padding-top: 10px;
         }
         
         .bus-note {
-            color: rgba(255,255,255,0.6);
+            color: #64748b;
             font-size: 12px;
             text-align: center;
             margin-top: 5px;
-        }
-        
-        .edit-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 10000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .edit-modal.show {
-            display: flex;
-        }
-        
-        .edit-box {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-        }
-        
-        .edit-box h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        
-        .edit-box input {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: border-color 0.3s;
-        }
-        
-        .edit-box input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .edit-box button {
-            padding: 12px 25px;
-            margin-right: 10px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            transition: opacity 0.3s;
-        }
-        
-        .edit-box button:first-of-type {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .edit-box button:first-of-type:hover {
-            opacity: 0.9;
-        }
-        
-        .edit-box button:last-of-type {
-            background: #e0e0e0;
-            color: #333;
-        }
-        
-        .edit-box button:last-of-type:hover {
-            background: #d0d0d0;
         }
         
         .emergency-btn {
@@ -1235,7 +1576,7 @@ $points = $user['PointsBalance'];
             color: white;
             font-size: 26px;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.5);
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
             z-index: 9996;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 3px solid rgba(255, 255, 255, 0.5);
@@ -1245,7 +1586,7 @@ $points = $user['PointsBalance'];
 
         .emergency-btn:hover {
             transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.8);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.6);
             background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
         }
 
@@ -1282,7 +1623,47 @@ $points = $user['PointsBalance'];
         }
 
         .chat-btn {
-            bottom: 110px;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+            z-index: 9996;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+        }
+
+        .chat-btn-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 22px;
+            height: 22px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            border: 2px solid white;
+            animation: pulse 1.5s infinite;
         }
 
         @media (max-width: 768px) {
@@ -1295,10 +1676,37 @@ $points = $user['PointsBalance'];
             }
             
             .chat-btn {
-                bottom: 100px;
+                width: 55px;
+                height: 55px;
+                font-size: 22px;
+                right: 20px;
+                bottom: 20px;
+            }
+            
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .profile-menu {
+                width: 320px;
+                right: -50px;
             }
         }
 
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .layout {
+                flex-direction: column;
+            }
+            
+            .profile-menu {
+                width: 300px;
+                right: -20px;
+            }
+        }
+        
         .chat-container {
             position: fixed;
             bottom: 100px;
@@ -1307,12 +1715,12 @@ $points = $user['PointsBalance'];
             height: 600px;
             background: white;
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             display: none;
             flex-direction: column;
             z-index: 9997;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid #e2e8f0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -1333,7 +1741,7 @@ $points = $user['PointsBalance'];
         }
 
         .chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             color: white;
             padding: 20px;
             display: flex;
@@ -1402,7 +1810,6 @@ $points = $user['PointsBalance'];
             transform: rotate(90deg);
         }
 
-        
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -1434,7 +1841,7 @@ $points = $user['PointsBalance'];
             line-height: 1.4;
             font-size: 14px;
             position: relative;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .message-group.bot .message-bubble {
@@ -1445,7 +1852,7 @@ $points = $user['PointsBalance'];
         }
 
         .message-group.user .message-bubble {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             color: white;
             border-bottom-right-radius: 5px;
         }
@@ -1478,15 +1885,15 @@ $points = $user['PointsBalance'];
             color: #475569;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .quick-reply-btn:hover {
-            background: #667eea;
+            background: #2563eb;
             color: white;
-            border-color: #667eea;
+            border-color: #2563eb;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
         }
 
         .typing-indicator {
@@ -1535,7 +1942,7 @@ $points = $user['PointsBalance'];
 
         .chat-input-wrapper:focus-within {
             background: white;
-            box-shadow: 0 0 0 2px #667eea;
+            box-shadow: 0 0 0 2px #2563eb;
         }
 
         .chat-input-wrapper input {
@@ -1579,13 +1986,13 @@ $points = $user['PointsBalance'];
         }
 
         .action-btn.send {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             color: white;
         }
 
         .action-btn.send:hover {
             transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
         }
 
         .chat-features {
@@ -1614,7 +2021,7 @@ $points = $user['PointsBalance'];
         }
 
         .feature-btn:hover {
-            color: #667eea;
+            color: #2563eb;
         }
 
         .feature-btn i {
@@ -1632,7 +2039,7 @@ $points = $user['PointsBalance'];
             right: 0;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             padding: 15px;
             display: none;
             grid-template-columns: repeat(6, 1fr);
@@ -1676,70 +2083,13 @@ $points = $user['PointsBalance'];
         .message-group {
             animation: messagePop 0.3s ease;
         }
-
-        .chat-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 26px;
-            cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            z-index: 9996;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 3px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .chat-btn:hover {
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
-        }
-
-        .chat-btn-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            min-width: 22px;
-            height: 22px;
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 6px;
-            border: 2px solid white;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
+        
         @media (max-width: 768px) {
             .chat-container {
                 width: 320px;
                 height: 500px;
                 right: 15px;
                 bottom: 85px;
-            }
-            
-            .chat-btn {
-                width: 55px;
-                height: 55px;
-                font-size: 22px;
-                right: 20px;
-                bottom: 20px;
             }
             
             .quick-replies {
@@ -1750,7 +2100,143 @@ $points = $user['PointsBalance'];
                 padding: 6px 12px;
                 font-size: 11px;
             }
-        }        
+        }
+        
+        .hero-section {
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .hero-slide {
+            background-image: url('library.jpg');
+        }
+
+        .hero-slide:nth-child(2) {
+            background-image: url('maritime.jpg');
+        }
+
+        .hero-slide:nth-child(3) {
+            background-image: url('convercation.jpg');
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                height: 50vh !important;
+                min-height: 300px !important;
+            }
+            
+            .hero-section h1 {
+                font-size: 1.8rem !important;
+            }
+            
+            .hero-section p {
+                font-size: 0.9rem !important;
+            }
+        }
+		
+		/* ========== CUSTOM SCROLL BAR STYLES ========== */
+		/* For Webkit browsers (Chrome, Safari, Edge) */
+		::-webkit-scrollbar {
+			width: 10px;
+			height: 10px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: #f1f1f1;
+			border-radius: 10px;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+			border-radius: 10px;
+			transition: all 0.3s ease;
+		}
+
+		::-webkit-scrollbar-thumb:hover {
+			background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+			transform: scale(1.05);
+		}
+
+		/* For Firefox */
+		* {
+			scrollbar-width: thin;
+			scrollbar-color: #2563eb #f1f1f1;
+		}
+
+		/* Smooth scrolling for the whole page */
+		html {
+			scroll-behavior: smooth;
+		}
+
+		/* Body scroll styling */
+		body {
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+
+		/* Custom scroll for the chat messages */
+		.chat-messages::-webkit-scrollbar {
+			width: 6px;
+		}
+
+		.chat-messages::-webkit-scrollbar-track {
+			background: #e2e8f0;
+			border-radius: 10px;
+		}
+
+		.chat-messages::-webkit-scrollbar-thumb {
+			background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+			border-radius: 10px;
+		}
+
+		/* Custom scroll for sidebar */
+		.sidebar::-webkit-scrollbar {
+			width: 4px;
+		}
+
+		.sidebar::-webkit-scrollbar-track {
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 10px;
+		}
+
+		.sidebar::-webkit-scrollbar-thumb {
+			background: rgba(255, 255, 255, 0.3);
+			border-radius: 10px;
+		}
+
+		.sidebar::-webkit-scrollbar-thumb:hover {
+			background: rgba(255, 255, 255, 0.5);
+		}
+
+		/* Custom scroll for notification dropdown */
+		.notification-list::-webkit-scrollbar {
+			width: 4px;
+		}
+
+		.notification-list::-webkit-scrollbar-track {
+			background: #e2e8f0;
+			border-radius: 10px;
+		}
+
+		.notification-list::-webkit-scrollbar-thumb {
+			background: #2563eb;
+			border-radius: 10px;
+		}
+
+		/* Custom scroll for search results */
+		.search-results-list::-webkit-scrollbar {
+			width: 6px;
+		}
+
+		.search-results-list::-webkit-scrollbar-track {
+			background: #e2e8f0;
+			border-radius: 10px;
+		}
+
+		.search-results-list::-webkit-scrollbar-thumb {
+			background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+			border-radius: 10px;
+		}
     </style>
 </head>
 <body>
@@ -1806,16 +2292,16 @@ $points = $user['PointsBalance'];
             </a>
         </li>
         <li class="sidebar-nav-item">
-            <a href="qr.html" class="sidebar-nav-link">
+            <a href="qr.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-qrcode"></i>
-                <span>QR Scanner</span>
+                <span>QR & GPS</span>
             </a>
         </li>
         <li class="sidebar-nav-item">
             <a href="notifications.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-bell"></i>
                 <span>Notifications</span>
-                <span class="sidebar-badge" id="sidebarNotificationBadge">3</span>
+                <span class="sidebar-badge" id="sidebarNotificationBadge"><?php echo $unread_count > 0 ? $unread_count : ''; ?></span>
             </a>
         </li>
     </ul>
@@ -1877,7 +2363,7 @@ $points = $user['PointsBalance'];
     <div class="icons">
         <div class="notify" onclick="toggleNotifications()">
             <i class="fa-solid fa-bell"></i>
-            <span class="badge" id="notificationBadge">0</span>
+            <span class="badge" id="notificationBadge"><?php echo $unread_count > 0 ? $unread_count : '0'; ?></span>
             
             <div class="notification-dropdown" id="notificationDropdown">
                 <div class="notification-header">
@@ -1899,17 +2385,79 @@ $points = $user['PointsBalance'];
         </div>
         
         <div class="profile">
-            <img id="avatar" src="https://i.pravatar.cc/40?u=<?php echo $user_id; ?>" class="avatar" onclick="toggleProfileMenu(event)">
+            <img id="avatar" src="https://i.pravatar.cc/42?u=<?php echo $user_id; ?>" class="avatar" onclick="toggleProfileMenu(event)">
             
             <div class="profile-menu" id="profileMenu">
-                <div class="profile-info">
-                    <img id="avatarLarge" src="https://i.pravatar.cc/80?u=<?php echo $user_id; ?>" class="avatar-large">
+                <div class="profile-header">
+                    <img id="avatarLarge" src="https://i.pravatar.cc/85?u=<?php echo $user_id; ?>" class="avatar-large">
                     <h4 id="userName"><?php echo htmlspecialchars($user['Name']); ?></h4>
                     <p id="userEmail"><?php echo htmlspecialchars($user['Email']); ?></p>
                 </div>
                 
-                <button class="edit-btn" onclick="openEditProfile()">Edit Profile</button> 
-                <button class="logout-btn" onclick="logout()">Logout</button>
+                <!-- Tier Card inside Profile -->
+                <div class="profile-tier-card">
+                    <div class="profile-tier-header">
+                        <div class="profile-tier-badge">
+                            <i class="fa-solid <?php echo $tiers[$current_tier]['icon']; ?>" style="color: <?php echo $tiers[$current_tier]['color']; ?>"></i>
+                            <span class="profile-tier-name"><?php echo $tiers[$current_tier]['name']; ?> Member</span>
+                        </div>
+                        <div class="profile-tier-points">
+                            <?php echo number_format($points); ?> pts
+                        </div>
+                    </div>
+                    
+                    <div class="profile-tier-progress">
+                        <div class="profile-progress-bar">
+                            <div class="profile-progress-fill" style="width: <?php echo $progress_percentage; ?>%;"></div>
+                        </div>
+                        <?php if ($next_tier): ?>
+                        <div class="profile-points-needed">
+                            ⭐ <?php echo number_format($points_to_next); ?> more to <?php echo $next_tier['name']; ?>
+                        </div>
+                        <?php else: ?>
+                        <div class="profile-points-needed">
+                            🏆 Max Tier Reached!
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="profile-tier-benefits">
+                        <h5><i class="fa-regular fa-star"></i> Benefits</h5>
+                        <ul>
+                            <?php foreach ($tier_benefits[$current_tier] as $benefit): ?>
+                            <li><i class="fa-regular fa-circle-check"></i> <?php echo $benefit; ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                    
+                    <div class="profile-tier-multiplier">
+                        <i class="fa-solid fa-calculator"></i> <?php echo $tiers[$current_tier]['multiplier']; ?>x
+                    </div>
+                </div>
+                
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <div class="profile-stat-value"><?php echo $points; ?></div>
+                        <div class="profile-stat-label">Points</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">4</div>
+                        <div class="profile-stat-label">Clubs</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">12</div>
+                        <div class="profile-stat-label">Events</div>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <button class="edit-profile-btn" onclick="openEditProfile()">
+                        <i class="fa-regular fa-pen-to-square"></i> Edit Profile
+                    </button>
+                    <button class="logout-profile-btn" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1927,15 +2475,58 @@ $points = $user['PointsBalance'];
     </div>
 </div>
 
+<!-- Hero Section with Animated Slider -->
+<div class="hero-section" style="position: relative; width: 100%; height: 60vh; min-height: 400px; overflow: hidden; margin-bottom: 30px; border-radius: 0 0 30px 30px;">
+    <div class="hero-slider" style="position: relative; width: 100%; height: 100%;">
+        
+        <!-- Slide 1 -->
+        <div class="hero-slide active" style="position: absolute; width: 100%; height: 100%; background-image: url('library.jpg'); background-size: cover; background-position: center; transition: opacity 1s ease; opacity: 1;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);"></div>
+            <div style="position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 0 20px;">
+                <h1 style="font-size: 3rem; margin-bottom: 15px;">Welcome to <span style="color: #2563eb;">Synergy Hub</span></h1>
+                <p style="font-size: 1.2rem; margin-bottom: 25px;">Your all-in-one campus companion</p>
+                <button onclick="document.getElementById('searchInput').focus()" style="background: #2563eb; color: white; border: none; padding: 12px 35px; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer;">Explore Now →</button>
+            </div>
+        </div>
+        
+        <!-- Slide 2 -->
+        <div class="hero-slide" style="position: absolute; width: 100%; height: 100%; background-image: url('maritime.jpg'); background-size: cover; background-position: center; transition: opacity 1s ease; opacity: 0;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);"></div>
+            <div style="position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 0 20px;">
+                <h1 style="font-size: 3rem; margin-bottom: 15px;">Discover <span style="color: #2563eb;">Facilities</span></h1>
+                <p style="font-size: 1.2rem; margin-bottom: 25px;">Gym, Pool, Sports grounds and more</p>
+                <a href="facilities.php" style="background: #2563eb; color: white; text-decoration: none; padding: 12px 35px; border-radius: 50px; font-size: 1rem; font-weight: 600;">View Facilities →</a>
+            </div>
+        </div>
+        
+        <!-- Slide 3 -->
+        <div class="hero-slide" style="position: absolute; width: 100%; height: 100%; background-image: url('convercation.jpg'); background-size: cover; background-position: center; transition: opacity 1s ease; opacity: 0;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);"></div>
+            <div style="position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 0 20px;">
+                <h1 style="font-size: 3rem; margin-bottom: 15px;">Join <span style="color: #2563eb;">Clubs</span> & <span style="color: #2563eb;">Events</span></h1>
+                <p style="font-size: 1.2rem; margin-bottom: 25px;">Connect with like-minded students</p>
+                <a href="clubs.php" style="background: #2563eb; color: white; text-decoration: none; padding: 12px 35px; border-radius: 50px; font-size: 1rem; font-weight: 600;">Explore Clubs →</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slider Dots -->
+    <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 10;">
+        <div class="hero-dot active" data-slide="0" style="width: 30px; height: 8px; border-radius: 10px; background: white; cursor: pointer;"></div>
+        <div class="hero-dot" data-slide="1" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer;"></div>
+        <div class="hero-dot" data-slide="2" style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer;"></div>
+    </div>
+</div>
+
 <main class="layout">
     <section class="grid">
-        <a href="qr.html" class="card">
+        <a href="qr.php" class="card">
             <i class="fa-solid fa-qrcode icon"></i>
             <h4>QR & GPS</h4>
-            <p>Scan QR to navigate campus</p>
+            <p>Scan QR codes Or use GPS to earn points</p>
         </a>
         
-        <a href="https://www.google.com/maps/place/CINEC+Campus+Malabe" target="_blank" class="card">
+        <a href="map.html" target="_blank" class="card">
             <i class="fa-solid fa-earth-asia icon"></i>
             <h4>360° Map & Navigation</h4>
             <p>Explore CINEC campus and get directions</p>
@@ -2094,12 +2685,26 @@ $points = $user['PointsBalance'];
 
 <div class="edit-modal" id="editModal">
     <div class="edit-box">
-        <h3>Edit Profile</h3>
-        <input id="editName" placeholder="Name" value="<?php echo htmlspecialchars($user['Name']); ?>">
-        <input id="editEmail" placeholder="Email" value="<?php echo htmlspecialchars($user['Email']); ?>">
-        <input type="file" id="editPhoto" accept="image/*">
-        <button onclick="saveProfile()">Save</button>
-        <button onclick="closeEdit()">Cancel</button>
+        <h3><i class="fa-regular fa-user"></i> Edit Profile</h3>
+        
+        <div class="edit-avatar-preview">
+            <img id="editAvatarPreview" src="https://i.pravatar.cc/100?u=<?php echo $user_id; ?>" onclick="document.getElementById('editPhoto').click()">
+        </div>
+        
+        <input id="editName" placeholder="Full Name" value="<?php echo htmlspecialchars($user['Name']); ?>">
+        <input id="editEmail" placeholder="Email Address" type="email" value="<?php echo htmlspecialchars($user['Email']); ?>">
+        
+        <div class="edit-file-input">
+            <label for="editPhoto">
+                <i class="fa-solid fa-camera"></i> Change Profile Picture
+            </label>
+            <input type="file" id="editPhoto" accept="image/*" onchange="previewProfileImage(this)">
+        </div>
+        
+        <div class="edit-box-buttons">
+            <button onclick="saveProfile()">Save Changes</button>
+            <button onclick="closeEdit()">Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -2254,9 +2859,21 @@ document.addEventListener("click", function() {
     document.getElementById("profileMenu").classList.remove("show");
 });
 
+function previewProfileImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById("editAvatarPreview").src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 function openEditProfile() {
     document.getElementById("editModal").classList.add("show");
     document.getElementById("profileMenu").classList.remove("show");
+    const currentAvatar = document.getElementById("avatarLarge").src;
+    document.getElementById("editAvatarPreview").src = currentAvatar;
 }
 
 function closeEdit() {
@@ -2268,45 +2885,36 @@ function saveProfile() {
     let email = document.getElementById("editEmail").value;
     let photoFile = document.getElementById("editPhoto").files[0];
     
+    if (name.trim() === "") {
+        alert("Please enter your name");
+        return;
+    }
+    
+    if (email.trim() === "") {
+        alert("Please enter your email");
+        return;
+    }
+    
+    // Update displayed name and email
     document.getElementById("userName").innerText = name;
     document.getElementById("userEmail").innerText = email;
+    document.querySelector(".sidebar-user-info h4").innerText = name;
     
     if (photoFile) {
         let reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById("avatar").src = e.target.result;
             document.getElementById("avatarLarge").src = e.target.result;
+            document.getElementById("editAvatarPreview").src = e.target.result;
         };
         reader.readAsDataURL(photoFile);
     }
     
     closeEdit();
-    alert("Profile updated!");
+    alert("Profile updated successfully!");
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadNotifications();
-    
-    setInterval(loadNotifications, 30000);
-});
-
-function toggleNotifications() {
-    const dropdown = document.getElementById('notificationDropdown');
-    dropdown.classList.toggle('show');
-    
-    if (dropdown.classList.contains('show')) {
-        loadNotifications();
-    }
-}
-
-document.addEventListener('click', function(e) {
-    const notify = document.querySelector('.notify');
-    const dropdown = document.getElementById('notificationDropdown');
-    
-    if (notify && dropdown && !notify.contains(e.target)) {
-        dropdown.classList.remove('show');
-    }
-});
+// ============= NOTIFICATION FUNCTIONS =============
 
 function loadNotifications() {
     fetch('get_notifications.php')
@@ -2322,11 +2930,26 @@ function loadNotifications() {
 
 function updateNotificationBadge(count) {
     const badge = document.getElementById('notificationBadge');
-    if (count > 0) {
-        badge.textContent = count;
-        badge.style.display = 'inline';
-    } else {
-        badge.style.display = 'none';
+    const sidebarBadge = document.getElementById('sidebarNotificationBadge');
+    
+    if (badge) {
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'inline-flex';
+        } else {
+            badge.textContent = '0';
+            badge.style.display = 'inline-flex';
+        }
+    }
+    
+    if (sidebarBadge) {
+        if (count > 0) {
+            sidebarBadge.textContent = count;
+            sidebarBadge.style.display = 'inline-block';
+        } else {
+            sidebarBadge.textContent = '';
+            sidebarBadge.style.display = 'none';
+        }
     }
 }
 
@@ -2349,8 +2972,8 @@ function displayNotifications(notifications) {
                     <i class="fa-solid ${iconClass}"></i>
                 </div>
                 <div class="notification-content">
-                    <div class="notification-title">${notif.title}</div>
-                    <div class="notification-message">${notif.message}</div>
+                    <div class="notification-title">${escapeHtml(notif.title)}</div>
+                    <div class="notification-message">${escapeHtml(notif.message)}</div>
                     <div class="notification-time">
                         <i class="fa-regular fa-clock"></i> ${notif.time} • ${notif.date}
                     </div>
@@ -2368,6 +2991,23 @@ function getNotificationIcon(type) {
         case 'event': return 'fa-calendar';
         case 'transport': return 'fa-bus';
         default: return 'fa-bell';
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+            loadNotifications();
+        }
     }
 }
 
@@ -2392,7 +3032,8 @@ function markAllAsRead() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-        }
+        },
+        body: 'all=1'
     })
     .then(response => response.json())
     .then(data => {
@@ -2402,6 +3043,24 @@ function markAllAsRead() {
     });
 }
 
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const notify = document.querySelector('.notify');
+    const dropdown = document.getElementById('notificationDropdown');
+    
+    if (notify && dropdown && !notify.contains(e.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Load notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
+});
+
+// Rest of the existing JavaScript code (search, chat, hero slider, etc.) continues here...
+// (Keep all your existing code for search, chat, hero slider, etc. unchanged)
 
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
@@ -3059,6 +3718,323 @@ document.addEventListener('DOMContentLoaded', function() {
         Notification.requestPermission();
     }
 });
+// ========== HERO SLIDER FUNCTIONALITY ==========
+let currentHeroSlide = 0;
+let heroSlides = [];
+let heroDots = [];
+let heroInterval;
+
+function initHeroSlider() {
+    heroSlides = document.querySelectorAll('.hero-slide');
+    heroDots = document.querySelectorAll('.hero-dot');
+    
+    if (heroSlides.length === 0) return;
+    
+    // Set all slides - initially hide all except first
+    heroSlides.forEach((slide, index) => {
+        if (index === 0) {
+            slide.style.opacity = '1';
+            slide.classList.add('active');
+        } else {
+            slide.style.opacity = '0';
+            slide.classList.remove('active');
+        }
+    });
+    
+    // Set dots style
+    if (heroDots.length) {
+        heroDots.forEach((dot, index) => {
+            if (index === 0) {
+                dot.style.background = 'white';
+                dot.style.width = '30px';
+                dot.style.borderRadius = '10px';
+            } else {
+                dot.style.background = 'rgba(255,255,255,0.5)';
+                dot.style.width = '8px';
+                dot.style.borderRadius = '50%';
+            }
+        });
+    }
+    
+    // Add click events to dots
+    if (heroDots.length) {
+        heroDots.forEach((dot, index) => {
+            dot.removeEventListener('click', heroDotClickHandler);
+            dot.addEventListener('click', () => heroDotClickHandler(index));
+        });
+    }
+    
+    // Start slider
+    startHeroSlider();
+    
+    // Pause slider on hover
+    const heroSection = document.querySelector('.hero-section');
+    if (heroSection) {
+        heroSection.removeEventListener('mouseenter', pauseHeroSlider);
+        heroSection.removeEventListener('mouseleave', startHeroSlider);
+        heroSection.addEventListener('mouseenter', pauseHeroSlider);
+        heroSection.addEventListener('mouseleave', startHeroSlider);
+    }
+}
+
+function heroDotClickHandler(index) {
+    clearInterval(heroInterval);
+    showHeroSlide(index);
+    startHeroSlider();
+}
+
+function showHeroSlide(index) {
+    if (!heroSlides.length) return;
+    
+    heroSlides.forEach((slide, i) => {
+        slide.style.opacity = '0';
+        slide.classList.remove('active');
+        if (heroDots[i]) {
+            heroDots[i].style.background = 'rgba(255,255,255,0.5)';
+            heroDots[i].style.width = '8px';
+            heroDots[i].style.borderRadius = '50%';
+        }
+    });
+    
+    heroSlides[index].style.opacity = '1';
+    heroSlides[index].classList.add('active');
+    if (heroDots[index]) {
+        heroDots[index].style.background = 'white';
+        heroDots[index].style.width = '30px';
+        heroDots[index].style.borderRadius = '10px';
+    }
+    currentHeroSlide = index;
+}
+
+function nextHeroSlide() {
+    if (!heroSlides.length) return;
+    let next = currentHeroSlide + 1;
+    if (next >= heroSlides.length) next = 0;
+    showHeroSlide(next);
+}
+
+function startHeroSlider() {
+    if (heroInterval) clearInterval(heroInterval);
+    if (heroSlides.length > 1) {
+        heroInterval = setInterval(nextHeroSlide, 3000); // 3 seconds
+    }
+}
+
+function pauseHeroSlider() {
+    if (heroInterval) clearInterval(heroInterval);
+}
+
+// Initialize hero slider when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initHeroSlider();
+});
+
+// ========== SCROLL FUNCTIONALITY ==========
+
+// Smooth scroll to top button
+function addScrollToTopButton() {
+    // Check if button already exists
+    if (document.getElementById('scrollToTop')) return;
+    
+    const scrollBtn = document.createElement('div');
+    scrollBtn.id = 'scrollToTop';
+    scrollBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+    scrollBtn.style.cssText = `
+        position: fixed;
+        bottom: 110px;
+        right: 120px;
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white;
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 9995;
+        box-shadow: 0 5px 20px rgba(37, 99, 235, 0.3);
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        font-size: 20px;
+    `;
+    
+    scrollBtn.onmouseenter = () => {
+        scrollBtn.style.transform = 'scale(1.1)';
+        scrollBtn.style.boxShadow = '0 8px 25px rgba(37, 99, 235, 0.4)';
+    };
+    
+    scrollBtn.onmouseleave = () => {
+        scrollBtn.style.transform = 'scale(1)';
+        scrollBtn.style.boxShadow = '0 5px 20px rgba(37, 99, 235, 0.3)';
+    };
+    
+    scrollBtn.onclick = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+    
+    document.body.appendChild(scrollBtn);
+    
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollBtn.style.display = 'flex';
+        } else {
+            scrollBtn.style.display = 'none';
+        }
+    });
+}
+
+// Function to scroll to specific section
+function scrollToSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+// Function to get current scroll position
+function getScrollPosition() {
+    return {
+        x: window.scrollX,
+        y: window.scrollY
+    };
+}
+
+// Function to save scroll position
+function saveScrollPosition() {
+    sessionStorage.setItem('scrollPosition', window.scrollY);
+}
+
+// Function to restore scroll position
+function restoreScrollPosition() {
+    const savedPosition = sessionStorage.getItem('scrollPosition');
+    if (savedPosition) {
+        window.scrollTo({
+            top: parseInt(savedPosition),
+            behavior: 'auto'
+        });
+        sessionStorage.removeItem('scrollPosition');
+    }
+}
+
+// Save scroll position before page reload or navigation
+window.addEventListener('beforeunload', () => {
+    saveScrollPosition();
+});
+
+// Restore scroll position on page load
+document.addEventListener('DOMContentLoaded', () => {
+    restoreScrollPosition();
+    addScrollToTopButton();
+});
+
+// Calculate and display scroll percentage on page
+function updateScrollPercentage() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = (scrollTop / docHeight) * 100;
+    
+    // Update scroll percentage in console (optional)
+    // console.log(`Scrolled: ${scrollPercent.toFixed(1)}%`);
+    
+    // You can add a visual indicator if needed
+    let scrollIndicator = document.getElementById('scrollIndicator');
+    if (!scrollIndicator && scrollPercent > 0) {
+        scrollIndicator = document.createElement('div');
+        scrollIndicator.id = 'scrollIndicator';
+        scrollIndicator.style.cssText = `
+            position: fixed;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 100px;
+            background: rgba(37, 99, 235, 0.3);
+            border-radius: 10px;
+            z-index: 9995;
+        `;
+        
+        const fill = document.createElement('div');
+        fill.id = 'scrollFill';
+        fill.style.cssText = `
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(180deg, #2563eb, #1e40af);
+            border-radius: 10px;
+            transition: height 0.3s ease;
+        `;
+        scrollIndicator.appendChild(fill);
+        document.body.appendChild(scrollIndicator);
+    }
+    
+    const scrollFill = document.getElementById('scrollFill');
+    if (scrollFill) {
+        scrollFill.style.height = scrollPercent + '%';
+    }
+}
+
+window.addEventListener('scroll', () => {
+    updateScrollPercentage();
+});
+
+// Keyboard navigation for scrolling
+document.addEventListener('keydown', (e) => {
+    // Page Up/Down keys
+    if (e.key === 'PageUp') {
+        e.preventDefault();
+        window.scrollBy({
+            top: -window.innerHeight / 2,
+            behavior: 'smooth'
+        });
+    } else if (e.key === 'PageDown') {
+        e.preventDefault();
+        window.scrollBy({
+            top: window.innerHeight / 2,
+            behavior: 'smooth'
+        });
+    } else if (e.key === 'Home') {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    } else if (e.key === 'End') {
+        e.preventDefault();
+        window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+});
+
+// Add CSS for responsive scroll adjustments
+const scrollResponsiveStyles = `
+    @media (max-width: 768px) {
+        #scrollToTop {
+            bottom: 100px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+        
+        #scrollIndicator {
+            right: 5px;
+            height: 60px;
+        }
+    }
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = scrollResponsiveStyles;
+document.head.appendChild(styleSheet);
 
 </script>
 
