@@ -61,7 +61,6 @@ $item_count = count($orders);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmed - Synergy Hub</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
@@ -72,42 +71,23 @@ $item_count = count($orders);
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
+            padding: 20px;
         }
         
         .confirmation-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 30px;
             padding: 50px;
-            max-width: 600px;
-            width: 90%;
+            max-width: 550px;
+            width: 100%;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             animation: slideUp 0.5s ease;
         }
         
@@ -137,35 +117,41 @@ $item_count = count($orders);
         }
         
         h1 {
-            color: white;
-            font-size: 36px;
+            color: #1e4a76;
+            font-size: 32px;
             margin-bottom: 10px;
         }
         
         .order-number {
-            color: #22d3ee;
-            font-size: 18px;
+            color: #2c7da0;
+            font-size: 16px;
             margin-bottom: 30px;
-            background: rgba(34, 211, 238, 0.1);
+            background: #e0f2fe;
             padding: 10px 20px;
             border-radius: 50px;
             display: inline-block;
+            font-weight: 500;
+        }
+        
+        .order-number i {
+            margin-right: 5px;
         }
         
         .order-details {
-            background: rgba(0,0,0,0.2);
+            background: #f8fafc;
             border-radius: 20px;
             padding: 25px;
             margin: 30px 0;
             text-align: left;
+            border: 1px solid #e2e8f0;
         }
         
         .detail-row {
             display: flex;
             justify-content: space-between;
             padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.9);
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
         }
         
         .detail-row:last-child {
@@ -173,52 +159,79 @@ $item_count = count($orders);
         }
         
         .detail-label {
-            color: rgba(255,255,255,0.6);
+            color: #64748b;
         }
         
         .detail-value {
             font-weight: 600;
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .items-list {
             margin-top: 15px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
+        }
+        
+        .items-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .items-list::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .items-list::-webkit-scrollbar-thumb {
+            background: #2c7da0;
+            border-radius: 10px;
         }
         
         .item-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            color: rgba(255,255,255,0.8);
+            padding: 10px 0;
+            color: #475569;
             font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .item-row:last-child {
+            border-bottom: none;
         }
         
         .total-amount {
             font-size: 24px;
-            color: white;
             margin: 20px 0;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
         }
         
-        .total-amount span {
-            color: #22d3ee;
+        .total-amount span:first-child {
+            color: #64748b;
+            font-size: 16px;
+            font-weight: normal;
+        }
+        
+        .total-amount span:last-child {
+            color: #2c7da0;
             font-weight: 700;
+            font-size: 28px;
         }
         
         .action-buttons {
             display: flex;
             gap: 15px;
-            margin-top: 30px;
+            margin-top: 20px;
         }
         
         .btn {
             flex: 1;
-            padding: 15px;
+            padding: 14px 20px;
             border: none;
             border-radius: 12px;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s;
             text-decoration: none;
@@ -229,27 +242,28 @@ $item_count = count($orders);
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(30, 74, 118, 0.3);
         }
         
         .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
+            background: #f8fafc;
+            color: #1e4a76;
+            border: 1px solid #e2e8f0;
         }
         
         .btn-secondary:hover {
-            background: rgba(255,255,255,0.2);
+            background: #e0f2fe;
+            border-color: #2c7da0;
         }
         
         .btn i {
-            font-size: 16px;
+            font-size: 14px;
         }
         
         .badge {
@@ -274,14 +288,14 @@ $item_count = count($orders);
             .action-buttons {
                 flex-direction: column;
             }
+            
+            .total-amount span:last-child {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-
-<div class="bg"></div>
-
-
 
 <div class="confirmation-card">
     <div class="success-icon">
@@ -294,10 +308,6 @@ $item_count = count($orders);
         <?php echo date('M d, Y - h:i A', strtotime($first_order['Timestamp'] ?? 'now')); ?>
     </div>
     
-
-
-
-
     <div class="order-details">
         <div class="detail-row">
             <span class="detail-label">Order ID</span>
@@ -311,17 +321,15 @@ $item_count = count($orders);
         <div class="items-list">
             <?php foreach($orders as $order): ?>
             <div class="item-row">
-                <span><?php echo htmlspecialchars($order['ItemName']); ?></span>
+                <span><i class="fa-regular fa-circle-check" style="color: #10b981; margin-right: 8px;"></i> <?php echo htmlspecialchars($order['ItemName']); ?></span>
                 <span>Rs. <?php echo number_format($order['Price'], 2); ?></span>
             </div>
             <?php endforeach; ?>
         </div>
     </div>
     
-
-    
     <div class="total-amount">
-        Total: <span>Rs. <?php echo number_format($total_amount, 2); ?></span>
+        <span>Total Amount:</span> <span>Rs. <?php echo number_format($total_amount, 2); ?></span>
     </div>
     
     <div class="action-buttons">
