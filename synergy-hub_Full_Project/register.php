@@ -1,22 +1,7 @@
 <?php
-/**
- * Features:
- *  - New user registration with Student ID, Name, Email, and Password
- *  - Password confirmation and validation
- *  - Duplicate chack for both Email and Student ID
- *  - Secure password hashing using password_hash() with PASSWORD_DEFAULT
- *  - Logs registration activity
- * 
- * Security Notes:
- *  - Passwords are hashed with a strong algorithm and unique salt
- *  - Duplicate prevention on both Email and Student ID
- *  - New users start with 0 points and Active membership status
- */
-
 require_once 'config.php';
 require_once 'functions.php';
 
-// Handle registration from submission
 $error = '';
 $success = '';
 
@@ -27,12 +12,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     
-    // Basic validation
     if ($password != $confirm_password) {
         $error = "Passwords do not match!";
     } else {
-        
-        // Chack for existing email or student ID
         $check_sql = "SELECT * FROM Users WHERE Email = ? OR StudentID = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
         mysqli_stmt_bind_param($check_stmt, "ss", $email, $student_id);
@@ -42,8 +24,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (mysqli_num_rows($check_result) > 0) {
             $error = "Email or Student ID already exists!";
         } else {
-            
-            // Hash password and insert new user
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             
             $insert_sql = "INSERT INTO Users (StudentID, Name, Email, PasswordHash, Role, PointsBalance, MembershipStatus) 
@@ -53,11 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             if (mysqli_stmt_execute($insert_stmt)) {
                 $success = "Registration successful! Please login.";
-                
-                
                 $new_user_id = mysqli_insert_id($conn);
-                
-                // Log the registration
                 logActivity($conn, $new_user_id, 'REGISTER');
             } else {
                 $error = "Error: " . mysqli_error($conn);
@@ -66,7 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -87,7 +62,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             position: relative;
         }
         
-        
         .bg {
             position: fixed;
             top: 0;
@@ -101,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             content: "";
             position: absolute;
             inset: 0;
-            background-image: url("campus.jpg");
+            background-image: url('loginimage.jpg');
             background-size: cover;
             background-position: center;
             filter: blur(4px) brightness(0.65);
@@ -120,47 +94,81 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .auth-box {
-            background: white;
+            background: #ffffff;
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 450px;
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.15); 
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: none;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         .auth-box h2 {
-            color: white;
-            margin-bottom: 30px;
+            color: #1e4a76;
+            margin-bottom: 20px;
             text-align: center;
             font-size: 28px;
             font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .profile-icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .profile-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #1e4a76;
+            box-shadow: 0 4px 15px rgba(30, 74, 118, 0.2);
+        }
+        
+        .profile-icon:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(30, 74, 118, 0.3);
+            border-color: #2c7da0;
+        }
+        
+        .profile-icon svg {
+            transition: transform 0.3s ease;
+        }
+        
+        .profile-icon:hover svg {
+            transform: scale(1.1);
         }
         
         .auth-box input {
             width: 100%;
             padding: 12px 15px;
             margin-bottom: 15px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid #e2e8f0;
             border-radius: 10px;
             font-size: 15px;
             transition: border-color 0.3s;
-            background: rgba(255,255,255,0.9);
+            background: #ffffff;
+            color: #1e293b;
         }
         
         .auth-box input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #2c7da0;
             background: white;
         }
         
         .auth-box button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -178,12 +186,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         .auth-box p {
             text-align: center;
-            color: white;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            color: #475569;
         }
         
         .auth-box a {
-            color: #22d3ee;
+            color: #2c7da0;
             text-decoration: none;
             font-weight: 500;
         }
@@ -203,27 +210,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .error {
-            background: rgba(255, 0, 0, 0.2);
-            color: white;
+            background: #fee2e2;
+            color: #b91c1c;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
             font-size: 14px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
+            border: 1px solid #fecaca;
         }
         
         .success {
-            background: rgba(0, 255, 0, 0.2);
-            color: white;
+            background: #dcfce7;
+            color: #166534;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
             font-size: 14px;
-            border: 1px solid rgba(0, 255, 0, 0.3);
-            backdrop-filter: blur(5px);
+            border: 1px solid #bbf7d0;
         }
     </style>
 </head>
@@ -235,12 +240,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="auth-box">
         <h2>Create Account</h2>
         
+        <div class="profile-icon-container">
+            <div class="profile-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1e4a76" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+        </div>
+        
         <?php if($error): ?>
-            <div class="error"><?php echo escape($error); ?></div>
+            <div class="error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
         
         <?php if($success): ?>
-            <div class="success"><?php echo escape($success); ?></div>
+            <div class="success"><?php echo htmlspecialchars($success); ?></div>
         <?php endif; ?>
         
         <form method="POST" action="">
