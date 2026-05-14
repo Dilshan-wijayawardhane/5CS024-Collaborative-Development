@@ -1,4 +1,5 @@
 <?php
+// pool_medical.php - COMPLETE FULL VERSION with white/blue theme
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -39,6 +40,14 @@ $valid_result = mysqli_stmt_get_result($valid_stmt);
 $has_valid = mysqli_num_rows($valid_result) > 0;
 $valid_report = mysqli_fetch_assoc($valid_result);
 
+// Get user points
+$user_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
+$user_stmt = mysqli_prepare($conn, $user_sql);
+mysqli_stmt_bind_param($user_stmt, "i", $user_id);
+mysqli_stmt_execute($user_stmt);
+$user_result = mysqli_stmt_get_result($user_stmt);
+$user = mysqli_fetch_assoc($user_result);
+
 // Handle form submission
 $message = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -55,9 +64,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         
         if (!in_array($ext, $allowed)) {
-            $message = '<div class="error-msg">❌ Only PDF, JPG, PNG files are allowed</div>';
+            $message = '<div class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> ❌ Only PDF, JPG, PNG files are allowed</div>';
         } elseif ($filesize > 5 * 1024 * 1024) {
-            $message = '<div class="error-msg">❌ File size must be less than 5MB</div>';
+            $message = '<div class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> ❌ File size must be less than 5MB</div>';
         } else {
             // Create upload directory if not exists
             $upload_dir = 'uploads/medical/';
@@ -86,22 +95,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 );
                 
                 if (mysqli_stmt_execute($insert_stmt)) {
-                    $message = '<div class="success-msg">✅ Medical report uploaded successfully!</div>';
+                    $message = '<div class="success-msg"><i class="fa-solid fa-check-circle"></i> ✅ Medical report uploaded successfully!</div>';
                     
                     // Log activity
                     logActivity($conn, $user_id, 'MEDICAL_UPLOAD', 'medical_reports', mysqli_insert_id($conn));
                     
                     // Refresh the page
-                    header("Refresh:2");
+                    echo '<meta http-equiv="refresh" content="2">';
                 } else {
-                    $message = '<div class="error-msg">❌ Database error: ' . mysqli_error($conn) . '</div>';
+                    $message = '<div class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> ❌ Database error: ' . mysqli_error($conn) . '</div>';
                 }
             } else {
-                $message = '<div class="error-msg">❌ Failed to upload file</div>';
+                $message = '<div class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> ❌ Failed to upload file</div>';
             }
         }
     } else {
-        $message = '<div class="error-msg">❌ Please select a file to upload</div>';
+        $message = '<div class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> ❌ Please select a file to upload</div>';
     }
 }
 
@@ -129,8 +138,8 @@ if (isset($_GET['delete'])) {
         mysqli_stmt_bind_param($delete_stmt, "ii", $report_id, $user_id);
         
         if (mysqli_stmt_execute($delete_stmt)) {
-            $message = '<div class="success-msg">✅ Report deleted successfully</div>';
-            header("Refresh:2");
+            $message = '<div class="success-msg"><i class="fa-solid fa-check-circle"></i> ✅ Report deleted successfully</div>';
+            echo '<meta http-equiv="refresh" content="2">';
         }
     }
 }
@@ -143,7 +152,6 @@ if (isset($_GET['delete'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medical Report - Synergy Hub</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
@@ -154,48 +162,28 @@ if (isset($_GET['delete'])) {
         
         body {
             min-height: 100vh;
-            position: relative;
-            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -205,9 +193,14 @@ if (isset($_GET['delete'])) {
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-btn.active {
+            transform: rotate(90deg);
         }
         
         .points {
@@ -217,44 +210,306 @@ if (isset($_GET['delete'])) {
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
         }
         
+        .home-link:hover {
+            color: #2c7da0;
+        }
+        
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
-            left: -260px;
+            left: -280px;
             top: 0;
-            width: 260px;
+            width: 280px;
             height: 100%;
-            background: #0f172a;
-            padding-top: 70px;
-            transition: .35s;
+            background: white;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+            overflow-y: auto;
         }
-        
-        .sidebar a {
-            display: block;
-            padding: 15px 20px;
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px 20px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+        }
+
+        .sidebar-header h2 {
             color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 5px 0;
+        }
+
+        .sidebar-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .sidebar-header p i {
+            color: #22d3ee;
+            margin-right: 5px;
+        }
+
+        .sidebar-user {
+            padding: 15px 20px;
+            background: #f8fafc;
+            margin: 0 15px 20px 15px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .sidebar-user-info h4 {
+            color: #1e293b;
+            font-size: 15px;
+            margin: 0 0 3px 0;
+            font-weight: 600;
+        }
+
+        .sidebar-user-info p {
+            color: #64748b;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .sidebar-user-info p i {
+            color: #fbbf24;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav-item {
+            margin: 4px 12px;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            color: #475569;
             text-decoration: none;
-            opacity: .8;
-            transition: all 0.3s;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 15px;
         }
-        
-        .sidebar a:hover {
-            opacity: 1;
-            background: #1e293b;
-            padding-left: 30px;
+
+        .sidebar-nav-link i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: #94a3b8;
+            transition: all 0.3s ease;
         }
-        
+
+        .sidebar-nav-link:hover {
+            background: #e0f2fe;
+            color: #1e4a76;
+        }
+
+        .sidebar-nav-link:hover i {
+            color: #2c7da0;
+        }
+
+        .sidebar-nav-link.active {
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
+        }
+
+        .sidebar-nav-link.active i {
+            color: #2c7da0;
+        }
+
+        .sidebar-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 30px;
+            margin-left: auto;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+            margin: 20px 20px;
+        }
+
+        .sidebar-section-title {
+            padding: 0 20px;
+            margin: 25px 0 10px 0;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .sidebar-club-preview {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 15px;
+            margin: 0 15px 20px 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sidebar-club-preview h4 {
+            color: #1e4a76;
+            font-size: 13px;
+            margin: 0 0 12px 0;
+        }
+
+        .sidebar-club-preview h4 i {
+            color: #fbbf24;
+        }
+
+        .sidebar-club-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+
+        .sidebar-club-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-club-item h5 {
+            color: #1e293b;
+            font-size: 14px;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+        }
+
+        .sidebar-club-item p {
+            color: #64748b;
+            font-size: 11px;
+            margin: 0 0 6px 0;
+        }
+
+        .sidebar-club-tag {
+            background: #e0f2fe;
+            color: #1e4a76;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        .sidebar-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            margin: 0 15px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sidebar-stat-item {
+            text-align: center;
+        }
+
+        .sidebar-stat-value {
+            color: #1e4a76;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .sidebar-stat-label {
+            color: #64748b;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-footer {
+            padding: 20px 20px 30px 20px;
+        }
+
+        .sidebar-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-footer-links a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 11px;
+            transition: color 0.2s;
+        }
+
+        .sidebar-footer-links a:hover {
+            color: #1e4a76;
+        }
+
+        .sidebar-copyright {
+            color: #94a3b8;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            z-index: 9998;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Container */
         .container {
             padding: 30px;
             max-width: 800px;
@@ -262,7 +517,7 @@ if (isset($_GET['delete'])) {
         }
         
         .page-title {
-            color: white;
+            color: #1e4a76;
             font-size: 32px;
             margin-bottom: 10px;
             display: flex;
@@ -271,22 +526,22 @@ if (isset($_GET['delete'])) {
         }
         
         .facility-name {
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 18px;
             margin-bottom: 30px;
         }
         
         /* Status Card */
         .status-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .status-icon {
@@ -300,40 +555,42 @@ if (isset($_GET['delete'])) {
         }
         
         .status-icon.valid {
-            background: rgba(16, 185, 129, 0.2);
+            background: #d1fae5;
             color: #10b981;
         }
         
         .status-icon.invalid {
-            background: rgba(239, 68, 68, 0.2);
+            background: #fee2e2;
             color: #ef4444;
         }
         
         .status-text {
             flex: 1;
-            color: white;
+            color: #1e293b;
         }
         
         .status-text h3 {
             margin-bottom: 5px;
+            font-size: 20px;
         }
         
         .status-text p {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
+            margin-top: 5px;
         }
         
         /* Upload Form */
         .upload-form {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .form-title {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             margin-bottom: 20px;
             display: flex;
@@ -342,7 +599,7 @@ if (isset($_GET['delete'])) {
         }
         
         .form-title i {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .form-group {
@@ -351,8 +608,9 @@ if (isset($_GET['delete'])) {
         
         .form-group label {
             display: block;
-            color: rgba(255,255,255,0.8);
+            color: #475569;
             margin-bottom: 8px;
+            font-weight: 500;
         }
         
         .form-group input,
@@ -361,17 +619,19 @@ if (isset($_GET['delete'])) {
             width: 100%;
             padding: 12px 15px;
             border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: white;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #1e293b;
             font-size: 14px;
             outline: none;
+            transition: all 0.3s;
         }
         
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
-            border-color: #22d3ee;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
         }
         
         .form-row {
@@ -381,7 +641,7 @@ if (isset($_GET['delete'])) {
         }
         
         .file-upload {
-            border: 2px dashed rgba(255,255,255,0.2);
+            border: 2px dashed #e2e8f0;
             border-radius: 10px;
             padding: 30px;
             text-align: center;
@@ -391,22 +651,22 @@ if (isset($_GET['delete'])) {
         }
         
         .file-upload:hover {
-            border-color: #22d3ee;
-            background: rgba(34, 211, 238, 0.05);
+            border-color: #2c7da0;
+            background: #f8fafc;
         }
         
         .file-upload i {
             font-size: 40px;
-            color: #22d3ee;
+            color: #2c7da0;
             margin-bottom: 10px;
         }
         
         .file-upload p {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
         }
         
         .file-info {
-            color: rgba(255,255,255,0.5);
+            color: #94a3b8;
             font-size: 12px;
             margin-top: 10px;
         }
@@ -414,7 +674,7 @@ if (isset($_GET['delete'])) {
         .submit-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border: none;
             border-radius: 10px;
             color: white;
@@ -426,37 +686,45 @@ if (isset($_GET['delete'])) {
         
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(2, 132, 199, 0.4);
+            box-shadow: 0 5px 20px rgba(30, 74, 118, 0.4);
         }
         
         /* Previous Reports */
         .reports-list {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .report-item {
-            background: rgba(255,255,255,0.05);
+            background: #f8fafc;
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 15px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+        
+        .report-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .report-icon {
             width: 40px;
             height: 40px;
-            background: rgba(34, 211, 238, 0.1);
+            background: #e0f2fe;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #22d3ee;
+            color: #2c7da0;
+            font-size: 20px;
         }
         
         .report-details {
@@ -464,13 +732,13 @@ if (isset($_GET['delete'])) {
         }
         
         .report-name {
-            color: white;
+            color: #1e293b;
             font-weight: 600;
             margin-bottom: 3px;
         }
         
         .report-meta {
-            color: rgba(255,255,255,0.5);
+            color: #64748b;
             font-size: 12px;
         }
         
@@ -500,18 +768,32 @@ if (isset($_GET['delete'])) {
             font-size: 12px;
             cursor: pointer;
             margin-left: 10px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
         }
         
         .no-reports {
             text-align: center;
-            color: rgba(255,255,255,0.5);
+            color: #94a3b8;
             padding: 30px 0;
         }
         
+        .no-reports i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+        
         .success-msg {
-            background: rgba(16, 185, 129, 0.2);
+            background: #d1fae5;
             border: 1px solid #10b981;
-            color: #10b981;
+            color: #065f46;
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
@@ -519,9 +801,9 @@ if (isset($_GET['delete'])) {
         }
         
         .error-msg {
-            background: rgba(239, 68, 68, 0.2);
+            background: #fee2e2;
             border: 1px solid #ef4444;
-            color: #ef4444;
+            color: #991b1b;
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
@@ -531,18 +813,18 @@ if (isset($_GET['delete'])) {
         .back-btn {
             display: inline-block;
             margin-top: 30px;
-            color: white;
+            color: #1e4a76;
             text-decoration: none;
             font-size: 16px;
             padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
+            background: #f1f5f9;
             border-radius: 30px;
             transition: all 0.3s;
         }
         
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
-            color: #22d3ee;
+            background: #1e4a76;
+            color: white;
         }
         
         @media (max-width: 768px) {
@@ -554,24 +836,135 @@ if (isset($_GET['delete'])) {
                 flex-direction: column;
                 text-align: center;
             }
+            
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .icons {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="bg"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2>Synergy Hub</h2>
+        <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
+    </div>
+    
+    <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="sidebar-user-info">
+            <h4><?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></h4>
+            <p><i class="fa-solid fa-star"></i> <?php echo $user['PointsBalance']; ?> points</p>
+        </div>
+    </div>
 
-<!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
-    <a href="index.php">Home</a>
-    <a href="facilities.php">Facilities</a>
-    <a href="transport.php">Transport</a>
-    <a href="game.php">Game Field</a>
-    <a href="clubs.php">Club Hub</a>
-    <a href="qr.html">QR Scanner</a>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+            <a href="index.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-home"></i>
+                <span>Home</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="facilities.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-building"></i>
+                <span>Facilities</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="transport.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-bus"></i>
+                <span>Transport</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="game.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-futbol"></i>
+                <span>Game Field</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="clubs.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-users"></i>
+                <span>Club Hub</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="qr.html" class="sidebar-nav-link">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>QR Scanner</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="notifications.php" class="sidebar-nav-link">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <span class="sidebar-badge" id="sidebarNotificationBadge">3</span>
+            </a>
+        </li>
+    </ul>
+    
+    <div class="sidebar-divider"></div>
+    
+    <div class="sidebar-section-title">MY CLUBS</div>
+    
+    <div class="sidebar-club-preview">
+        <h4><i class="fa-regular fa-star"></i> Active Clubs</h4>
+        <div class="sidebar-club-item">
+            <h5>Coding Club</h5>
+            <p>Programming and software development...</p>
+            <span class="sidebar-club-tag">Academic</span>
+        </div>
+        <div class="sidebar-club-item">
+            <h5>IEEE Student Branch</h5>
+            <p>IEEE student chapter...</p>
+            <span class="sidebar-club-tag">Academic</span>
+        </div>
+        <div class="sidebar-club-item">
+            <h5>Sports Club</h5>
+            <p>Sports and fitness activities...</p>
+            <span class="sidebar-club-tag">Sports</span>
+        </div>
+    </div>
+    
+    <div class="sidebar-stats">
+        <div class="sidebar-stat-item">
+            <div class="sidebar-stat-value">4</div>
+            <div class="sidebar-stat-label">Clubs</div>
+        </div>
+        <div class="sidebar-stat-item">
+            <div class="sidebar-stat-value">12</div>
+            <div class="sidebar-stat-label">Events</div>
+        </div>
+        <div class="sidebar-stat-item">
+            <div class="sidebar-stat-value"><?php echo $user['PointsBalance']; ?></div>
+            <div class="sidebar-stat-label">Points</div>
+        </div>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-links">
+            <a href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
+            <a href="#"><i class="fa-regular fa-gear"></i> Settings</a>
+            <a href="#"><i class="fa-regular fa-message"></i> Feedback</a>
+        </div>
+        <div class="sidebar-copyright">
+            © 2025 Synergy Hub
+        </div>
+    </div>
 </div>
 
-<!-- NAVBAR -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -582,15 +975,7 @@ if (isset($_GET['delete'])) {
     <div class="icons">
         <div class="points">
             <i class="fa-solid fa-star"></i>
-            <span><?php
-                $points_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
-                $points_stmt = mysqli_prepare($conn, $points_sql);
-                mysqli_stmt_bind_param($points_stmt, "i", $user_id);
-                mysqli_stmt_execute($points_stmt);
-                $points_result = mysqli_stmt_get_result($points_stmt);
-                $user_points = mysqli_fetch_assoc($points_result);
-                echo $user_points['PointsBalance'];
-            ?></span>
+            <span><?php echo $user['PointsBalance']; ?></span>
         </div>
         <a href="pool.php?id=<?php echo $facility_id; ?>" class="home-link">
             <i class="fa-solid fa-arrow-left"></i> Back to Pool
@@ -598,7 +983,6 @@ if (isset($_GET['delete'])) {
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <div class="container">
     
     <h1 class="page-title">
@@ -618,6 +1002,9 @@ if (isset($_GET['delete'])) {
             <?php if($has_valid): ?>
                 <p>Valid until <?php echo date('F d, Y', strtotime($valid_report['expiry_date'] ?? '+1 year')); ?></p>
                 <p>Emergency Contact: <?php echo htmlspecialchars($valid_report['emergency_contact_name']); ?> (<?php echo htmlspecialchars($valid_report['emergency_contact_phone']); ?>)</p>
+                <?php if(!empty($valid_report['medical_conditions'])): ?>
+                    <p>Medical Conditions: <?php echo htmlspecialchars($valid_report['medical_conditions']); ?></p>
+                <?php endif; ?>
             <?php else: ?>
                 <p>Please upload a valid medical report to book pool lanes</p>
             <?php endif; ?>
@@ -640,18 +1027,18 @@ if (isset($_GET['delete'])) {
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Emergency Contact Name</label>
-                    <input type="text" name="emergency_name" required>
+                    <label><i class="fa-solid fa-user"></i> Emergency Contact Name</label>
+                    <input type="text" name="emergency_name" required placeholder="Full name of emergency contact">
                 </div>
                 <div class="form-group">
-                    <label>Emergency Contact Phone</label>
+                    <label><i class="fa-solid fa-phone"></i> Emergency Contact Phone</label>
                     <input type="tel" name="emergency_phone" required placeholder="07X XXX XXXX">
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Expiry Date</label>
+                    <label><i class="fa-regular fa-calendar"></i> Expiry Date</label>
                     <input type="date" name="expiry_date" value="<?php echo date('Y-m-d', strtotime('+1 year')); ?>" required>
                 </div>
                 <div class="form-group">
@@ -661,7 +1048,7 @@ if (isset($_GET['delete'])) {
             </div>
             
             <div class="form-group">
-                <label>Medical Conditions (if any)</label>
+                <label><i class="fa-solid fa-stethoscope"></i> Medical Conditions (if any)</label>
                 <textarea name="medical_conditions" rows="3" placeholder="List any medical conditions, allergies, or medications..."></textarea>
             </div>
             
@@ -690,7 +1077,13 @@ if (isset($_GET['delete'])) {
                     <div class="report-meta">
                         Uploaded on <?php echo date('M d, Y', strtotime($report['upload_date'])); ?> • 
                         <?php echo round($report['file_size'] / 1024); ?> KB
+                        <?php if($report['expiry_date']): ?>
+                            • Expires: <?php echo date('M d, Y', strtotime($report['expiry_date'])); ?>
+                        <?php endif; ?>
                     </div>
+                    <?php if(!empty($report['emergency_contact_name'])): ?>
+                        <div class="report-meta">Emergency: <?php echo htmlspecialchars($report['emergency_contact_name']); ?></div>
+                    <?php endif; ?>
                 </div>
                 <div>
                     <span class="report-status <?php echo $is_valid ? 'status-valid' : 'status-expired'; ?>">
@@ -699,15 +1092,16 @@ if (isset($_GET['delete'])) {
                     <a href="?id=<?php echo $facility_id; ?>&delete=<?php echo $report['report_id']; ?>" 
                        class="delete-btn" 
                        onclick="return confirm('Delete this report?')">
-                        Delete
+                        <i class="fa-solid fa-trash"></i> Delete
                     </a>
                 </div>
             </div>
             <?php endwhile; ?>
         <?php else: ?>
             <div class="no-reports">
-                <i class="fa-regular fa-file" style="font-size: 40px; margin-bottom: 10px;"></i>
+                <i class="fa-regular fa-file"></i>
                 <p>No medical reports uploaded yet</p>
+                <p style="font-size: 12px; margin-top: 5px;">Upload your medical report to start booking pool lanes</p>
             </div>
         <?php endif; ?>
     </div>
@@ -719,15 +1113,33 @@ if (isset($_GET['delete'])) {
 
 <script>
 function toggleSidebar() {
-    const sidebar = document.querySelector(".sidebar");
-    sidebar.style.left = sidebar.style.left === "0px" ? "-260px" : "0px";
+    const sidebar = document.querySelector("#sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    const menuBtn = document.querySelector(".menu-btn");
+    
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
+        overlay.classList.remove("active");
+        menuBtn.classList.remove("active");
+    } else {
+        sidebar.classList.add("active");
+        overlay.classList.add("active");
+        menuBtn.classList.add("active");
+    }
 }
 
 document.addEventListener("click", function(e) {
-    const sidebar = document.querySelector(".sidebar");
+    const sidebar = document.querySelector("#sidebar");
     const btn = document.querySelector(".menu-btn");
-    if(sidebar && btn && !sidebar.contains(e.target) && !btn.contains(e.target)) {
-        sidebar.style.left = "-260px";
+    const overlay = document.getElementById("sidebarOverlay");
+    
+    if(sidebar && btn && overlay && 
+       !sidebar.contains(e.target) && 
+       !btn.contains(e.target) && 
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
+        overlay.classList.remove("active");
+        btn.classList.remove("active");
     }
 });
 
@@ -736,6 +1148,7 @@ document.getElementById('medicalFile').addEventListener('change', function(e) {
     let fileName = e.target.files[0]?.name;
     if (fileName) {
         document.querySelector('.file-upload p').innerHTML = 'Selected: ' + fileName;
+        document.querySelector('.file-upload i').innerHTML = 'fa-solid fa-file-check';
     }
 });
 </script>
