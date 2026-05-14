@@ -1,9 +1,7 @@
 <?php
 
-
 require_once 'config.php';
 require_once 'functions.php';
-
 
 if (!isLoggedIn()) {
     header("Location: login.php");
@@ -13,16 +11,10 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 $facility_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-
-
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'browse';
-
-
 
 $books_sql = "SELECT * FROM books WHERE available > 0 ORDER BY category, title";
 $books_result = mysqli_query($conn, $books_sql);
-
-
 
 $borrowed_sql = "SELECT b.*, bk.title, bk.author, bk.category,
                         DATEDIFF(b.due_date, CURDATE()) as days_remaining,
@@ -36,8 +28,6 @@ mysqli_stmt_bind_param($borrowed_stmt, "i", $user_id);
 mysqli_stmt_execute($borrowed_stmt);
 $borrowed_result = mysqli_stmt_get_result($borrowed_stmt);
 
-
-
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
@@ -45,11 +35,12 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
-
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
+
+// Default image if no image in database
+$default_image = 'uploads/library/default-book.jpg';
 ?>
 
 <!DOCTYPE html>
@@ -69,49 +60,29 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR - White/Blue theme */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            position: relative;
-            z-index: 1000;
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -121,7 +92,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -138,39 +109,41 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             transition: all 0.3s;
         }
         
         .points.active {
             transform: scale(1.1);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .home-link:hover {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
+        /* SIDEBAR - White/Blue theme */
         .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             width: 280px;
             height: 100%;
-            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
-            backdrop-filter: blur(10px);
+            background: white;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
             overflow-y: auto;
         }
 
@@ -180,22 +153,9 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .sidebar-header {
             padding: 25px 20px 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
             margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
         }
 
         .sidebar-header h2 {
@@ -203,32 +163,25 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 24px;
             font-weight: 700;
             margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-header p {
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 13px;
             margin: 0;
-            font-weight: 400;
         }
 
         .sidebar-header p i {
             color: #22d3ee;
             margin-right: 5px;
-            font-size: 10px;
         }
 
         .sidebar-user {
             padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             margin: 0 15px 20px 15px;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -238,34 +191,29 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-user-info h4 {
-            color: white;
+            color: #1e293b;
             font-size: 15px;
             margin: 0 0 3px 0;
             font-weight: 600;
         }
 
         .sidebar-user-info p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 12px;
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .sidebar-user-info p i {
             color: #fbbf24;
-            font-size: 10px;
         }
 
         .sidebar-nav {
@@ -282,7 +230,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             display: flex;
             align-items: center;
             padding: 12px 18px;
-            color: #b8c7de;
+            color: #475569;
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
@@ -294,29 +242,28 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .sidebar-nav-link i {
             width: 22px;
             font-size: 1.1rem;
-            color: #5f7d9e;
+            color: #94a3b8;
             transition: all 0.3s ease;
             text-align: center;
         }
 
         .sidebar-nav-link:hover {
-            background: rgba(168, 192, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
+            background: #e0f2fe;
+            color: #1e4a76;
         }
 
         .sidebar-nav-link:hover i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
-            color: white;
-            border-left: 3px solid #a5b4fc;
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
         }
 
         .sidebar-nav-link.active i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-badge {
@@ -327,48 +274,35 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             padding: 2px 6px;
             border-radius: 30px;
             margin-left: auto;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .sidebar-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
             margin: 20px 20px;
         }
 
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .sidebar-club-preview {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin: 0 15px 20px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-club-preview h4 {
-            color: white;
+            color: #1e4a76;
             font-size: 13px;
             margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            opacity: 0.8;
         }
 
         .sidebar-club-preview h4 i {
@@ -376,42 +310,40 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-club-item {
-            background: rgba(0, 0, 0, 0.2);
+            background: white;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid #e2e8f0;
             transition: transform 0.2s;
         }
 
         .sidebar-club-item:hover {
             transform: translateX(5px);
-            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .sidebar-club-item h5 {
-            color: white;
+            color: #1e293b;
             font-size: 14px;
             margin: 0 0 4px 0;
             font-weight: 600;
         }
 
         .sidebar-club-item p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             margin: 0 0 6px 0;
-            line-height: 1.4;
         }
 
         .sidebar-club-tag {
-            background: #2d4c6e;
-            color: white;
+            background: #e0f2fe;
+            color: #1e4a76;
             font-size: 9px;
             font-weight: 600;
             padding: 3px 8px;
             border-radius: 30px;
             display: inline-block;
-            text-transform: uppercase;
         }
 
         .sidebar-stats {
@@ -419,31 +351,22 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: space-around;
             padding: 15px 10px;
             margin: 0 15px;
-            background: rgba(255, 255, 255, 0.02);
+            background: #f8fafc;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .sidebar-stat-item {
-            text-align: center;
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-stat-value {
-            color: white;
+            color: #1e4a76;
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 3px;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-stat-label {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
 
         .sidebar-footer {
@@ -458,7 +381,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-footer-links a {
-            color: #94a3b8;
+            color: #64748b;
             text-decoration: none;
             font-size: 11px;
             transition: color 0.2s;
@@ -468,15 +391,11 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-footer-links a:hover {
-            color: white;
-        }
-
-        .sidebar-footer-links a i {
-            font-size: 10px;
+            color: #1e4a76;
         }
 
         .sidebar-copyright {
-            color: #64748b;
+            color: #94a3b8;
             font-size: 10px;
             text-align: center;
         }
@@ -487,17 +406,14 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(3px);
             z-index: 9998;
             display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .sidebar-overlay.active {
             display: block;
-            opacity: 1;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -509,14 +425,11 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 20px;
         }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
         
+        /* MAIN CONTAINER */
         .container {
             padding: 30px;
             max-width: 1400px;
@@ -524,28 +437,26 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .page-title {
-            color: white;
+            color: #1e4a76;
             font-size: 32px;
             margin-bottom: 30px;
             text-align: center;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         
         .points-badge {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
-            padding: 15px 25px;
+            padding: 12px 25px;
             border-radius: 50px;
             display: inline-block;
             margin-bottom: 30px;
             font-weight: 600;
-            font-size: 18px;
-            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         .points-badge i {
-            color: #22d3ee;
+            color: #fbbf24;
             margin-right: 8px;
         }
         
@@ -554,14 +465,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: center;
             gap: 20px;
             margin-bottom: 30px;
+            flex-wrap: wrap;
         }
         
         .tab-btn {
             padding: 15px 30px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.2);
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
             border-radius: 15px;
-            color: white;
+            color: #475569;
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
@@ -572,72 +484,107 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .tab-btn:hover {
-            background: rgba(255,255,255,0.2);
+            background: #e0f2fe;
+            border-color: #2c7da0;
         }
         
         .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            color: white;
             border-color: transparent;
         }
         
         .tab-badge {
-            background: #22d3ee;
-            color: #0f172a;
+            background: #fbbf24;
+            color: #1e293b;
             padding: 2px 8px;
             border-radius: 30px;
             font-size: 12px;
             margin-left: 8px;
+            font-weight: 600;
         }
         
+        .section-title {
+            color: #1e4a76;
+            font-size: 24px;
+            margin: 40px 0 20px;
+            border-left: 5px solid #2c7da0;
+            padding-left: 15px;
+        }
+        
+        /* BOOKS GRID */
         .books-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 25px;
             margin-top: 20px;
         }
         
         .book-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden;
             transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
         
         .book-card:hover {
             transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border-color: #2c7da0;
         }
         
-        .book-title {
+        /* Card Image Section */
+        .book-card-image {
+            width: 100%;
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .book-card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            padding: 15px;
+        }
+        
+        .book-card-title {
             color: white;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
         
-        .book-author {
+        .book-card-author {
             color: #22d3ee;
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        
+        /* Card Content */
+        .book-card-content {
+            padding: 20px;
         }
         
         .book-category {
             display: inline-block;
-            padding: 5px 15px;
-            background: rgba(255,255,255,0.1);
+            padding: 4px 12px;
+            background: #e0f2fe;
             border-radius: 20px;
-            color: rgba(255,255,255,0.8);
+            color: #1e4a76;
             font-size: 12px;
-            margin-bottom: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
         
         .book-description {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 14px;
-            margin: 15px 0;
+            margin: 12px 0;
             line-height: 1.5;
         }
         
@@ -646,15 +593,21 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: space-between;
             margin: 15px 0;
             padding: 10px 0;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.8);
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+            font-size: 13px;
+        }
+        
+        .book-stats i {
+            color: #2c7da0;
+            margin-right: 5px;
         }
         
         .borrow-btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border: none;
             border-radius: 10px;
             color: white;
@@ -665,7 +618,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .borrow-btn:hover {
             transform: scale(1.02);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(30, 74, 118, 0.3);
         }
         
         .borrow-btn:disabled {
@@ -674,52 +627,81 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             transform: none;
         }
         
+        /* SEARCH BOX */
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            background: white;
+            color: #1e293b;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .search-box input:focus {
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
+        }
+        
+        /* BORROWED LIST */
         .borrowed-list {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 20px;
             margin-top: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .borrowed-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.08);
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
             border-radius: 15px;
             margin-bottom: 15px;
         }
         
         .borrowed-item:last-child {
             border-bottom: none;
+            margin-bottom: 0;
         }
         
         .borrowed-info h4 {
-            color: white;
+            color: #1e4a76;
             font-size: 18px;
             margin-bottom: 8px;
             font-weight: 600;
         }
         
         .borrowed-info p {
-            color: white;
+            color: #64748b;
             font-size: 14px;
             margin: 3px 0;
-            opacity: 0.9;
         }
         
         .borrowed-dates {
             margin-top: 10px;
-            color: white;
+            color: #64748b;
             font-size: 13px;
-            opacity: 0.8;
         }
         
         .borrowed-dates i {
-            color: #22d3ee;
+            color: #2c7da0;
             margin-right: 5px;
         }
         
@@ -732,7 +714,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 16px;
             font-weight: 600;
             margin-bottom: 5px;
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .due-date.overdue {
@@ -764,44 +746,35 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .return-btn:hover {
             transform: scale(1.05);
-            background: #0f9b6e;
-        }
-        
-        .section-title {
-            color: white;
-            font-size: 24px;
-            margin: 40px 0 20px;
-            border-left: 5px solid #22d3ee;
-            padding-left: 15px;
+            background: #059669;
         }
         
         .no-books {
-            color: white;
+            color: #64748b;
             text-align: center;
             padding: 60px 40px;
         }
         
         .no-books i {
             font-size: 60px;
-            color: #22d3ee;
+            color: #cbd5e1;
             margin-bottom: 20px;
         }
         
         .no-books h3 {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             margin-bottom: 10px;
         }
         
         .no-books p {
-            color: white;
-            opacity: 0.8;
+            color: #64748b;
             margin-bottom: 20px;
         }
         
         .browse-btn {
             padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border: none;
             border-radius: 30px;
             color: white;
@@ -813,49 +786,27 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .browse-btn:hover {
             transform: scale(1.05);
-        }
-        
-        .search-box {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto 30px;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 30px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 16px;
-            outline: none;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .search-box input::placeholder {
-            color: rgba(255,255,255,0.5);
-        }
-        
-        .search-box input:focus {
-            border-color: #22d3ee;
+            box-shadow: 0 5px 15px rgba(30, 74, 118, 0.3);
         }
         
         .back-btn {
             display: inline-block;
-            margin-top: 30px;
-            color: white;
+            margin-top: 40px;
+            color: #1e4a76;
             text-decoration: none;
             font-size: 16px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            background: white;
             border-radius: 30px;
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
+            font-weight: 500;
         }
         
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
-            color: #22d3ee;
+            background: #1e4a76;
+            color: white;
+            border-color: #1e4a76;
         }
         
         .back-btn i {
@@ -881,12 +832,14 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             .books-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .container {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-
-<div class="bg"></div>
 
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
@@ -911,7 +864,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             </a>
         </li>
         <li class="sidebar-nav-item">
-            <a href="facilities.php" class="sidebar-nav-link active">
+            <a href="facilities.php" class="sidebar-nav-link">
                 <i class="fa-solid fa-building"></i> Facilities
                 <span class="sidebar-badge"><?php echo $facilities_count; ?></span>
             </a>
@@ -1031,29 +984,42 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
     </div>
     
     <div class="search-box" id="browseTab" style="display: <?php echo $active_tab == 'browse' ? 'block' : 'none'; ?>;">
-        <input type="text" id="searchBooks" placeholder="Search by title, author, or category..." onkeyup="searchBooks()">
+        <input type="text" id="searchBooks" placeholder="🔍 Search by title, author, or category..." onkeyup="searchBooks()">
     </div>
     
     <div id="booksGrid" class="books-grid" style="display: <?php echo $active_tab == 'browse' ? 'grid' : 'none'; ?>;">
         <?php 
         mysqli_data_seek($books_result, 0);
         while($book = mysqli_fetch_assoc($books_result)): 
+            // Get image from database - if empty use default image
+            $image_file = !empty($book['image']) ? $book['image'] : 'default-book.jpg';
+            $image_path = 'uploads/library/' . $image_file;
         ?>
         <div class="book-card" data-title="<?php echo strtolower($book['title']); ?>" 
              data-author="<?php echo strtolower($book['author']); ?>" 
              data-category="<?php echo strtolower($book['category']); ?>">
-            <div class="book-title"><?php echo htmlspecialchars($book['title']); ?></div>
-            <div class="book-author">by <?php echo htmlspecialchars($book['author']); ?></div>
-            <div class="book-category"><?php echo htmlspecialchars($book['category']); ?></div>
-            <div class="book-description"><?php echo htmlspecialchars(substr($book['description'], 0, 100)) . '...'; ?></div>
-            <div class="book-stats">
-                <span><i class="fa-solid fa-hashtag"></i> ISBN: <?php echo htmlspecialchars($book['isbn'] ?: 'N/A'); ?></span>
-                <span><i class="fa-solid fa-copy"></i> Available: <?php echo $book['available']; ?>/<?php echo $book['quantity']; ?></span>
+            
+            <!-- Image from uploads/library folder -->
+            <div class="book-card-image" style="background-image: url('<?php echo $image_path; ?>');">
+                <div class="book-card-overlay">
+                    <div class="book-card-title"><?php echo htmlspecialchars($book['title']); ?></div>
+                    <div class="book-card-author">by <?php echo htmlspecialchars($book['author']); ?></div>
+                </div>
             </div>
-            <button class="borrow-btn" onclick="borrowBook(<?php echo $book['book_id']; ?>)"
-                <?php echo ($book['available'] <= 0) ? 'disabled' : ''; ?>>
-                <i class="fa-solid fa-book"></i> Borrow Book (+5 points)
-            </button>
+            
+            <!-- CARD CONTENT -->
+            <div class="book-card-content">
+                <div class="book-category"><?php echo htmlspecialchars($book['category']); ?></div>
+                <div class="book-description"><?php echo htmlspecialchars(substr($book['description'], 0, 100)) . '...'; ?></div>
+                <div class="book-stats">
+                    <span><i class="fa-solid fa-hashtag"></i> ISBN: <?php echo htmlspecialchars($book['isbn'] ?: 'N/A'); ?></span>
+                    <span><i class="fa-solid fa-copy"></i> Available: <?php echo $book['available']; ?>/<?php echo $book['quantity']; ?></span>
+                </div>
+                <button class="borrow-btn" onclick="borrowBook(<?php echo $book['book_id']; ?>)"
+                    <?php echo ($book['available'] <= 0) ? 'disabled' : ''; ?>>
+                    <i class="fa-solid fa-book"></i> Borrow Book (+5 points)
+                </button>
+            </div>
         </div>
         <?php endwhile; ?>
     </div>
@@ -1119,21 +1085,17 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 </div>
 
 <script>
-
-
-
-
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
     const menuBtn = document.querySelector(".menu-btn");
     
-    if(sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         menuBtn.classList.remove("active");
     } else {
-        sidebar.style.left = "0px";
+        sidebar.classList.add("active");
         overlay.classList.add("active");
         menuBtn.classList.add("active");
     }
@@ -1147,16 +1109,12 @@ document.addEventListener("click", function(e) {
     if(sidebar && btn && overlay && 
        !sidebar.contains(e.target) && 
        !btn.contains(e.target) && 
-       sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         btn.classList.remove("active");
     }
 });
-
-
-
-
 
 function switchTab(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
@@ -1187,9 +1145,6 @@ function switchTab(tab) {
     }
 }
 
-
-
-
 function searchBooks() {
     let searchTerm = document.getElementById('searchBooks').value.toLowerCase();
     let books = document.querySelectorAll('.book-card');
@@ -1207,9 +1162,6 @@ function searchBooks() {
     });
 }
 
-
-
-
 function borrowBook(bookId) {
     if(confirm('Borrow this book? You will get 5 points! (Due in 14 days)')) {
         fetch('borrow_book.php', {
@@ -1222,7 +1174,7 @@ function borrowBook(bookId) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('Book borrowed successfully! Due date: ' + data.due_date + '. You earned 5 points!');
+                alert('✅ Book borrowed successfully! Due date: ' + data.due_date + '. You earned 5 points!');
                 
                 let pointsSpan = document.getElementById('pointsDisplay');
                 let currentPoints = parseInt(pointsSpan.textContent);
@@ -1236,17 +1188,14 @@ function borrowBook(bookId) {
                 
                 location.reload();
             } else {
-                alert('Error: ' + data.message);
+                alert('❌ Error: ' + data.message);
             }
         })
         .catch(error => {
-            alert('Error processing request');
+            alert('❌ Error processing request');
         });
     }
 }
-
-
-
 
 function returnBook(borrowId, bookId) {
     if(confirm('Return this book? You will get 2 points!')) {
@@ -1260,7 +1209,7 @@ function returnBook(borrowId, bookId) {
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                alert('Book returned successfully! You earned 2 points!');
+                alert('✅ Book returned successfully! You earned 2 points!');
                 
                 let pointsSpan = document.getElementById('pointsDisplay');
                 let currentPoints = parseInt(pointsSpan.textContent);
@@ -1274,11 +1223,11 @@ function returnBook(borrowId, bookId) {
                 
                 location.reload();
             } else {
-                alert('Error: ' + data.message);
+                alert('❌ Error: ' + data.message);
             }
         })
         .catch(error => {
-            alert('Error processing request');
+            alert('❌ Error processing request');
         });
     }
 }
