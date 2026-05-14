@@ -43,11 +43,9 @@ mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
 $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
-
 
 $facility_sql = "SELECT Name FROM Facilities WHERE FacilityID = ?";
 $facility_stmt = mysqli_prepare($conn, $facility_sql);
@@ -56,19 +54,19 @@ mysqli_stmt_execute($facility_stmt);
 $facility_result = mysqli_stmt_get_result($facility_stmt);
 $facility = mysqli_fetch_assoc($facility_result);
 
-
+// Offer images - online stock images (database changes නැතුව)
 $offer_images = [
-    'Happy Hour Special' => 'beverages.jpg',
-    'Combo Meal Deal' => 'Chicken Rice + Soft Drink.jpg',
-    'Buy 1 Get 1 Free' => 'coffeeoffer.jpg',
-    'Student Discount' => 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=250&fit=crop',
-    'Breakfast Special' => 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&h=250&fit=crop',
-    'Lunch Deal' => 'https://images.unsplash.com/photo-1547496502-affa22d38842?w=400&h=250&fit=crop',
-    'Dinner Combo' => 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=250&fit=crop',
+    'Happy Hour Special' => 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'Combo Meal Deal' => 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'Buy 1 Get 1 Free' => 'https://images.pexels.com/photos/1600727/pexels-photo-1600727.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'Student Discount' => 'https://images.pexels.com/photos/3184298/pexels-photo-3184298.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'Breakfast Special' => 'https://images.pexels.com/photos/1326946/pexels-photo-1326946.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'Lunch Deal' => 'https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'Dinner Combo' => 'https://images.pexels.com/photos/406152/pexels-photo-406152.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'default' => 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600'
 ];
 
-
-$default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=250&fit=crop';
+$default_image = 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600';
 ?>
 
 <!DOCTYPE html>
@@ -88,47 +86,29 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR - White/Blue theme */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -138,7 +118,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -155,35 +135,37 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
+            transition: all 0.3s;
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .home-link:hover {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
-        
-
+        /* SIDEBAR - White/Blue theme */
         .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             width: 280px;
             height: 100%;
-            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
-            backdrop-filter: blur(10px);
+            background: white;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
             overflow-y: auto;
         }
 
@@ -193,22 +175,9 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
 
         .sidebar-header {
             padding: 25px 20px 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
             margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
         }
 
         .sidebar-header h2 {
@@ -216,32 +185,25 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             font-size: 24px;
             font-weight: 700;
             margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-header p {
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 13px;
             margin: 0;
-            font-weight: 400;
         }
 
         .sidebar-header p i {
             color: #22d3ee;
             margin-right: 5px;
-            font-size: 10px;
         }
 
         .sidebar-user {
             padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             margin: 0 15px 20px 15px;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -251,34 +213,29 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-user-info h4 {
-            color: white;
+            color: #1e293b;
             font-size: 15px;
             margin: 0 0 3px 0;
             font-weight: 600;
         }
 
         .sidebar-user-info p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 12px;
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .sidebar-user-info p i {
             color: #fbbf24;
-            font-size: 10px;
         }
 
         .sidebar-nav {
@@ -295,7 +252,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             display: flex;
             align-items: center;
             padding: 12px 18px;
-            color: #b8c7de;
+            color: #475569;
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
@@ -307,29 +264,28 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         .sidebar-nav-link i {
             width: 22px;
             font-size: 1.1rem;
-            color: #5f7d9e;
+            color: #94a3b8;
             transition: all 0.3s ease;
             text-align: center;
         }
 
         .sidebar-nav-link:hover {
-            background: rgba(168, 192, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
+            background: #e0f2fe;
+            color: #1e4a76;
         }
 
         .sidebar-nav-link:hover i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
-            color: white;
-            border-left: 3px solid #a5b4fc;
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
         }
 
         .sidebar-nav-link.active i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-badge {
@@ -340,48 +296,35 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             padding: 2px 6px;
             border-radius: 30px;
             margin-left: auto;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .sidebar-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
             margin: 20px 20px;
         }
 
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .sidebar-club-preview {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin: 0 15px 20px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-club-preview h4 {
-            color: white;
+            color: #1e4a76;
             font-size: 13px;
             margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            opacity: 0.8;
         }
 
         .sidebar-club-preview h4 i {
@@ -389,42 +332,40 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
 
         .sidebar-club-item {
-            background: rgba(0, 0, 0, 0.2);
+            background: white;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid #e2e8f0;
             transition: transform 0.2s;
         }
 
         .sidebar-club-item:hover {
             transform: translateX(5px);
-            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .sidebar-club-item h5 {
-            color: white;
+            color: #1e293b;
             font-size: 14px;
             margin: 0 0 4px 0;
             font-weight: 600;
         }
 
         .sidebar-club-item p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             margin: 0 0 6px 0;
-            line-height: 1.4;
         }
 
         .sidebar-club-tag {
-            background: #2d4c6e;
-            color: white;
+            background: #e0f2fe;
+            color: #1e4a76;
             font-size: 9px;
             font-weight: 600;
             padding: 3px 8px;
             border-radius: 30px;
             display: inline-block;
-            text-transform: uppercase;
         }
 
         .sidebar-stats {
@@ -432,31 +373,22 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             justify-content: space-around;
             padding: 15px 10px;
             margin: 0 15px;
-            background: rgba(255, 255, 255, 0.02);
+            background: #f8fafc;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .sidebar-stat-item {
-            text-align: center;
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-stat-value {
-            color: white;
+            color: #1e4a76;
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 3px;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-stat-label {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
 
         .sidebar-footer {
@@ -471,7 +403,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
 
         .sidebar-footer-links a {
-            color: #94a3b8;
+            color: #64748b;
             text-decoration: none;
             font-size: 11px;
             transition: color 0.2s;
@@ -481,15 +413,11 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
 
         .sidebar-footer-links a:hover {
-            color: white;
-        }
-
-        .sidebar-footer-links a i {
-            font-size: 10px;
+            color: #1e4a76;
         }
 
         .sidebar-copyright {
-            color: #64748b;
+            color: #94a3b8;
             font-size: 10px;
             text-align: center;
         }
@@ -500,17 +428,14 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(3px);
             z-index: 9998;
             display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .sidebar-overlay.active {
             display: block;
-            opacity: 1;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -522,14 +447,11 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 20px;
         }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
         
+        /* MAIN CONTAINER */
         .container {
             padding: 30px;
             max-width: 1200px;
@@ -537,33 +459,33 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
         
         .page-title {
-            color: white;
+            color: #1e4a76;
             font-size: 32px;
             margin-bottom: 10px;
             text-align: center;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         .facility-name {
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 18px;
             text-align: center;
             margin-bottom: 20px;
         }
         
         .points-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             padding: 12px 25px;
             border-radius: 50px;
             display: inline-block;
             margin-bottom: 30px;
             font-weight: 600;
-            font-size: 18px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         .points-badge i {
+            color: #fbbf24;
             margin-right: 8px;
         }
         
@@ -574,21 +496,22 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             margin-top: 20px;
         }
         
+        /* OFFER CARD */
         .offer-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .offer-card:hover {
             transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: #2c7da0;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
         
         .offer-image {
@@ -613,13 +536,13 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             position: absolute;
             top: 15px;
             right: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             padding: 8px 20px;
             border-radius: 30px;
             font-size: 14px;
             font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 2;
         }
         
@@ -631,21 +554,21 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
         
         .offer-title {
-            color: white;
+            color: #1e293b;
             font-size: 22px;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 10px;
         }
         
         .offer-description {
-            color: rgba(255,255,255,0.8);
+            color: #64748b;
             font-size: 14px;
             margin-bottom: 20px;
             line-height: 1.6;
         }
         
         .offer-details {
-            background: rgba(0,0,0,0.2);
+            background: #f8fafc;
             border-radius: 15px;
             padding: 15px;
             margin-bottom: 20px;
@@ -655,16 +578,16 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
-            color: rgba(255,255,255,0.9);
+            color: #1e293b;
         }
         
         .detail-label {
-            color: rgba(255,255,255,0.6);
+            color: #64748b;
         }
         
         .detail-value {
             font-weight: 600;
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .original-price {
@@ -680,13 +603,13 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         }
         
         .points-required {
-            color: #22d3ee;
+            color: #2c7da0;
             font-weight: 600;
             font-size: 18px;
         }
         
         .validity {
-            color: rgba(255,255,255,0.5);
+            color: #94a3b8;
             font-size: 12px;
             margin-bottom: 15px;
         }
@@ -694,9 +617,9 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         .claim-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             color: white;
             font-weight: 600;
             cursor: pointer;
@@ -711,7 +634,7 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
         
         .claim-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(30, 74, 118, 0.3);
         }
         
         .claim-btn:disabled {
@@ -724,43 +647,51 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
             grid-column: 1 / -1;
             text-align: center;
             padding: 60px;
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
         }
         
         .no-offers i {
             font-size: 60px;
-            color: rgba(255,255,255,0.3);
+            color: #cbd5e1;
             margin-bottom: 20px;
         }
         
         .back-btn {
             display: inline-block;
             margin-top: 40px;
-            color: white;
+            color: #1e4a76;
             text-decoration: none;
             font-size: 16px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            background: white;
             border-radius: 30px;
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
+            font-weight: 500;
         }
         
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
-            color: #22d3ee;
+            background: #1e4a76;
+            color: white;
+            border-color: #1e4a76;
+        }
+        
+        .back-btn i {
+            margin-right: 8px;
         }
         
         @media (max-width: 768px) {
             .offers-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .container {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-
-<div class="bg"></div>
-
 
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
@@ -863,7 +794,6 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -882,7 +812,6 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
     </div>
 </header>
 
-
 <div class="container">
     
     <div class="points-badge">
@@ -890,13 +819,12 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
     </div>
     
     <h1 class="page-title">🎉 Special Offers</h1>
-    <div class="facility-name">at <?php echo htmlspecialchars($facility['Name']); ?></div>
+    <div class="facility-name">at <?php echo htmlspecialchars($facility['Name'] ?? 'Café'); ?></div>
     
     <div class="offers-grid">
         <?php if(mysqli_num_rows($offers_result) > 0): ?>
             <?php while($offer = mysqli_fetch_assoc($offers_result)): ?>
                 <?php
-                
                 $days_left = '';
                 if($offer['valid_until']) {
                     $valid_until = new DateTime($offer['valid_until']);
@@ -904,7 +832,6 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
                     $interval = $today->diff($valid_until);
                     $days_left = $interval->days . ' days left';
                 }
-                
                 
                 $offer_tag = '';
                 $image_url = isset($offer_images[$offer['title']]) ? $offer_images[$offer['title']] : $default_image;
@@ -992,18 +919,17 @@ $default_image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=40
 </div>
 
 <script>
-
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const overlay = document.getElementById("sidebarOverlay");
     const menuBtn = document.querySelector(".menu-btn");
     
-    if(sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         menuBtn.classList.remove("active");
     } else {
-        sidebar.style.left = "0px";
+        sidebar.classList.add("active");
         overlay.classList.add("active");
         menuBtn.classList.add("active");
     }
@@ -1017,8 +943,8 @@ document.addEventListener("click", function(e) {
     if(sidebar && btn && overlay && 
        !sidebar.contains(e.target) && 
        !btn.contains(e.target) && 
-       sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         btn.classList.remove("active");
     }
