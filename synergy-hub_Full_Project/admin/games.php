@@ -1,5 +1,5 @@
 <?php
-// admin/games.php - Game Management Page
+
 require_once '../config.php';
 require_once '../functions.php';
 
@@ -12,7 +12,7 @@ if (!isLoggedIn() || $_SESSION['user_role'] != 'Admin') {
 $user_id = $_SESSION['user_id'];
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'dashboard';
 
-// Get game statistics
+
 $stats = [];
 
 // Total games played
