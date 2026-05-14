@@ -1,4 +1,5 @@
 <?php
+// pool.php - Rewritten to match facilities.php white/blue theme
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -40,14 +41,25 @@ $check_result = mysqli_stmt_get_result($check_stmt);
 $already_checked_in = mysqli_num_rows($check_result) > 0;
 
 // Get user points
-$user_sql = "SELECT PointsBalance FROM Users WHERE UserID = ?";
+$user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
 mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-// Generate lane availability (in real app, this would come from database)
+// Check if user has valid medical report
+$medical_sql = "SELECT * FROM medical_reports 
+                WHERE user_id = ? AND is_valid = TRUE 
+                AND (expiry_date IS NULL OR expiry_date >= CURDATE())
+                ORDER BY upload_date DESC LIMIT 1";
+$medical_stmt = mysqli_prepare($conn, $medical_sql);
+mysqli_stmt_bind_param($medical_stmt, "i", $user_id);
+mysqli_stmt_execute($medical_stmt);
+$medical_result = mysqli_stmt_get_result($medical_stmt);
+$has_medical = mysqli_num_rows($medical_result) > 0;
+
+// Generate lane availability
 $lane_availability = [];
 for ($i = 1; $i <= $lanes; $i++) {
     $lane_availability[] = [
@@ -57,7 +69,12 @@ for ($i = 1; $i <= $lanes; $i++) {
     ];
 }
 
-// Generate sessions
+$available_lanes = 0;
+foreach ($lane_availability as $lane) {
+    if ($lane['status'] === 'available') $available_lanes++;
+}
+
+// Sessions
 $sessions = [
     ['time' => '06:00 - 08:00', 'name' => 'Morning Swim', 'type' => 'morning', 'capacity' => 30, 'booked' => rand(10, 25)],
     ['time' => '08:00 - 12:00', 'name' => 'Lap Swimming', 'type' => 'morning', 'capacity' => 40, 'booked' => rand(20, 35)],
@@ -65,14 +82,7 @@ $sessions = [
     ['time' => '16:00 - 20:00', 'name' => 'Evening Swim', 'type' => 'evening', 'capacity' => 45, 'booked' => rand(25, 40)],
     ['time' => '20:00 - 22:00', 'name' => 'Ladies Only', 'type' => 'evening', 'capacity' => 25, 'booked' => rand(5, 15)]
 ];
-
-// Calculate available lanes
-$available_lanes = 0;
-foreach ($lane_availability as $lane) {
-    if ($lane['status'] === 'available') $available_lanes++;
-}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,7 +90,6 @@ foreach ($lane_availability as $lane) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($pool['Name']); ?> - Synergy Hub</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
@@ -91,48 +100,29 @@ foreach ($lane_availability as $lane) {
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
-            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -142,9 +132,14 @@ foreach ($lane_availability as $lane) {
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-btn.active {
+            transform: rotate(90deg);
         }
         
         .points {
@@ -154,67 +149,194 @@ foreach ($lane_availability as $lane) {
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
         }
         
+        .home-link:hover {
+            color: #2c7da0;
+        }
+        
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
-            left: -260px;
+            left: -280px;
             top: 0;
-            width: 260px;
+            width: 280px;
             height: 100%;
-            background: #0f172a;
-            padding-top: 70px;
-            transition: .35s;
+            background: white;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+            overflow-y: auto;
         }
-        
-        .sidebar a {
-            display: block;
-            padding: 15px 20px;
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px 20px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+        }
+
+        .sidebar-header h2 {
             color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 5px 0;
+        }
+
+        .sidebar-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+        }
+
+        .sidebar-user {
+            padding: 15px 20px;
+            background: #f8fafc;
+            margin: 0 15px 20px 15px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .sidebar-user-info h4 {
+            color: #1e293b;
+            font-size: 15px;
+            margin: 0 0 3px 0;
+            font-weight: 600;
+        }
+
+        .sidebar-user-info p {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .sidebar-user-info p i {
+            color: #fbbf24;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav-item {
+            margin: 4px 12px;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            color: #475569;
             text-decoration: none;
-            opacity: .8;
-            transition: all 0.3s;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 15px;
         }
-        
-        .sidebar a:hover {
-            opacity: 1;
-            background: #1e293b;
-            padding-left: 30px;
+
+        .sidebar-nav-link i {
+            width: 22px;
+            color: #94a3b8;
         }
-        
+
+        .sidebar-nav-link:hover {
+            background: #e0f2fe;
+            color: #1e4a76;
+        }
+
+        .sidebar-nav-link:hover i {
+            color: #2c7da0;
+        }
+
+        .sidebar-nav-link.active {
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
+        }
+
+        .sidebar-nav-link.active i {
+            color: #2c7da0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            z-index: 9998;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Container */
         .container {
             padding: 30px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
-        
+
+        /* Card Base */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            margin-bottom: 25px;
+        }
+
         /* Facility Header */
         .facility-header {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
             display: flex;
             align-items: center;
             gap: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
         }
-        
+
         .facility-icon {
             width: 100px;
             height: 100px;
-            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -222,23 +344,23 @@ foreach ($lane_availability as $lane) {
             font-size: 48px;
             color: white;
         }
-        
+
         .facility-info {
             flex: 1;
         }
-        
+
         .facility-name {
             font-size: 36px;
-            color: white;
+            color: #0f172a;
             margin-bottom: 10px;
         }
-        
+
         .facility-type {
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 18px;
             margin-bottom: 10px;
         }
-        
+
         .facility-status {
             display: inline-block;
             padding: 8px 20px;
@@ -247,22 +369,22 @@ foreach ($lane_availability as $lane) {
             font-weight: 600;
             margin: 10px 0;
         }
-        
+
         .status-Open {
             background: #10b981;
             color: white;
         }
-        
+
         .status-Closed {
             background: #ef4444;
             color: white;
         }
-        
+
         .status-Maintenance {
             background: #f59e0b;
             color: white;
         }
-        
+
         .medical-badge {
             display: inline-flex;
             align-items: center;
@@ -275,86 +397,77 @@ foreach ($lane_availability as $lane) {
             font-weight: 600;
             margin-left: 8px;
         }
-        
+
         /* Quick Stats */
         .quick-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
-            margin: 20px 0 30px;
+            margin-bottom: 30px;
         }
-        
+
         .stat-card {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: #f8fafc;
             padding: 15px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             gap: 15px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
         }
-        
+
         .stat-card i {
             font-size: 2rem;
-            color: #22d3ee;
+            color: #2c7da0;
         }
-        
-        .stat-card div {
-            display: flex;
-            flex-direction: column;
-        }
-        
+
         .stat-label {
             font-size: 0.8rem;
-            color: rgba(255,255,255,0.8);
+            color: #64748b;
         }
-        
+
         .stat-value {
             font-size: 1.5rem;
             font-weight: 700;
-            color: white;
+            color: #0f172a;
         }
-        
+
         /* Check-in Section */
         .checkin-section {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
             text-align: center;
         }
-        
+
         .points-info {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 30px;
-            margin: 20px 0;
             flex-wrap: wrap;
         }
-        
+
         .points-badge {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            color: white;
+            background: #f1f5f9;
+            color: #0f172a;
             padding: 15px 30px;
             border-radius: 50px;
             font-size: 20px;
             font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
         }
-        
+
         .points-badge i {
-            color: gold;
+            color: #fbbf24;
             margin-right: 8px;
         }
-        
+
         .checkin-btn {
             padding: 15px 40px;
-            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border: none;
             border-radius: 50px;
             color: white;
@@ -362,176 +475,172 @@ foreach ($lane_availability as $lane) {
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.2);
         }
-        
+
         .checkin-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(2, 132, 199, 0.4);
+            box-shadow: 0 5px 20px rgba(30, 74, 118, 0.4);
         }
-        
+
         .checkin-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .checkin-message {
             margin-top: 15px;
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 16px;
         }
-        
-        /* Pool Features Grid */
+
+        /* Features Grid */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
-            margin-top: 30px;
         }
-        
+
         .feature-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: #f8fafc;
             border-radius: 20px;
             padding: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
             cursor: pointer;
             text-decoration: none;
-            color: white;
+            color: #0f172a;
             display: block;
             opacity: 0.5;
             pointer-events: none;
         }
-        
+
         .feature-card.active {
             opacity: 1;
             pointer-events: all;
         }
-        
+
         .feature-card.active:hover {
             transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: #2c7da0;
         }
-        
+
         .feature-icon {
             font-size: 48px;
-            color: #22d3ee;
+            color: #2c7da0;
             margin-bottom: 20px;
         }
-        
+
         .feature-title {
-            color: white;
             font-size: 22px;
             font-weight: 600;
             margin-bottom: 10px;
         }
-        
+
         .feature-description {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 14px;
             line-height: 1.5;
         }
-        
-        /* Lane Availability */
+
+        /* Lane Section */
         .lane-section {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
-            padding: 30px;
-            margin: 30px 0;
-            border: 1px solid rgba(255,255,255,0.2);
+            padding: 25px;
+            margin: 25px 0;
+            border: 1px solid #e2e8f0;
         }
-        
+
         .section-title {
-            color: white;
+            color: #0f172a;
             font-size: 24px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .section-title i {
-            color: #22d3ee;
+            color: #2c7da0;
         }
-        
+
         .lane-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
-        
+
         .lane-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 15px;
             text-align: center;
-            color: white;
+            color: #0f172a;
         }
-        
+
         .lane-card.available {
             border-left: 4px solid #10b981;
         }
-        
+
         .lane-card.busy {
             border-left: 4px solid #f59e0b;
             opacity: 0.7;
         }
-        
+
         .lane-number {
             font-size: 20px;
             font-weight: 700;
-            color: #22d3ee;
+            color: #1e4a76;
             margin-bottom: 5px;
         }
-        
+
         .lane-type {
             font-size: 12px;
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
         }
-        
+
         /* Sessions */
         .session-list {
             margin: 20px 0;
         }
-        
+
         .session-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background: rgba(255,255,255,0.05);
+            background: #f8fafc;
             border-radius: 12px;
             margin-bottom: 10px;
             border-left: 4px solid;
-            color: white;
+            color: #0f172a;
         }
-        
+
         .session-item.morning { border-left-color: #f59e0b; }
-        .session-item.afternoon { border-left-color: #0284c7; }
+        .session-item.afternoon { border-left-color: #2c7da0; }
         .session-item.evening { border-left-color: #8b5cf6; }
-        
+
         .session-time {
             font-weight: 600;
         }
-        
+
         .session-name {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 14px;
         }
-        
+
         .session-capacity {
-            background: rgba(255,255,255,0.1);
+            background: #e2e8f0;
             padding: 5px 15px;
             border-radius: 30px;
             font-size: 14px;
         }
-        
+
         /* Amenities */
         .amenities-list {
             display: flex;
@@ -539,90 +648,116 @@ foreach ($lane_availability as $lane) {
             gap: 10px;
             margin: 20px 0;
         }
-        
+
         .amenity-tag {
-            background: rgba(255,255,255,0.1);
+            background: #f1f5f9;
             padding: 8px 16px;
             border-radius: 30px;
             font-size: 14px;
-            color: white;
+            color: #0f172a;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
         .amenity-tag i {
-            color: #22d3ee;
+            color: #2c7da0;
         }
-        
+
         /* Rules */
         .rules-list {
             list-style: none;
             margin: 20px 0;
         }
-        
+
         .rules-list li {
-            color: rgba(255,255,255,0.8);
+            color: #475569;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .rules-list li i {
-            color: #22d3ee;
+            color: #2c7da0;
             width: 20px;
         }
-        
-        /* Back Button */
+
         .back-btn {
             display: inline-block;
-            margin-top: 40px;
-            color: white;
+            margin-top: 30px;
+            color: #1e4a76;
             text-decoration: none;
             font-size: 16px;
             padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
+            background: #f1f5f9;
             border-radius: 30px;
             transition: all 0.3s;
         }
-        
+
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
-            color: #22d3ee;
+            background: #1e4a76;
+            color: white;
         }
-        
-        .back-btn i {
-            margin-right: 8px;
-        }
-        
+
         @media (max-width: 768px) {
             .facility-header {
                 flex-direction: column;
                 text-align: center;
             }
-            
             .points-info {
                 flex-direction: column;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .icons {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="bg"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2>Synergy Hub</h2>
+        <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
+    </div>
+    
+    <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="sidebar-user-info">
+            <h4><?php echo htmlspecialchars($user['Name'] ?? 'User'); ?></h4>
+            <p><i class="fa-solid fa-star"></i> <?php echo $user['PointsBalance']; ?> points</p>
+        </div>
+    </div>
 
-<!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
-    <a href="index.php">Home</a>
-    <a href="facilities.php">Facilities</a>
-    <a href="transport.php">Transport</a>
-    <a href="game.php">Game Field</a>
-    <a href="clubs.php">Club Hub</a>
-    <a href="qr.html">QR Scanner</a>
+    <ul class="sidebar-nav">
+        <li class="sidebar-nav-item"><a href="index.php" class="sidebar-nav-link"><i class="fa-solid fa-home"></i><span>Home</span></a></li>
+        <li class="sidebar-nav-item"><a href="facilities.php" class="sidebar-nav-link"><i class="fa-solid fa-building"></i><span>Facilities</span></a></li>
+        <li class="sidebar-nav-item"><a href="transport.php" class="sidebar-nav-link"><i class="fa-solid fa-bus"></i><span>Transport</span></a></li>
+        <li class="sidebar-nav-item"><a href="game.php" class="sidebar-nav-link"><i class="fa-solid fa-futbol"></i><span>Game Field</span></a></li>
+        <li class="sidebar-nav-item"><a href="clubs.php" class="sidebar-nav-link"><i class="fa-solid fa-users"></i><span>Club Hub</span></a></li>
+        <li class="sidebar-nav-item"><a href="qr.html" class="sidebar-nav-link"><i class="fa-solid fa-qrcode"></i><span>QR Scanner</span></a></li>
+    </ul>
+    
+    <div class="sidebar-footer" style="padding: 20px 20px 30px 20px;">
+        <div class="sidebar-footer-links" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px;">
+            <a href="#" style="color: #64748b; text-decoration: none; font-size: 11px;"><i class="fa-regular fa-circle-question"></i> Help</a>
+            <a href="#" style="color: #64748b; text-decoration: none; font-size: 11px;"><i class="fa-regular fa-gear"></i> Settings</a>
+            <a href="#" style="color: #64748b; text-decoration: none; font-size: 11px;"><i class="fa-regular fa-message"></i> Feedback</a>
+        </div>
+        <div class="sidebar-copyright" style="color: #94a3b8; font-size: 10px; text-align: center;">© 2025 Synergy Hub</div>
+    </div>
 </div>
 
-<!-- NAVBAR -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <header class="navbar">
     <div class="menu-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -641,7 +776,6 @@ foreach ($lane_availability as $lane) {
     </div>
 </header>
 
-<!-- MAIN CONTENT -->
 <div class="container">
     
     <!-- FACILITY HEADER -->
@@ -665,44 +799,17 @@ foreach ($lane_availability as $lane) {
     
     <!-- QUICK STATS -->
     <div class="quick-stats">
-        <div class="stat-card">
-            <i class="fa-solid fa-water"></i>
-            <div>
-                <span class="stat-label">Water Temp</span>
-                <span class="stat-value"><?php echo $water_temp; ?>°C</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <i class="fa-solid fa-arrows-up-down"></i>
-            <div>
-                <span class="stat-label">Depth</span>
-                <span class="stat-value"><?php echo $depth; ?></span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <i class="fa-solid fa-people-group"></i>
-            <div>
-                <span class="stat-label">Lifeguards</span>
-                <span class="stat-value"><?php echo $lifeguards; ?></span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <i class="fa-solid fa-road"></i>
-            <div>
-                <span class="stat-label">Available Lanes</span>
-                <span class="stat-value"><?php echo $available_lanes; ?>/<?php echo $lanes; ?></span>
-            </div>
-        </div>
+        <div class="stat-card"><i class="fa-solid fa-water"></i><div><div class="stat-label">Water Temp</div><div class="stat-value"><?php echo $water_temp; ?>°C</div></div></div>
+        <div class="stat-card"><i class="fa-solid fa-arrows-up-down"></i><div><div class="stat-label">Depth</div><div class="stat-value"><?php echo $depth; ?></div></div></div>
+        <div class="stat-card"><i class="fa-solid fa-people-group"></i><div><div class="stat-label">Lifeguards</div><div class="stat-value"><?php echo $lifeguards; ?></div></div></div>
+        <div class="stat-card"><i class="fa-solid fa-road"></i><div><div class="stat-label">Available Lanes</div><div class="stat-value"><?php echo $available_lanes; ?>/<?php echo $lanes; ?></div></div></div>
     </div>
     
     <!-- CHECK-IN SECTION -->
     <div class="checkin-section">
         <div class="points-info">
-            <div class="points-badge">
-                <i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span>
-            </div>
-            <button class="checkin-btn" id="checkinBtn" onclick="checkIn(<?php echo $facility_id; ?>)"
-                <?php echo ($already_checked_in || $pool['Status'] != 'Open') ? 'disabled' : ''; ?>>
+            <div class="points-badge"><i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span></div>
+            <button class="checkin-btn" id="checkinBtn" onclick="checkIn(<?php echo $facility_id; ?>)" <?php echo ($already_checked_in || $pool['Status'] != 'Open') ? 'disabled' : ''; ?>>
                 <i class="fa-solid fa-location-dot"></i> Check In (+10 points)
             </button>
         </div>
@@ -718,56 +825,37 @@ foreach ($lane_availability as $lane) {
     </div>
     
     <!-- POOL FEATURES GRID -->
-    <h2 class="section-title">
-        <i class="fa-solid fa-person-swimming"></i> Pool Features
-    </h2>
-    <div class="features-grid">
-        <a href="pool_booking.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
-            <div class="feature-icon">
-                <i class="fa-solid fa-calendar-check"></i>
-            </div>
-            <div class="feature-title">Book a Lane</div>
-            <div class="feature-description">
-                Reserve a swimming lane for your workout. Choose lane type and time slot.
-            </div>
-        </a>
-        
-        <a href="pool_schedule.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
-            <div class="feature-icon">
-                <i class="fa-regular fa-clock"></i>
-            </div>
-            <div class="feature-title">View Schedule</div>
-            <div class="feature-description">
-                Check daily sessions, peak hours, and lane availability in real-time.
-            </div>
-        </a>
-        
-        <a href="pool_medical.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
-            <div class="feature-icon">
-                <i class="fa-solid fa-notes-medical"></i>
-            </div>
-            <div class="feature-title">Medical Report</div>
-            <div class="feature-description">
-                Upload or update your medical report. Required for all swimmers.
-            </div>
-        </a>
-        
-        <div class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>" onclick="featureAction('Swim Lessons')">
-            <div class="feature-icon">
-                <i class="fa-solid fa-chalkboard-user"></i>
-            </div>
-            <div class="feature-title">Swim Lessons</div>
-            <div class="feature-description">
-                Join swimming lessons for beginners or advanced swimmers.
-            </div>
+    <div class="lane-section">
+        <h2 class="section-title"><i class="fa-solid fa-person-swimming"></i> Pool Features</h2>
+        <div class="features-grid">
+            <a href="pool_booking.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo ($already_checked_in && $has_medical) ? 'active' : ''; ?>">
+                <div class="feature-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                <div class="feature-title">Book a Lane</div>
+                <div class="feature-description">Reserve a swimming lane for your workout. Choose lane type and time slot.</div>
+            </a>
+            
+            <a href="pool_schedule.php?id=<?php echo $facility_id; ?>" class="feature-card <?php echo $already_checked_in ? 'active' : ''; ?>">
+                <div class="feature-icon"><i class="fa-regular fa-clock"></i></div>
+                <div class="feature-title">View Schedule</div>
+                <div class="feature-description">Check daily sessions, peak hours, and lane availability in real-time.</div>
+            </a>
+            
+            <a href="pool_medical.php?id=<?php echo $facility_id; ?>" class="feature-card active">
+                <div class="feature-icon"><i class="fa-solid fa-notes-medical"></i></div>
+                <div class="feature-title">Medical Report</div>
+                <div class="feature-description">Upload or update your medical report. Required for all swimmers.</div>
+            </a>
         </div>
+        <?php if(!$has_medical): ?>
+        <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border-radius: 10px; color: #92400e;">
+            <i class="fa-solid fa-exclamation-triangle"></i> Please upload your medical report before booking a lane.
+        </div>
+        <?php endif; ?>
     </div>
     
     <!-- LANE AVAILABILITY -->
     <div class="lane-section">
-        <h2 class="section-title">
-            <i class="fa-solid fa-road"></i> Lane Availability
-        </h2>
+        <h2 class="section-title"><i class="fa-solid fa-road"></i> Lane Availability (Live)</h2>
         <div class="lane-grid">
             <?php foreach($lane_availability as $lane): ?>
             <div class="lane-card <?php echo $lane['status']; ?>">
@@ -783,21 +871,12 @@ foreach ($lane_availability as $lane) {
     
     <!-- DAILY SESSIONS -->
     <div class="lane-section">
-        <h2 class="section-title">
-            <i class="fa-regular fa-clock"></i> Daily Sessions
-        </h2>
+        <h2 class="section-title"><i class="fa-regular fa-clock"></i> Daily Sessions</h2>
         <div class="session-list">
-            <?php foreach($sessions as $session): 
-                $percentage = ($session['booked'] / $session['capacity']) * 100;
-            ?>
+            <?php foreach($sessions as $session): ?>
             <div class="session-item <?php echo $session['type']; ?>">
-                <div>
-                    <div class="session-time"><?php echo $session['time']; ?></div>
-                    <div class="session-name"><?php echo $session['name']; ?></div>
-                </div>
-                <div class="session-capacity">
-                    <?php echo $session['booked']; ?>/<?php echo $session['capacity']; ?>
-                </div>
+                <div><div class="session-time"><?php echo $session['time']; ?></div><div class="session-name"><?php echo $session['name']; ?></div></div>
+                <div class="session-capacity"><?php echo $session['booked']; ?>/<?php echo $session['capacity']; ?></div>
             </div>
             <?php endforeach; ?>
         </div>
@@ -805,23 +884,17 @@ foreach ($lane_availability as $lane) {
     
     <!-- AMENITIES -->
     <div class="lane-section">
-        <h2 class="section-title">
-            <i class="fa-solid fa-star"></i> Amenities
-        </h2>
+        <h2 class="section-title"><i class="fa-solid fa-star"></i> Amenities</h2>
         <div class="amenities-list">
             <?php foreach($amenities as $amenity): ?>
-            <span class="amenity-tag">
-                <i class="fa-solid fa-check-circle"></i> <?php echo htmlspecialchars($amenity); ?>
-            </span>
+            <span class="amenity-tag"><i class="fa-solid fa-check-circle"></i> <?php echo htmlspecialchars($amenity); ?></span>
             <?php endforeach; ?>
         </div>
     </div>
     
     <!-- POOL RULES -->
     <div class="lane-section">
-        <h2 class="section-title">
-            <i class="fa-solid fa-clipboard-list"></i> Pool Rules
-        </h2>
+        <h2 class="section-title"><i class="fa-solid fa-clipboard-list"></i> Pool Rules</h2>
         <ul class="rules-list">
             <li><i class="fa-solid fa-circle-check"></i> Shower before entering pool</li>
             <li><i class="fa-solid fa-circle-check"></i> Swim cap required</li>
@@ -831,70 +904,60 @@ foreach ($lane_availability as $lane) {
         </ul>
     </div>
     
-    <a href="facilities.php" class="back-btn">
-        <i class="fa-solid fa-arrow-left"></i> Back to Facilities
-    </a>
+    <a href="facilities.php" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Facilities</a>
 </div>
 
 <script>
 function toggleSidebar() {
-    const sidebar = document.querySelector(".sidebar");
-    sidebar.style.left = sidebar.style.left === "0px" ? "-260px" : "0px";
+    const sidebar = document.querySelector("#sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    const menuBtn = document.querySelector(".menu-btn");
+    
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
+        overlay.classList.remove("active");
+        menuBtn.classList.remove("active");
+    } else {
+        sidebar.classList.add("active");
+        overlay.classList.add("active");
+        menuBtn.classList.add("active");
+    }
 }
 
 document.addEventListener("click", function(e) {
-    const sidebar = document.querySelector(".sidebar");
+    const sidebar = document.querySelector("#sidebar");
     const btn = document.querySelector(".menu-btn");
-    if(sidebar && btn && !sidebar.contains(e.target) && !btn.contains(e.target)) {
-        sidebar.style.left = "-260px";
+    const overlay = document.getElementById("sidebarOverlay");
+    
+    if(sidebar && btn && overlay && 
+       !sidebar.contains(e.target) && 
+       !btn.contains(e.target) && 
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
+        overlay.classList.remove("active");
+        btn.classList.remove("active");
     }
 });
 
-// Check-in function
 function checkIn(facilityId) {
     fetch('checkin.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'facility_id=' + facilityId
     })
     .then(response => response.json())
     .then(data => {
         if(data.success) {
-            // Update points display
-            let pointsSpan = document.getElementById('pointsDisplay');
-            let currentPoints = parseInt(pointsSpan.textContent);
-            pointsSpan.textContent = data.new_points;
-            
+            document.getElementById('pointsDisplay').textContent = data.new_points;
             document.getElementById('currentPoints').textContent = data.new_points;
-            
-            // Animate points
-            document.querySelector('.points').classList.add('active');
-            setTimeout(() => {
-                document.querySelector('.points').classList.remove('active');
-            }, 500);
-            
-            // Update UI
             document.getElementById('checkinBtn').disabled = true;
             document.getElementById('checkinMessage').innerHTML = '✅ Check-in successful! +10 points added. You can now book lanes.';
-            
-            // Activate all feature cards
-            document.querySelectorAll('.feature-card').forEach(card => {
-                card.classList.add('active');
-            });
-            
+            document.querySelectorAll('.feature-card').forEach(card => { card.classList.add('active'); });
         } else {
             alert('Error: ' + data.message);
         }
     });
 }
-
-// Feature action for placeholder features
-function featureAction(feature) {
-    alert(`🔧 "${feature}" feature is coming soon! We're working on it.`);
-}
 </script>
-
 </body>
 </html>
