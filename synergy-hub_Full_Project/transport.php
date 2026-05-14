@@ -1,4 +1,12 @@
 <?php
+/**
+ * User-facing page showing:
+ *  - My active transport passes
+ *  - Live bus tracking cards
+ *  - Campus bus schedules
+ *  - Available routes to request passes (admin approval required)
+ */
+
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -84,47 +92,28 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         
         body {
             min-height: 100vh;
-            position: relative;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -134,7 +123,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -151,115 +140,376 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
         }
         
         .home-link:hover {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
-        /* Sidebar Styles (same as before - keeping it compact) */
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             width: 280px;
             height: 100%;
-            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
-            backdrop-filter: blur(10px);
+            background: white;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
             overflow-y: auto;
         }
-        .sidebar.active { left: 0; }
-        .sidebar-header { padding: 25px 20px 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 15px; }
-        .sidebar-header h2 { color: white; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sidebar-header p { color: #94a3b8; font-size: 13px; }
-        .sidebar-user { padding: 15px 20px; background: rgba(255, 255, 255, 0.03); margin: 0 15px 20px 15px; border-radius: 16px; display: flex; align-items: center; gap: 12px; }
-        .sidebar-user-avatar { width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
-        .sidebar-user-info h4 { color: white; font-size: 15px; margin: 0 0 3px 0; }
-        .sidebar-user-info p { color: #94a3b8; font-size: 12px; }
-        .sidebar-user-info p i { color: #fbbf24; }
-        .sidebar-nav { list-style: none; padding: 0; margin: 0; }
-        .sidebar-nav-item { margin: 4px 12px; }
-        .sidebar-nav-link { display: flex; align-items: center; padding: 12px 18px; color: #b8c7de; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; gap: 12px; }
-        .sidebar-nav-link:hover { background: rgba(168, 192, 255, 0.1); color: white; transform: translateX(5px); }
-        .sidebar-nav-link.active { background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%); color: white; border-left: 3px solid #a5b4fc; }
-        .sidebar-badge { background: #ef4444; color: white; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 30px; margin-left: auto; }
-        .sidebar-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent); margin: 20px 20px; }
-        .sidebar-section-title { padding: 0 20px; margin: 25px 0 10px 0; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-        .sidebar-stats { display: flex; justify-content: space-around; padding: 15px 10px; margin: 0 15px; background: rgba(255, 255, 255, 0.02); border-radius: 16px; }
-        .sidebar-stat-value { color: white; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sidebar-stat-label { color: #94a3b8; font-size: 10px; text-transform: uppercase; }
-        .sidebar-footer { padding: 20px 20px 30px 20px; }
-        .sidebar-footer-links { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
-        .sidebar-footer-links a { color: #94a3b8; text-decoration: none; font-size: 11px; }
-        .sidebar-copyright { color: #64748b; font-size: 10px; text-align: center; }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); z-index: 9998; display: none; }
-        .sidebar-overlay.active { display: block; }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px 20px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 5px 0;
+        }
+
+        .sidebar-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .sidebar-header p i {
+            color: #22d3ee;
+            margin-right: 5px;
+        }
+
+        .sidebar-user {
+            padding: 15px 20px;
+            background: #f8fafc;
+            margin: 0 15px 20px 15px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .sidebar-user-info h4 {
+            color: #1e293b;
+            font-size: 15px;
+            margin: 0 0 3px 0;
+            font-weight: 600;
+        }
+
+        .sidebar-user-info p {
+            color: #64748b;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .sidebar-user-info p i {
+            color: #fbbf24;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav-item {
+            margin: 4px 12px;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .sidebar-nav-link i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav-link:hover {
+            background: #e0f2fe;
+            color: #1e4a76;
+        }
+
+        .sidebar-nav-link:hover i {
+            color: #2c7da0;
+        }
+
+        .sidebar-nav-link.active {
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
+        }
+
+        .sidebar-nav-link.active i {
+            color: #2c7da0;
+        }
+
+        .sidebar-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 30px;
+            margin-left: auto;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+            margin: 20px 20px;
+        }
+
+        .sidebar-section-title {
+            padding: 0 20px;
+            margin: 25px 0 10px 0;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .sidebar-club-preview {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 15px;
+            margin: 0 15px 20px 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sidebar-club-preview h4 {
+            color: #1e4a76;
+            font-size: 13px;
+            margin: 0 0 12px 0;
+        }
+
+        .sidebar-club-preview h4 i {
+            color: #fbbf24;
+        }
+
+        .sidebar-club-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+
+        .sidebar-club-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-club-item h5 {
+            color: #1e293b;
+            font-size: 14px;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+        }
+
+        .sidebar-club-item p {
+            color: #64748b;
+            font-size: 11px;
+            margin: 0 0 6px 0;
+        }
+
+        .sidebar-club-tag {
+            background: #e0f2fe;
+            color: #1e4a76;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        .sidebar-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            margin: 0 15px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sidebar-stat-item {
+            text-align: center;
+        }
+
+        .sidebar-stat-value {
+            color: #1e4a76;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .sidebar-stat-label {
+            color: #64748b;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-footer {
+            padding: 20px 20px 30px 20px;
+        }
+
+        .sidebar-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-footer-links a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 11px;
+            transition: color 0.2s;
+        }
+
+        .sidebar-footer-links a:hover {
+            color: #1e4a76;
+        }
+
+        .sidebar-copyright {
+            color: #94a3b8;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            z-index: 9998;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
         
+        /* Main Container */
         .transport-container {
             padding: 30px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
+        /* Points Badge */
         .points-badge {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            color: white;
+            background: white;
+            color: #1e4a76;
             padding: 15px 25px;
             border-radius: 50px;
             display: inline-block;
             margin-bottom: 30px;
             font-weight: 600;
             font-size: 18px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .points-badge i {
-            color: #22d3ee;
+            color: #fbbf24;
             margin-right: 8px;
         }
         
+        /* Section Title */
         .section-title {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             margin: 40px 0 20px;
-            border-left: 5px solid #22d3ee;
+            border-left: 5px solid #2c7da0;
             padding-left: 15px;
+        }
+        
+        /* Info Banner */
+        .info-banner {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            color: #065f46;
+            font-size: 14px;
+        }
+        
+        .info-banner i {
+            color: #10b981;
+            margin-right: 10px;
         }
         
         /* Passes Grid */
         .passes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
             margin-bottom: 40px;
         }
         
         .pass-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .pass-card:hover {
             transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         
         .pass-header {
@@ -272,7 +522,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         .pass-route {
             font-size: 18px;
             font-weight: 600;
-            color: white;
+            color: #1e293b;
         }
         
         .pass-status {
@@ -312,24 +562,25 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         }
         
         .pass-details {
-            color: rgba(255,255,255,0.9);
+            color: #475569;
             margin: 10px 0;
             line-height: 1.6;
         }
         
         .pass-details i {
-            color: #22d3ee;
+            color: #2c7da0;
             width: 20px;
             margin-right: 8px;
         }
         
         .no-passes {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-style: italic;
-            background: rgba(255,255,255,0.05);
+            background: #f8fafc;
             padding: 20px;
             border-radius: 15px;
             text-align: center;
+            border: 1px solid #e2e8f0;
         }
         
         /* Tracking Grid */
@@ -341,18 +592,19 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         }
         
         .track-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(14px);
+            background: white;
             border-radius: 18px;
             overflow: hidden;
             transition: 0.3s;
             display: flex;
             flex-direction: column;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .track-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
         }
         
         .track-card h3 {
@@ -360,7 +612,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             padding: 15px;
             margin: 0;
             color: white;
-            background: rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
         }
         
         .map-area {
@@ -378,7 +630,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             display: flex;
             justify-content: space-around;
             padding: 16px;
-            background: rgba(255,255,255,0.05);
+            background: #f8fafc;
         }
         
         .track-buttons button {
@@ -387,7 +639,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             padding: 10px 0;
             border: none;
             border-radius: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
             font-weight: 600;
             cursor: pointer;
@@ -400,10 +652,10 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         
         .status-text {
             font-size: 0.8rem;
-            color: white;
+            color: #475569;
             text-align: center;
             padding: 10px;
-            background: rgba(0,0,0,0.2);
+            background: #f8fafc;
             margin: 0;
         }
         
@@ -416,17 +668,17 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         }
         
         .campus-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 25px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
             transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .campus-card:hover {
             transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         
         .campus-header {
@@ -439,19 +691,19 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         .campus-icon {
             width: 50px;
             height: 50px;
-            background: rgba(34, 211, 238, 0.2);
+            background: #e0f2fe;
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .campus-route {
             font-size: 18px;
             font-weight: 600;
-            color: white;
+            color: #1e293b;
         }
         
         .campus-details {
@@ -460,21 +712,21 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             align-items: center;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid #e2e8f0;
         }
         
         .next-departure {
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 20px;
             font-weight: 600;
         }
         
         .next-departure.morning {
-            color: #fbbf24;
+            color: #f59e0b;
         }
         
         .next-departure.evening {
-            color: #22d3ee;
+            color: #2c7da0;
             font-size: 24px;
             font-weight: 700;
         }
@@ -486,24 +738,24 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             font-weight: 600;
         }
         
-        .status-On-Time { background: #10b981; color: white; }
-        .status-Sharp { background: #22d3ee; color: white; }
+        .status-OnTime { background: #10b981; color: white; }
+        .status-Sharp { background: #2c7da0; color: white; }
         .status-Delayed { background: #f59e0b; color: white; }
         .status-Cancelled { background: #ef4444; color: white; }
         
         .frequency {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 14px;
             margin-top: 5px;
         }
         
         /* Available Routes List */
         .routes-list {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 20px;
             padding: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         
         .route-item {
@@ -511,7 +763,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             justify-content: space-between;
             align-items: center;
             padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid #e2e8f0;
         }
         
         .route-item:last-child {
@@ -523,26 +775,26 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         }
         
         .route-name {
-            color: white;
+            color: #1e293b;
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 5px;
         }
         
         .route-details {
-            color: rgba(255,255,255,0.7);
+            color: #64748b;
             font-size: 14px;
         }
         
         .route-details i {
-            color: #22d3ee;
+            color: #2c7da0;
             margin-right: 5px;
         }
         
         .route-price {
             flex: 1;
             text-align: right;
-            color: #22d3ee;
+            color: #2c7da0;
             font-weight: 700;
             font-size: 18px;
             margin-right: 20px;
@@ -550,20 +802,19 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         
         .request-btn {
             padding: 12px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border: none;
             border-radius: 30px;
             color: white;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.2);
-            min-width: 120px;
+            min-width: 150px;
         }
         
         .request-btn:hover:not(:disabled) {
             transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(30, 74, 118, 0.4);
         }
         
         .request-btn:disabled {
@@ -583,33 +834,18 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         .back-btn {
             display: inline-block;
             margin-top: 30px;
-            color: white;
+            color: #1e4a76;
             text-decoration: none;
             font-size: 16px;
             padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
+            background: #f1f5f9;
             border-radius: 30px;
+            transition: all 0.3s;
         }
         
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
-            color: #22d3ee;
-        }
-        
-        /* Info Banner */
-        .info-banner {
-            background: rgba(34, 211, 238, 0.1);
-            border-left: 4px solid #22d3ee;
-            padding: 15px 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            color: rgba(255,255,255,0.9);
-            font-size: 14px;
-        }
-        
-        .info-banner i {
-            color: #22d3ee;
-            margin-right: 10px;
+            background: #1e4a76;
+            color: white;
         }
         
         @media (max-width: 768px) {
@@ -631,15 +867,23 @@ function hasPendingRequest($conn, $user_id, $route_name) {
                 text-align: center;
                 margin-right: 0;
             }
+            
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .icons {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="bg"></div>
-
 <!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
+<div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h2>Synergy Hub</h2>
         <p><i class="fa-solid fa-circle"></i> Connect · Collaborate · Create</p>
@@ -654,7 +898,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             <p><i class="fa-solid fa-star"></i> <?php echo $user['PointsBalance']; ?> points</p>
         </div>
     </div>
-    
+
     <ul class="sidebar-nav">
         <li class="sidebar-nav-item"><a href="index.php" class="sidebar-nav-link"><i class="fa-solid fa-home"></i><span>Home</span></a></li>
         <li class="sidebar-nav-item"><a href="facilities.php" class="sidebar-nav-link"><i class="fa-solid fa-building"></i><span>Facilities</span><span class="sidebar-badge"><?php echo $facilities_count; ?></span></a></li>
@@ -666,6 +910,27 @@ function hasPendingRequest($conn, $user_id, $route_name) {
     </ul>
     
     <div class="sidebar-divider"></div>
+    
+    <div class="sidebar-section-title">MY CLUBS</div>
+    
+    <div class="sidebar-club-preview">
+        <h4><i class="fa-regular fa-star"></i> Active Clubs</h4>
+        <div class="sidebar-club-item">
+            <h5>Coding Club</h5>
+            <p>Programming and software development...</p>
+            <span class="sidebar-club-tag">Academic</span>
+        </div>
+        <div class="sidebar-club-item">
+            <h5>IEEE Student Branch</h5>
+            <p>IEEE student chapter...</p>
+            <span class="sidebar-club-tag">Academic</span>
+        </div>
+        <div class="sidebar-club-item">
+            <h5>Sports Club</h5>
+            <p>Sports and fitness activities...</p>
+            <span class="sidebar-club-tag">Sports</span>
+        </div>
+    </div>
     
     <div class="sidebar-stats">
         <div class="sidebar-stat-item"><div class="sidebar-stat-value">4</div><div class="sidebar-stat-label">Clubs</div></div>
@@ -709,7 +974,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
     
     <!-- POINTS BADGE -->
     <div class="points-badge">
-        <i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span>
+        <i class="fa-solid fa-star"></i> Your Points: <span id="currentPoints"><?php echo $user['PointsBalance']; ?></span> ⭐
     </div>
     
     <!-- INFO BANNER - Explain the request system -->
@@ -719,7 +984,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
     </div>
     
     <!-- CINEC BUS SCHEDULE SECTION -->
-    <h2 class="section-title">🚌 CINEC Bus Schedule</h2>
+    <h2 class="section-title"><i class="fa-solid fa-bus"></i> CINEC Bus Schedule</h2>
     <div class="campus-grid">
         <?php 
         if(mysqli_num_rows($campus_transport_result) > 0):
@@ -732,18 +997,18 @@ function hasPendingRequest($conn, $user_id, $route_name) {
                     <i class="fa-solid fa-bus"></i>
                 </div>
                 <div class="campus-route">
-                    <?php echo $route['from_campus']; ?> → <?php echo $route['to_campus']; ?>
+                    <?php echo htmlspecialchars($route['from_campus']); ?> → <?php echo htmlspecialchars($route['to_campus']); ?>
                 </div>
             </div>
             <div class="campus-details">
                 <div>
                     <div class="next-departure <?php echo $is_evening ? 'evening' : 'morning'; ?>">
-                        <?php echo $route['next_departure']; ?>
+                        <?php echo htmlspecialchars($route['next_departure']); ?>
                     </div>
-                    <div class="frequency"><?php echo $route['frequency']; ?></div>
+                    <div class="frequency"><i class="fa-regular fa-clock"></i> <?php echo htmlspecialchars($route['frequency']); ?></div>
                 </div>
                 <span class="status-badge status-<?php echo str_replace('-', '', $route['status']); ?>">
-                    <?php echo $route['status']; ?>
+                    <?php echo htmlspecialchars($route['status']); ?>
                 </span>
             </div>
         </div>
@@ -751,12 +1016,14 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             endwhile;
         else:
         ?>
-        <p style="color: white;">No bus schedules available</p>
+        <div class="campus-card">
+            <p style="color: #64748b;">No bus schedules available</p>
+        </div>
         <?php endif; ?>
     </div>
     
     <!-- BUS TRACKING SECTION -->
-    <h2 class="section-title">🚍 Live Bus Tracking</h2>
+    <h2 class="section-title"><i class="fa-solid fa-map-location-dot"></i> Live Bus Tracking</h2>
     <div class="tracking-grid">
         <?php 
         if(mysqli_num_rows($bus_routes_result) > 0):
@@ -765,7 +1032,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
                 $display_name = $route_details[$route_id]['name'] ?? ucfirst($route_id);
         ?>
         <div class="track-card" id="route-<?php echo $route_id; ?>">
-            <h3><?php echo $display_name; ?></h3>
+            <h3><i class="fa-solid fa-location-dot"></i> <?php echo $display_name; ?></h3>
             <div class="map-area">
                 <iframe id="map-<?php echo $route_id; ?>"
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.783515024766!2d79.97036937587595!3d6.916460618471185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae256db1a677131%3A0x2c6145384bc19bc8!2sCINEC%20Campus!5e0!3m2!1sen!2slk!4v1700000000000" 
@@ -774,18 +1041,18 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             </div>
             <div class="track-buttons">
                 <button onclick="viewLocation('<?php echo $route_id; ?>')">
-                    <i class="fa-solid fa-eye"></i> View
+                    <i class="fa-solid fa-eye"></i> View Location
                 </button>
                 <button onclick="updateLocation('<?php echo $route_id; ?>')">
-                    <i class="fa-solid fa-pen"></i> Update
+                    <i class="fa-solid fa-pen"></i> Update Location
                 </button>
             </div>
             <p class="status-text" id="status-<?php echo $route_id; ?>">
                 <?php if($bus['location']): ?>
-                    <strong>Last Location:</strong> <?php echo $bus['location']; ?><br>
-                    <strong>Updated at:</strong> <?php echo $bus['updated_time']; ?>
+                    <i class="fa-solid fa-map-pin"></i> <strong>Last Location:</strong> <?php echo htmlspecialchars($bus['location']); ?><br>
+                    <i class="fa-regular fa-clock"></i> <strong>Updated at:</strong> <?php echo htmlspecialchars($bus['updated_time']); ?>
                 <?php else: ?>
-                    No updates yet
+                    <i class="fa-regular fa-clock"></i> No updates yet
                 <?php endif; ?>
             </p>
         </div>
@@ -796,13 +1063,15 @@ function hasPendingRequest($conn, $user_id, $route_name) {
     </div>
     
     <!-- MY TRANSPORT PASSES SECTION -->
-    <h2 class="section-title">🎫 My Transport Passes</h2>
+    <h2 class="section-title"><i class="fa-solid fa-ticket"></i> My Transport Passes</h2>
     <div class="passes-grid">
         <?php if(mysqli_num_rows($passes_result) > 0): ?>
             <?php while($pass = mysqli_fetch_assoc($passes_result)): ?>
             <div class="pass-card">
                 <div class="pass-header">
-                    <span class="pass-route"><?php echo htmlspecialchars($pass['RouteName']); ?></span>
+                    <span class="pass-route">
+                        <i class="fa-solid fa-bus"></i> <?php echo htmlspecialchars($pass['RouteName']); ?>
+                    </span>
                     <span class="pass-status status-<?php echo $pass['Status']; ?> <?php echo $pass['Status'] == 'Pending' ? 'pending-animation' : ''; ?>">
                         <?php echo $pass['Status']; ?>
                         <?php if($pass['Status'] == 'Pending'): ?>
@@ -815,7 +1084,7 @@ function hasPendingRequest($conn, $user_id, $route_name) {
                         <i class="fa-regular fa-hourglass-half"></i> Awaiting Admin Approval<br>
                         <i class="fa-regular fa-calendar"></i> Requested: <?php echo date('M d, Y', strtotime($pass['IssuedAt'])); ?>
                     <?php else: ?>
-                        <i class="fa-regular fa-calendar"></i> Valid Until: <?php echo date('M d, Y', strtotime($pass['ValidUntil'])); ?><br>
+                        <i class="fa-regular fa-calendar-check"></i> Valid Until: <?php echo date('M d, Y', strtotime($pass['ValidUntil'])); ?><br>
                         <i class="fa-regular fa-clock"></i> Issued: <?php echo date('M d, Y', strtotime($pass['IssuedAt'])); ?>
                     <?php endif; ?>
                 </div>
@@ -823,13 +1092,14 @@ function hasPendingRequest($conn, $user_id, $route_name) {
             <?php endwhile; ?>
         <?php else: ?>
             <div class="no-passes">
-                <i class="fa-solid fa-ticket"></i> No transport passes yet. Request one below!
+                <i class="fa-solid fa-ticket" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i>
+                <p>No transport passes yet. Request one below!</p>
             </div>
         <?php endif; ?>
     </div>
     
     <!-- AVAILABLE ROUTES SECTION - REQUEST PASS BUTTONS -->
-    <h2 class="section-title">🛒 Available Routes - Request Pass</h2>
+    <h2 class="section-title"><i class="fa-solid fa-road"></i> Available Routes - Request Pass</h2>
     <div class="routes-list">
         <?php foreach($route_details as $route_id => $route): 
             $has_pending = hasPendingRequest($conn, $user_id, $route['name']);
@@ -837,12 +1107,12 @@ function hasPendingRequest($conn, $user_id, $route_name) {
         ?>
         <div class="route-item">
             <div class="route-info">
-                <div class="route-name"><?php echo $route['name']; ?></div>
+                <div class="route-name"><i class="fa-solid fa-bus"></i> <?php echo $route['name']; ?></div>
                 <div class="route-details">
                     <i class="fa-regular fa-clock"></i> <?php echo $route['frequency']; ?>
                 </div>
             </div>
-            <div class="route-price"><?php echo $route['price']; ?> points</div>
+            <div class="route-price"><i class="fa-solid fa-star"></i> <?php echo $route['price']; ?> points</div>
             <button class="request-btn <?php echo $has_pending ? 'pending' : ''; ?>" 
                     onclick="requestPass('<?php echo $route['name']; ?>', <?php echo $route['price']; ?>)"
                     <?php echo (!$can_request && !$has_pending) ? 'disabled' : ''; ?>>
@@ -866,31 +1136,31 @@ function hasPendingRequest($conn, $user_id, $route_name) {
 <script>
 // ==================== SIDEBAR ====================
 function toggleSidebar() {
-    const sidebar = document.querySelector(".sidebar");
+    const sidebar = document.querySelector("#sidebar");
     const overlay = document.getElementById("sidebarOverlay");
     const menuBtn = document.querySelector(".menu-btn");
     
-    if(sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         menuBtn.classList.remove("active");
     } else {
-        sidebar.style.left = "0px";
+        sidebar.classList.add("active");
         overlay.classList.add("active");
         menuBtn.classList.add("active");
     }
 }
 
 document.addEventListener("click", function(e) {
-    const sidebar = document.querySelector(".sidebar");
+    const sidebar = document.querySelector("#sidebar");
     const btn = document.querySelector(".menu-btn");
     const overlay = document.getElementById("sidebarOverlay");
     
     if(sidebar && btn && overlay && 
        !sidebar.contains(e.target) && 
        !btn.contains(e.target) && 
-       sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         btn.classList.remove("active");
     }
@@ -976,7 +1246,7 @@ function viewLocation(routeId) {
 function renderStatus(routeId, place, time) {
     let statusEl = document.getElementById('status-' + routeId);
     if (statusEl) {
-        statusEl.innerHTML = '<strong>Last Location:</strong> ' + place + ' <br> <strong>Updated at:</strong> ' + time;
+        statusEl.innerHTML = '<i class="fa-solid fa-map-pin"></i> <strong>Last Location:</strong> ' + place + ' <br> <i class="fa-regular fa-clock"></i> <strong>Updated at:</strong> ' + time;
     }
 }
 </script>
