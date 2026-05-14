@@ -579,25 +579,21 @@ if (mysqli_num_rows($check_orders) > 0) {
                             <i class="fa-solid fa-bus"></i>
                             <span>Transport</span>
                         </a>
-                        <a href="facility_management.php" class="action-card">
-                            <i class="fa-solid fa-building"></i>
-                            <span>Manage Facilities</span>
-                        </a>
-                        <a href="cafe_menu_admin.php" class="action-card">
-                            <i class="fa-solid fa-mug-saucer"></i>
-                            <span>Café Menu</span>
-                        </a>
-                        <a href="library_management.php" class="action-card">
-                            <i class="fa-solid fa-book"></i>
-                            <span>Library</span>
-                        </a>
                         <a href="pool_management.php" class="action-card">
                             <i class="fa-solid fa-person-swimming"></i>
                             <span>Pool Management</span>
-                        </a>
-                    </div>
-                </div>
-                
+                        </a>   
+			<a href="games.php" class="action-card">
+            		    <i class="fa-solid fa-gamepad"></i>
+                            <span>Game Dashboard</span>
+        		</a>
+                            <a href="../game.php" target="_blank" class="action-card">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Play Games</span>
+        		</a>
+    		  </div>
+		</div>
+
                 <!-- Recent Activity & Orders -->
                 <div class="dashboard-grid">
                     <!-- Recent Activity -->
