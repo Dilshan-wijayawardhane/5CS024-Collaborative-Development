@@ -1,12 +1,7 @@
 <?php
 
-
-
 require_once 'config.php';
 require_once 'functions.php';
-
-
-
 
 if (!isLoggedIn()) {
     header("Location: login.php");
@@ -15,17 +10,12 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-
-
 $user_sql = "SELECT PointsBalance, Name FROM Users WHERE UserID = ?";
 $user_stmt = mysqli_prepare($conn, $user_sql);
 mysqli_stmt_bind_param($user_stmt, "i", $user_id);
 mysqli_stmt_execute($user_stmt);
 $user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
-
-
-
 
 $facilities_count_sql = "SELECT COUNT(*) as count FROM Facilities WHERE Status = 'Open'";
 $facilities_count_result = mysqli_query($conn, $facilities_count_sql);
@@ -37,6 +27,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Hub - Synergy Hub</title>
     <style>
         * {
@@ -48,47 +39,29 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             position: relative;
         }
         
-        .bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-        }
-        
-        .bg::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("campus.jpg");
-            background-size: cover;
-            background-position: center;
-            filter: blur(4px) brightness(0.65);
-            transform: scale(1.05);
-            pointer-events: none;
-        }
-        
+        /* NAVBAR - White/Blue theme */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #1e4a76;
         }
         
         .logo span {
-            color: #22d3ee;
+            color: #2c7da0;
         }
         
         .icons {
@@ -98,7 +71,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .menu-btn {
-            color: white;
+            color: #1e4a76;
             font-size: 24px;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -115,29 +88,39 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-weight: 600;
             padding: 8px 15px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             color: white;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .points.active {
+            transform: scale(1.1);
         }
         
         .home-link {
-            color: white;
+            color: #1e4a76;
             font-size: 20px;
             text-decoration: none;
+            transition: color 0.3s;
         }
         
+        .home-link:hover {
+            color: #2c7da0;
+        }
+        
+        /* SIDEBAR - White/Blue theme */
         .sidebar {
             position: fixed;
             left: -280px;
             top: 0;
             width: 280px;
             height: 100%;
-            background: linear-gradient(180deg, #1e2b3c 0%, #0d1a24 100%);
-            backdrop-filter: blur(10px);
+            background: white;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
             overflow-y: auto;
         }
 
@@ -147,22 +130,9 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
 
         .sidebar-header {
             padding: 25px 20px 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
             margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
         }
 
         .sidebar-header h2 {
@@ -170,32 +140,25 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             font-size: 24px;
             font-weight: 700;
             margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-header p {
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 13px;
             margin: 0;
-            font-weight: 400;
         }
 
         .sidebar-header p i {
             color: #22d3ee;
             margin-right: 5px;
-            font-size: 10px;
         }
 
         .sidebar-user {
             padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             margin: 0 15px 20px 15px;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -205,34 +168,29 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             width: 45px;
             height: 45px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-user-info h4 {
-            color: white;
+            color: #1e293b;
             font-size: 15px;
             margin: 0 0 3px 0;
             font-weight: 600;
         }
 
         .sidebar-user-info p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 12px;
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .sidebar-user-info p i {
             color: #fbbf24;
-            font-size: 10px;
         }
 
         .sidebar-nav {
@@ -249,43 +207,39 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             display: flex;
             align-items: center;
             padding: 12px 18px;
-            color: #b8c7de;
+            color: #475569;
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
             gap: 12px;
             font-weight: 500;
             font-size: 15px;
-            position: relative;
-            overflow: hidden;
         }
 
         .sidebar-nav-link i {
             width: 22px;
             font-size: 1.1rem;
-            color: #5f7d9e;
+            color: #94a3b8;
             transition: all 0.3s ease;
-            text-align: center;
         }
 
         .sidebar-nav-link:hover {
-            background: rgba(168, 192, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
+            background: #e0f2fe;
+            color: #1e4a76;
         }
 
         .sidebar-nav-link:hover i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-nav-link.active {
-            background: linear-gradient(90deg, rgba(168, 192, 255, 0.15) 0%, rgba(168, 192, 255, 0.05) 100%);
-            color: white;
-            border-left: 3px solid #a5b4fc;
+            background: #e0f2fe;
+            color: #1e4a76;
+            border-left: 3px solid #2c7da0;
         }
 
         .sidebar-nav-link.active i {
-            color: #a5b4fc;
+            color: #2c7da0;
         }
 
         .sidebar-badge {
@@ -296,48 +250,35 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             padding: 2px 6px;
             border-radius: 30px;
             margin-left: auto;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
         }
 
         .sidebar-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
             margin: 20px 20px;
         }
 
         .sidebar-section-title {
             padding: 0 20px;
             margin: 25px 0 10px 0;
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .sidebar-club-preview {
-            background: rgba(255, 255, 255, 0.03);
+            background: #f8fafc;
             border-radius: 16px;
             padding: 15px;
             margin: 0 15px 20px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-club-preview h4 {
-            color: white;
+            color: #1e4a76;
             font-size: 13px;
             margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            opacity: 0.8;
         }
 
         .sidebar-club-preview h4 i {
@@ -345,46 +286,40 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-club-item {
-            background: rgba(0, 0, 0, 0.2);
+            background: white;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid #e2e8f0;
             transition: transform 0.2s;
         }
 
         .sidebar-club-item:hover {
             transform: translateX(5px);
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .sidebar-club-item:last-child {
-            margin-bottom: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .sidebar-club-item h5 {
-            color: white;
+            color: #1e293b;
             font-size: 14px;
             margin: 0 0 4px 0;
             font-weight: 600;
         }
 
         .sidebar-club-item p {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 11px;
             margin: 0 0 6px 0;
-            line-height: 1.4;
         }
 
         .sidebar-club-tag {
-            background: #2d4c6e;
-            color: white;
+            background: #e0f2fe;
+            color: #1e4a76;
             font-size: 9px;
             font-weight: 600;
             padding: 3px 8px;
             border-radius: 30px;
             display: inline-block;
-            text-transform: uppercase;
         }
 
         .sidebar-stats {
@@ -392,31 +327,22 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: space-around;
             padding: 15px 10px;
             margin: 0 15px;
-            background: rgba(255, 255, 255, 0.02);
+            background: #f8fafc;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .sidebar-stat-item {
-            text-align: center;
+            border: 1px solid #e2e8f0;
         }
 
         .sidebar-stat-value {
-            color: white;
+            color: #1e4a76;
             font-size: 18px;
             font-weight: 700;
             margin-bottom: 3px;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .sidebar-stat-label {
-            color: #94a3b8;
+            color: #64748b;
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
 
         .sidebar-footer {
@@ -431,25 +357,18 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar-footer-links a {
-            color: #94a3b8;
+            color: #64748b;
             text-decoration: none;
             font-size: 11px;
             transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
 
         .sidebar-footer-links a:hover {
-            color: white;
-        }
-
-        .sidebar-footer-links a i {
-            font-size: 10px;
+            color: #1e4a76;
         }
 
         .sidebar-copyright {
-            color: #64748b;
+            color: #94a3b8;
             font-size: 10px;
             text-align: center;
         }
@@ -460,17 +379,14 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(3px);
             z-index: 9998;
             display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .sidebar-overlay.active {
             display: block;
-            opacity: 1;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -482,14 +398,11 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 20px;
         }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
         
+        /* GAME CONTAINER */
         .game-container {
             padding: 30px;
             max-width: 1200px;
@@ -497,10 +410,11 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         }
         
         .game-hub {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             border-radius: 30px;
             padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
         }
         
         .game-tabs {
@@ -508,17 +422,17 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: center;
             gap: 15px;
             margin-bottom: 30px;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid #e2e8f0;
             padding-bottom: 20px;
             flex-wrap: wrap;
         }
         
         .tab-btn {
             padding: 15px 30px;
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.1);
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
             border-radius: 15px;
-            color: white;
+            color: #475569;
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
@@ -530,16 +444,23 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .tab-btn i {
             font-size: 24px;
+            color: #2c7da0;
         }
         
         .tab-btn:hover {
-            background: rgba(255,255,255,0.1);
+            background: #e0f2fe;
             transform: translateY(-2px);
+            border-color: #2c7da0;
         }
         
         .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border-color: transparent;
+            color: white;
+        }
+        
+        .tab-btn.active i {
+            color: white;
         }
         
         .game-panel {
@@ -550,6 +471,66 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             display: block;
         }
         
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .game-header h2 {
+            color: #1e4a76;
+        }
+        
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            color: #1e293b;
+        }
+        
+        .stat-box {
+            text-align: center;
+            background: #f8fafc;
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c7da0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 74, 118, 0.3);
+        }
+        
+        /* MEMORY GAME */
         .memory-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -560,7 +541,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .memory-card {
             aspect-ratio: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
             border-radius: 15px;
             cursor: pointer;
             display: flex;
@@ -568,14 +549,19 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             justify-content: center;
             font-size: 40px;
             color: white;
-            transition: transform 0.3s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .memory-card:hover {
+            transform: scale(1.05);
         }
         
         .memory-card.flipped {
             background: white;
-            color: #667eea;
-            transform: rotateY(180deg);
+            color: #2c7da0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            border: 2px solid #2c7da0;
         }
         
         .memory-card.matched {
@@ -583,8 +569,10 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             color: white;
             cursor: default;
             opacity: 0.7;
+            transform: none;
         }
         
+        /* MATH GAME */
         .math-game {
             text-align: center;
             padding: 20px;
@@ -592,7 +580,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         .question {
             font-size: 60px;
-            color: white;
+            color: #1e4a76;
             margin: 30px 0;
             font-weight: 700;
         }
@@ -608,27 +596,130 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         .option-btn {
             padding: 20px;
             font-size: 24px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.2);
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
             border-radius: 15px;
-            color: white;
+            color: #1e293b;
             cursor: pointer;
             transition: all 0.3s;
+            font-weight: 600;
         }
         
         .option-btn:hover {
-            background: rgba(255,255,255,0.2);
+            background: #e0f2fe;
             transform: scale(1.05);
+            border-color: #2c7da0;
         }
         
         .option-btn.correct {
             background: #10b981;
+            color: white;
             animation: correctPulse 0.5s;
         }
         
         .option-btn.wrong {
             background: #ef4444;
+            color: white;
             animation: shake 0.5s;
+        }
+        
+        .timer-bar {
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2c7da0, #1e4a76);
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+        
+        /* TIC-TAC-TOE */
+        .tictactoe-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            margin: 30px auto;
+        }
+        
+        .ttt-cell {
+            aspect-ratio: 1;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: #1e4a76;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 700;
+        }
+        
+        .ttt-cell:hover {
+            background: #e0f2fe;
+            transform: scale(1.05);
+            border-color: #2c7da0;
+        }
+        
+        .ttt-cell.winner {
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            color: white;
+            animation: winnerPulse 1s infinite;
+        }
+        
+        .game-modes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .mode-btn {
+            padding: 8px 16px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .mode-btn:hover {
+            background: #e0f2fe;
+            border-color: #2c7da0;
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .player-turn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #1e4a76 0%, #2c7da0 100%);
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .result-message {
+            text-align: center;
+            color: #2c7da0;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 600;
         }
         
         @keyframes correctPulse {
@@ -642,149 +733,9 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             75% { transform: translateX(10px); }
         }
         
-        .tictactoe-board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 400px;
-            margin: 30px auto;
-        }
-        
-        .ttt-cell {
-            aspect-ratio: 1;
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .ttt-cell:hover {
-            background: rgba(255,255,255,0.1);
-            transform: scale(1.05);
-        }
-        
-        .ttt-cell.winner {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            animation: winnerPulse 1s infinite;
-        }
-        
         @keyframes winnerPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
-        }
-        
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .game-stats {
-            display: flex;
-            gap: 30px;
-            color: white;
-        }
-        
-        .stat-box {
-            text-align: center;
-            background: rgba(255,255,255,0.05);
-            padding: 10px 20px;
-            border-radius: 15px;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #22d3ee;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: rgba(255,255,255,0.7);
-        }
-        
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 10px;
-            transition: transform 0.3s;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #22d3ee;
-            color: #0f172a;
-        }
-        
-        .game-modes {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
-        .mode-btn {
-            padding: 8px 16px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .mode-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .mode-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .timer-bar {
-            width: 100%;
-            height: 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        
-        .timer-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #22d3ee, #667eea);
-            width: 100%;
-            transition: width 0.1s linear;
-        }
-        
-        .player-turn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 30px;
-            color: white;
-            font-weight: 600;
         }
         
         @media (max-width: 768px) {
@@ -800,12 +751,18 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
             .options {
                 grid-template-columns: 1fr;
             }
+            
+            .game-container {
+                padding: 20px;
+            }
+            
+            .game-hub {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-
-<div class="bg"></div>
 
 <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
@@ -952,7 +909,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
         
         <div id="memoryGame" class="game-panel active">
             <div class="game-header">
-                <h2 style="color: white;">🎴 Memory Card Game</h2>
+                <h2>🎴 Memory Card Game</h2>
                 <div class="game-stats">
                     <div class="stat-box">
                         <div class="stat-value" id="memoryMoves">0</div>
@@ -973,12 +930,12 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 </button>
             </div>
             
-            <div id="memoryResult" style="text-align: center; color: #22d3ee; margin-top: 20px; font-size: 18px;"></div>
+            <div id="memoryResult" class="result-message"></div>
         </div>
         
         <div id="mathGame" class="game-panel">
             <div class="game-header">
-                <h2 style="color: white;">🧮 Quick Math Challenge</h2>
+                <h2>🧮 Quick Math Challenge</h2>
                 <div class="game-stats">
                     <div class="stat-box">
                         <div class="stat-value" id="mathScore">0</div>
@@ -1005,15 +962,15 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 </button>
             </div>
             
-            <div id="mathResult" style="text-align: center; color: #22d3ee; margin-top: 20px; font-size: 18px;"></div>
+            <div id="mathResult" class="result-message"></div>
         </div>
         
         <div id="tictactoeGame" class="game-panel">
             <div class="game-header">
-                <h2 style="color: white;">🎮 Tic-Tac-Toe</h2>
+                <h2>🎮 Tic-Tac-Toe</h2>
                 <div class="game-modes">
-                    <button class="mode-btn active" onclick="setTTTMode('cpu')">vs CPU</button>
-                    <button class="mode-btn" onclick="setTTTMode('friend')">vs Friend</button>
+                    <button class="mode-btn active" onclick="setTTTMode('cpu', this)">vs CPU</button>
+                    <button class="mode-btn" onclick="setTTTMode('friend', this)">vs Friend</button>
                 </div>
             </div>
             
@@ -1029,7 +986,7 @@ $facilities_count = mysqli_fetch_assoc($facilities_count_result)['count'];
                 </button>
             </div>
             
-            <div id="tttResult" style="text-align: center; color: #22d3ee; margin-top: 20px; font-size: 18px;"></div>
+            <div id="tttResult" class="result-message"></div>
         </div>
     </div>
 </div>
@@ -1040,12 +997,12 @@ function toggleSidebar() {
     const overlay = document.getElementById("sidebarOverlay");
     const menuBtn = document.querySelector(".menu-btn");
     
-    if(sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+    if(sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         menuBtn.classList.remove("active");
     } else {
-        sidebar.style.left = "0px";
+        sidebar.classList.add("active");
         overlay.classList.add("active");
         menuBtn.classList.add("active");
     }
@@ -1059,15 +1016,12 @@ document.addEventListener("click", function(e) {
     if(sidebar && btn && overlay && 
        !sidebar.contains(e.target) && 
        !btn.contains(e.target) && 
-       sidebar.style.left === "0px") {
-        sidebar.style.left = "-280px";
+       sidebar.classList.contains("active")) {
+        sidebar.classList.remove("active");
         overlay.classList.remove("active");
         btn.classList.remove("active");
     }
 });
-
-
-
 
 function switchGame(game) {
     document.getElementById('memoryGame').classList.remove('active');
@@ -1092,9 +1046,7 @@ function switchGame(game) {
     }
 }
 
-
-
-
+// Memory Game Logic
 let memoryCards = [];
 let memoryFlipped = [];
 let memoryMatched = 0;
@@ -1166,8 +1118,7 @@ function flipMemoryCard(index) {
                 if (memoryMatched === memorySymbols.length) {
                     memoryGameActive = false;
                     let points = Math.max(10, 50 - memoryMoves);
-                    document.getElementById('memoryResult').innerHTML = 
-                        `🎉 Congratulations! You won ${points} points!`;
+                    document.getElementById('memoryResult').innerHTML = `🎉 Congratulations! You won ${points} points!`;
                     saveGameScore('Memory Game', points);
                 }
                 updateMemoryDisplay();
@@ -1188,9 +1139,7 @@ function updateMemoryDisplay() {
     document.getElementById('memoryMatches').textContent = memoryMatched;
 }
 
-
-
-
+// Math Game Logic
 let mathScore = 0;
 let mathQuestion = 1;
 let mathTimeLeft = 10;
@@ -1317,9 +1266,7 @@ function endMathGame() {
     saveGameScore('Math Game', points);
 }
 
-
-
-
+// Tic-Tac-Toe Logic
 let tttBoard = ['', '', '', '', '', '', '', '', ''];
 let tttPlayer = 'X';
 let tttActive = true;
@@ -1341,14 +1288,12 @@ function renderTTT() {
         boardHtml += `<div class="ttt-cell" onclick="makeTTTMove(${i})" id="ttt-cell-${i}">${tttBoard[i]}</div>`;
     }
     document.getElementById('tttBoard').innerHTML = boardHtml;
-    document.getElementById('tttTurn').innerHTML = `Your turn (${tttPlayer})`;
+    document.getElementById('tttTurn').innerHTML = tttMode === 'cpu' ? `Your turn (${tttPlayer})` : `Player ${tttPlayer}'s turn`;
 }
 
 function makeTTTMove(pos) {
     if (!tttActive || tttGameOver) return;
-    
     if (tttBoard[pos] !== '') return;
-    
     if (tttMode === 'cpu' && tttPlayer === 'O') return;
     
     tttBoard[pos] = tttPlayer;
@@ -1365,7 +1310,7 @@ function makeTTTMove(pos) {
     }
     
     tttPlayer = tttPlayer === 'X' ? 'O' : 'X';
-    document.getElementById('tttTurn').innerHTML = `Your turn (${tttPlayer})`;
+    document.getElementById('tttTurn').innerHTML = tttMode === 'cpu' ? (tttPlayer === 'X' ? 'Your turn (X)' : 'CPU turn (O)') : `Player ${tttPlayer}'s turn`;
     
     if (tttMode === 'cpu' && tttPlayer === 'O' && tttActive && !tttGameOver) {
         setTimeout(makeCPUTTTMove, 600);
@@ -1399,7 +1344,7 @@ function makeCPUTTTMove() {
     }
     
     tttPlayer = 'X';
-    document.getElementById('tttTurn').innerHTML = `Your turn (${tttPlayer})`;
+    document.getElementById('tttTurn').innerHTML = 'Your turn (X)';
 }
 
 function getBestCPUMove(emptyCells) {
@@ -1483,12 +1428,12 @@ function endTTT(result) {
     }
 }
 
-function setTTTMode(mode) {
+function setTTTMode(mode, btnElement) {
     tttMode = mode;
     document.querySelectorAll('#tictactoeGame .mode-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    btnElement.classList.add('active');
     resetTTT();
 }
 
@@ -1496,9 +1441,7 @@ function resetTTT() {
     initTTT();
 }
 
-
-
-
+// Utility Functions
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -1506,9 +1449,6 @@ function shuffleArray(array) {
     }
     return array;
 }
-
-
-
 
 function saveGameScore(gameType, points) {
     fetch('save_game_score.php', {
@@ -1535,9 +1475,6 @@ function saveGameScore(gameType, points) {
         console.error('Error saving score:', error);
     });
 }
-
-
-
 
 window.onload = function() {
     initMemoryGame();
