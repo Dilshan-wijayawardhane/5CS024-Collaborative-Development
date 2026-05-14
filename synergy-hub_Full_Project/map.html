@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>360° Campus Tour | Synergy Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .map-header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateX(-3px);
+        }
+        .map-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .map-title i {
+            color: #22d3ee;
+            margin-right: 8px;
+        }
+        .tour-container {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 70px);
+            border: none;
+            position: relative;
+            background: #0f172a;
+        }
+        .loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 5;
+        }
+        .loading-message i {
+            font-size: 3rem;
+            color: #22d3ee;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .error-message i {
+            font-size: 4rem;
+            color: #f59e0b;
+            margin-bottom: 20px;
+        }
+        .error-message h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .error-message p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        .open-new-tab {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .open-new-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .map-header { padding: 0.8rem 1rem; }
+            .map-title { font-size: 1rem; }
+            .tour-container { height: calc(100vh - 62px); }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="map-header">
+        <a href="index.php" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+        <div class="map-title">
+            <i class="fa-solid fa-earth-asia"></i> 360° Campus Tour
+        </div>
+    </div>
+    <div class="tour-container">
+        <div class="loading-message" id="loadingMessage">
+            <i class="fa-solid fa-circle-notch"></i>
+            <p>Loading 360° Campus Tour...</p>
+        </div>
+        
+        <iframe 
+            id="tourFrame"
+            src="https://tour.panoee.net/69f5ac0cc2c57175613b2843" 
+            title="360° Campus Map"
+            allow="fullscreen; geolocation; microphone; camera"
+            allowfullscreen>
+        </iframe>
+        
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <i class="fa-solid fa-map"></i>
+            <h3>Tour Loading Issue</h3>
+            <p>The 360° tour couldn't load in this window.</p>
+            <p style="font-size: 0.9rem;">This may happen if the tour service blocks embedding.</p>
+            <button class="open-new-tab" onclick="window.open('https://tour.panoee.net/69f5ac0cc2c57175613b2843', '_blank')">
+                <i class="fa-solid fa-external-link-alt"></i> Open in New Tab
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const iframe = document.getElementById('tourFrame');
+        const loadingMsg = document.getElementById('loadingMessage');
+        const errorMsg = document.getElementById('errorMessage');
+        let loadFailed = true;
+        let timeoutId;
+
+        // Hide loading when iframe loads
+        iframe.onload = function() {
+            loadFailed = false;
+            loadingMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            clearTimeout(timeoutId);
+        };
+
+        // If iframe doesn't load within 8 seconds, show fallback
+        timeoutId = setTimeout(function() {
+            if (loadFailed) {
+                loadingMsg.style.display = 'none';
+                errorMsg.style.display = 'block';
+            }
+        }, 8000);
+
+        // Also try to detect if iframe content is accessible
+        try {
+            // This will fail if cross-origin, but that's okay
+            iframe.onerror = function() {
+                loadingMsg.style.display = 'none';
+                errorMsg.style.display = 'block';
+            };
+        } catch(e) {
+            console.log('Cross-origin detection not possible');
+        }
+    </script>
+</body>
+</html>
