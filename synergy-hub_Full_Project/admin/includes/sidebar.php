@@ -50,6 +50,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </div>
 
+        <div class="nav-section">
+            <div class="nav-section-title">Events</div>
+            <a href="admin_events.php" class="<?php echo $current_page == 'admin_events.php' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-calendar-alt"></i>
+                <span>Manage Events</span>
+            </a>
+        </div>
+
         <!-- Facility Management -->
         <div class="nav-section">
             <div class="nav-section-title">Facility Management</div>
@@ -100,6 +108,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <span>Borrowed Books</span>
             </a>
         </div>
+
+	<!-- Game Management -->
+	<div class="nav-section">
+              <div class="nav-section-title">Game Management</div>
+              <a href="games.php"><i class="fa-solid fa-gamepad"></i> Game Dashboard</a>
+              <a href="games.php?tab=players"><i class="fa-solid fa-ranking-star"></i> Players Stats</a>
+              <a href="games.php?tab=config"><i class="fa-solid fa-gear"></i> Game Configuration</a>
+	</div>
         
         <!-- Pool Management -->
         <div class="nav-section">
